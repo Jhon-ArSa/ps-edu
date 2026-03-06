@@ -1,0 +1,68 @@
+<?php
+
+namespace App\Http\Controllers\Docente;
+
+use App\Http\Controllers\Controller;
+use App\Models\Course;
+use App\Models\Task;
+use App\Models\Week;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class TaskController extends Controller
+{
+    public function store(Request $request, Course $course, Week $week)
+    {
+        $this->authorize('manage', $course);
+
+        $request->validate([
+            'title'        => 'required|string|max:255',
+            'description'  => 'nullable|string',
+            'instructions' => 'nullable|string',
+            'due_date'     => 'nullable|date',
+            'max_score'    => 'nullable|integer|min:1|max:1000',
+            'file'         => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,zip|max:20480',
+        ]);
+
+        $data = $request->only(['title', 'description', 'instructions', 'due_date', 'max_score']);
+        $data['week_id'] = $week->id;
+
+        if ($request->hasFile('file')) {
+            $data['file_path'] = $request->file('file')->store("tasks/{$course->id}", 'public');
+        }
+
+        Task::create($data);
+
+        return back()->with('success', 'Tarea "' . $request->title . '" creada exitosamente.');
+    }
+
+    public function update(Request $request, Course $course, Week $week, Task $task)
+    {
+        $this->authorize('manage', $course);
+
+        $request->validate([
+            'title'        => 'required|string|max:255',
+            'description'  => 'nullable|string',
+            'instructions' => 'nullable|string',
+            'due_date'     => 'nullable|date',
+            'max_score'    => 'nullable|integer|min:1|max:1000',
+        ]);
+
+        $task->update($request->only(['title', 'description', 'instructions', 'due_date', 'max_score']));
+
+        return back()->with('success', 'Tarea actualizada.');
+    }
+
+    public function destroy(Course $course, Week $week, Task $task)
+    {
+        $this->authorize('manage', $course);
+
+        if ($task->file_path) {
+            Storage::disk('public')->delete($task->file_path);
+        }
+
+        $task->delete();
+
+        return back()->with('success', 'Tarea eliminada.');
+    }
+}

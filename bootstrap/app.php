@@ -11,7 +11,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
+        ]);
+
+        // Redirigir usuarios ya autenticados que intenten ir a rutas guest (/login)
+        $middleware->redirectUsersTo(function () {
+            if (!auth()->check()) return route('login');
+            return match(auth()->user()->role) {
+                'admin'   => route('admin.dashboard'),
+                'docente' => route('docente.dashboard'),
+                'alumno'  => route('alumno.dashboard'),
+                default   => route('login'),
+            };
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
