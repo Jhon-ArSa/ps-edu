@@ -45,18 +45,29 @@ class UserController extends Controller
             'role'     => 'required|in:admin,docente,alumno',
             'dni'      => 'nullable|string|max:20|unique:users,dni',
             'phone'    => 'nullable|string|max:20',
+            'status'   => 'nullable|boolean',
         ]);
+
+        $validated['status'] = $request->boolean('status', true);
 
         $user = User::create($validated);
 
         if ($user->isDocente()) {
-            DocenteProfile::create(['user_id' => $user->id]);
+            DocenteProfile::create([
+                'user_id'          => $user->id,
+                'title'            => $request->input('title'),
+                'degree'           => $request->input('degree'),
+                'specialty'        => $request->input('specialty'),
+                'category'         => $request->input('category'),
+                'years_of_service' => $request->input('years_of_service'),
+                'bio'              => $request->input('bio'),
+            ]);
         } elseif ($user->isAlumno()) {
             AlumnoProfile::create([
-                'user_id' => $user->id,
-                'program' => $request->program,
-                'promotion_year' => $request->promotion_year,
-                'code'    => $request->code,
+                'user_id'        => $user->id,
+                'code'           => $request->input('code'),
+                'promotion_year' => $request->input('promotion_year'),
+                'program'        => $request->input('program'),
             ]);
         }
 
@@ -84,7 +95,10 @@ class UserController extends Controller
             'role'  => 'required|in:admin,docente,alumno',
             'dni'   => 'nullable|string|max:20|unique:users,dni,' . $user->id,
             'phone' => 'nullable|string|max:20',
+            'status' => 'nullable|boolean',
         ]);
+
+        $validated['status'] = $request->boolean('status', true);
 
         if ($request->filled('password')) {
             $request->validate(['password' => 'min:8|confirmed']);
@@ -106,7 +120,7 @@ class UserController extends Controller
             );
         }
 
-        return redirect()->route('admin.users.index')
+        return redirect()->route('admin.users.show', $user)
             ->with('success', 'Usuario actualizado exitosamente.');
     }
 
