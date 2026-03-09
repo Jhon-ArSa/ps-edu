@@ -69,6 +69,8 @@
                 <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
             </div>
             <x-sidebar-link route="admin.users.index" icon="users">Usuarios</x-sidebar-link>
+            <x-sidebar-link route="admin.programs.index" icon="graduation">Programas</x-sidebar-link>
+            <x-sidebar-link route="admin.semesters.index" icon="calendar">Semestres</x-sidebar-link>
             <x-sidebar-link route="admin.courses.index" icon="book">Cursos</x-sidebar-link>
             <x-sidebar-link route="admin.enrollments.index" icon="clipboard">Matrículas</x-sidebar-link>
             <x-sidebar-link route="admin.announcements.index" icon="bell">Comunicados</x-sidebar-link>

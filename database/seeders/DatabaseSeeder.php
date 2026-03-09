@@ -62,5 +62,11 @@ class DatabaseSeeder extends Seeder
         Setting::set('institution_acronym', 'FAEDU');
         Setting::set('institution_subtitle', 'Posgrado');
         Setting::set('institution_year', date('Y'));
+
+        // Programas de posgrado con menciones y plan de estudios
+        $this->call(ProgramSeeder::class);
+
+        // Semestres, docentes adicionales, alumnos y cursos
+        $this->call(CourseSeeder::class);
     }
 }

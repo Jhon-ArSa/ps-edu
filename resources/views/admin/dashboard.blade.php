@@ -32,6 +32,41 @@
         </div>
     </div>
 
+    {{-- Active Semester Banner --}}
+    @if($activeSemester)
+    <div class="relative bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 rounded-xl p-5 text-white overflow-hidden animate-fade-in-up delay-1">
+        <div class="absolute -top-6 -right-6 w-32 h-32 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
+        <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 shrink-0">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.7"/>
+                        <path d="M16 2v4M8 2v4M3 10h18" stroke-width="1.7" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-base font-bold">{{ $activeSemester->name }}</h3>
+                        <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-sm">
+                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> En curso
+                        </span>
+                    </div>
+                    <p class="text-white/65 text-xs mt-0.5">{{ $activeSemester->date_range }} · {{ $activeSemester->progress_percent }}% completado</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="w-32 bg-white/20 rounded-full h-2 overflow-hidden">
+                    <div class="h-full bg-white rounded-full transition-all" style="width: {{ $activeSemester->progress_percent }}%"></div>
+                </div>
+                <a href="{{ route('admin.semesters.show', $activeSemester) }}" class="inline-flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-2 rounded-lg border border-white/20 transition-all whitespace-nowrap">
+                    Ver semestre
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Stats Grid --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
@@ -143,7 +178,7 @@
                 <p class="text-xs text-gray-400 mt-0.5">Acceso rápido a todas las funcionalidades</p>
             </div>
         </div>
-        <div class="p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="p-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
 
             {{-- Usuarios --}}
             <a href="{{ route('admin.users.index') }}"
@@ -203,6 +238,18 @@
                     </svg>
                 </div>
                 <span class="relative z-10 text-xs font-semibold text-gray-600 group-hover:text-primary-700 leading-tight transition-colors">Configuración</span>
+            </a>
+
+            {{-- Semestres --}}
+            <a href="{{ route('admin.semesters.index') }}"
+               class="group module-card">
+                <div class="relative z-10 w-12 h-12 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-md shadow-teal-500/20 group-hover:shadow-lg group-hover:shadow-teal-500/30 group-hover:scale-110 transition-all duration-300">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.5"/>
+                        <path d="M16 2v4M8 2v4M3 10h18" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <span class="relative z-10 text-xs font-semibold text-gray-600 group-hover:text-primary-700 leading-tight transition-colors">Semestres</span>
             </a>
 
             {{-- Nuevo Usuario --}}

@@ -41,8 +41,15 @@
             <option value="active"   {{ request('status') === 'active'   ? 'selected' : '' }}>Activos</option>
             <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactivos</option>
         </select>
+        <select name="semester_id"
+                class="px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-400">
+            <option value="">Todos los semestres</option>
+            @foreach($semesters as $sem)
+                <option value="{{ $sem->id }}" {{ request('semester_id') == $sem->id ? 'selected' : '' }}>{{ $sem->name }}</option>
+            @endforeach
+        </select>
         <button type="submit" class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">Filtrar</button>
-        @if(request()->hasAny(['search', 'status']))
+        @if(request()->hasAny(['search', 'status', 'semester_id']))
             <a href="{{ route('admin.courses.index') }}" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">Limpiar</a>
         @endif
     </form>
@@ -55,6 +62,7 @@
                     <tr class="border-b border-gray-100 bg-gray-50">
                         <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Curso</th>
                         <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Docente</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Semestre</th>
                         <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Ciclo / Sem.</th>
                         <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
                         <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Acciones</th>
@@ -68,6 +76,15 @@
                             <p class="text-xs text-gray-400">{{ $course->code }}</p>
                         </td>
                         <td class="px-5 py-3 text-gray-600 hidden md:table-cell">{{ $course->teacher->name ?? '—' }}</td>
+                        <td class="px-5 py-3 text-gray-500 hidden lg:table-cell">
+                            @if($course->semesterPeriod)
+                                <a href="{{ route('admin.semesters.show', $course->semesterPeriod) }}" class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full {{ $course->semesterPeriod->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }} hover:underline">
+                                    {{ $course->semesterPeriod->name }}
+                                </a>
+                            @else
+                                <span class="text-xs text-gray-300">—</span>
+                            @endif
+                        </td>
                         <td class="px-5 py-3 text-gray-500 hidden lg:table-cell">
                             @if($course->cycle)
                                 Ciclo {{ $course->cycle }}
@@ -111,7 +128,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-5 py-12 text-center text-gray-400">
+                        <td colspan="6" class="px-5 py-12 text-center text-gray-400">
                             No se encontraron cursos con los filtros aplicados.
                         </td>
                     </tr>

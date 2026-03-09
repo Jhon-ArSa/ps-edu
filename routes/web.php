@@ -57,6 +57,22 @@ Route::middleware(['auth', 'role:admin'])
     Route::patch('users/{user}/toggle-status', [Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
     Route::resource('courses', Admin\CourseController::class);
+
+    Route::resource('programs', Admin\ProgramController::class);
+
+    // Menciones dentro de programas
+    Route::prefix('programs/{program}/mentions')->name('programs.mentions.')->group(function () {
+        Route::get('/create',           [Admin\MentionController::class, 'create'])->name('create');
+        Route::post('/',                [Admin\MentionController::class, 'store'])->name('store');
+        Route::get('/{mention}/edit',   [Admin\MentionController::class, 'edit'])->name('edit');
+        Route::put('/{mention}',        [Admin\MentionController::class, 'update'])->name('update');
+        Route::delete('/{mention}',     [Admin\MentionController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::resource('semesters', Admin\SemesterController::class);
+    Route::patch('semesters/{semester}/activate', [Admin\SemesterController::class, 'activate'])->name('semesters.activate');
+    Route::patch('semesters/{semester}/close', [Admin\SemesterController::class, 'close'])->name('semesters.close');
+
     Route::resource('announcements', Admin\AnnouncementController::class)->except(['show']);
 
     Route::get('/enrollments',                         [Admin\EnrollmentController::class, 'index'])->name('enrollments.index');

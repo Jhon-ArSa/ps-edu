@@ -7,11 +7,14 @@ use App\Models\User;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Announcement;
+use App\Models\Semester;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        $activeSemester = Semester::getActive();
+
         $stats = [
             'total_students'       => User::where('role', 'alumno')->count(),
             'total_teachers'       => User::where('role', 'docente')->count(),
@@ -22,6 +25,6 @@ class DashboardController extends Controller
             'recent_announcements' => Announcement::published()->latest('published_at')->take(5)->get(),
         ];
 
-        return view('admin.dashboard', compact('stats'));
+        return view('admin.dashboard', compact('stats', 'activeSemester'));
     }
 }

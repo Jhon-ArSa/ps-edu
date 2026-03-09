@@ -4,14 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\Enrollment;
+use App\Models\Program;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CourseController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Course::with('teacher');
+        $query = Course::with(['teacher', 'semesterPeriod']);
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
@@ -24,14 +28,31 @@ class CourseController extends Controller
             $query->where('status', $request->status);
         }
 
-        $courses = $query->latest()->paginate(15)->withQueryString();
-        return view('admin.courses.index', compact('courses'));
+        if ($request->filled('semester_id')) {
+            $query->where('semester_id', $request->semester_id);
+        }
+
+        $courses   = $query->latest()->paginate(15)->withQueryString();
+        $semesters = Semester::orderByDesc('year')->orderByDesc('period')->get();
+
+        return view('admin.courses.index', compact('courses', 'semesters'));
     }
 
     public function create()
     {
-        $teachers = User::where('role', 'docente')->where('status', true)->get();
-        return view('admin.courses.create', compact('teachers'));
+        $teachers  = User::where('role', 'docente')->where('status', true)->orderBy('name')->get();
+        $students  = User::where('role', 'alumno')->where('status', true)->with('alumnoProfile')->orderBy('name')->get();
+        $semesters = Semester::orderByDesc('year')->orderByDesc('period')->get();
+        $programs  = Program::where('status', 'active')->orderBy('name')->get();
+
+        $studentsJson = $students->map(fn ($s) => [
+            'id'   => (string) $s->id,
+            'name' => $s->name,
+            'email'=> $s->email,
+            'dni'  => $s->dni ?? '',
+        ])->values();
+
+        return view('admin.courses.create', compact('teachers', 'students', 'semesters', 'programs', 'studentsJson'));
     }
 
     public function store(Request $request)
@@ -41,28 +62,62 @@ class CourseController extends Controller
             'code'       => 'required|string|max:30|unique:courses,code',
             'description'=> 'nullable|string',
             'teacher_id' => 'required|exists:users,id',
+            'semester_id'=> 'nullable|exists:semesters,id',
+            'program_id' => 'nullable|exists:programs,id',
             'program'    => 'nullable|string|max:255',
             'cycle'      => 'nullable|integer|min:1|max:10',
             'year'       => 'nullable|integer|min:2000|max:2100',
             'semester'   => 'nullable|in:I,II',
             'status'     => 'required|in:active,inactive',
+            'students'   => 'nullable|array',
+            'students.*' => 'exists:users,id',
         ]);
 
-        Course::create($validated);
+        $studentIds = $validated['students'] ?? [];
+        unset($validated['students']);
+
+        DB::transaction(function () use ($validated, $studentIds) {
+            $course = Course::create($validated);
+
+            if (!empty($studentIds)) {
+                $enrollments = collect($studentIds)->map(fn ($uid) => [
+                    'course_id'   => $course->id,
+                    'user_id'     => $uid,
+                    'enrolled_at' => now(),
+                    'status'      => 'active',
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ]);
+                Enrollment::insert($enrollments->toArray());
+            }
+        });
+
         return redirect()->route('admin.courses.index')
             ->with('success', 'Curso creado exitosamente.');
     }
 
     public function show(Course $course)
     {
-        $course->load(['teacher', 'enrollments.student', 'weeks.materials']);
+        $course->load(['teacher', 'semesterPeriod', 'programBelongs', 'enrollments.student', 'weeks.materials']);
         return view('admin.courses.show', compact('course'));
     }
 
     public function edit(Course $course)
     {
-        $teachers = User::where('role', 'docente')->where('status', true)->get();
-        return view('admin.courses.edit', compact('course', 'teachers'));
+        $teachers   = User::where('role', 'docente')->where('status', true)->orderBy('name')->get();
+        $students   = User::where('role', 'alumno')->where('status', true)->with('alumnoProfile')->orderBy('name')->get();
+        $semesters  = Semester::orderByDesc('year')->orderByDesc('period')->get();
+        $programs   = Program::where('status', 'active')->orderBy('name')->get();
+        $enrolledIds = $course->enrollments()->where('status', 'active')->pluck('user_id')->map(fn ($id) => (int) $id)->toArray();
+
+        $studentsJson = $students->map(fn ($s) => [
+            'id'   => (string) $s->id,
+            'name' => $s->name,
+            'email'=> $s->email,
+            'dni'  => $s->dni ?? '',
+        ])->values();
+
+        return view('admin.courses.edit', compact('course', 'teachers', 'students', 'semesters', 'programs', 'enrolledIds', 'studentsJson'));
     }
 
     public function update(Request $request, Course $course)
@@ -72,14 +127,41 @@ class CourseController extends Controller
             'code'       => 'required|string|max:30|unique:courses,code,' . $course->id,
             'description'=> 'nullable|string',
             'teacher_id' => 'required|exists:users,id',
+            'semester_id'=> 'nullable|exists:semesters,id',
+            'program_id' => 'nullable|exists:programs,id',
             'program'    => 'nullable|string|max:255',
             'cycle'      => 'nullable|integer|min:1|max:10',
             'year'       => 'nullable|integer|min:2000|max:2100',
             'semester'   => 'nullable|in:I,II',
             'status'     => 'required|in:active,inactive',
+            'students'   => 'nullable|array',
+            'students.*' => 'exists:users,id',
         ]);
 
-        $course->update($validated);
+        $studentIds = collect($validated['students'] ?? [])->map(fn ($id) => (int) $id);
+        unset($validated['students']);
+
+        DB::transaction(function () use ($course, $validated, $studentIds) {
+            $course->update($validated);
+
+            $currentEnrolled = $course->enrollments()->where('status', 'active')->pluck('user_id');
+
+            // Drop students that were removed
+            $toDrop = $currentEnrolled->diff($studentIds);
+            if ($toDrop->isNotEmpty()) {
+                $course->enrollments()->whereIn('user_id', $toDrop)->update(['status' => 'dropped']);
+            }
+
+            // Add new students
+            $toAdd = $studentIds->diff($currentEnrolled);
+            foreach ($toAdd as $uid) {
+                Enrollment::updateOrCreate(
+                    ['course_id' => $course->id, 'user_id' => $uid],
+                    ['status' => 'active', 'enrolled_at' => now()]
+                );
+            }
+        });
+
         return redirect()->route('admin.courses.index')
             ->with('success', 'Curso actualizado exitosamente.');
     }

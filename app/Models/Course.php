@@ -7,13 +7,23 @@ use Illuminate\Database\Eloquent\Model;
 class Course extends Model
 {
     protected $fillable = [
-        'name', 'code', 'description', 'teacher_id',
-        'program', 'cycle', 'year', 'semester', 'status',
+        'name', 'code', 'description', 'teacher_id', 'semester_id',
+        'program_id', 'program', 'cycle', 'year', 'semester', 'status',
     ];
 
     public function teacher()
     {
         return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    public function semesterPeriod()
+    {
+        return $this->belongsTo(Semester::class, 'semester_id');
+    }
+
+    public function programBelongs()
+    {
+        return $this->belongsTo(Program::class, 'program_id');
     }
 
     public function weeks()
