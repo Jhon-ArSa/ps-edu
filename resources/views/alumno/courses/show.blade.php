@@ -41,6 +41,19 @@
         @if($course->description)
         <p class="text-sm text-gray-600 mt-3 leading-relaxed">{{ $course->description }}</p>
         @endif
+
+        {{-- Acceso rápido a calificaciones --}}
+        <div class="mt-4 pt-4 border-t border-gray-100">
+            <a href="{{ route('alumno.grades.show', $course) }}"
+               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                    <rect x="9" y="3" width="6" height="4" rx="1"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6M9 16h4"/>
+                </svg>
+                Ver mis calificaciones
+            </a>
+        </div>
     </div>
 
     {{-- Weeks & Materials --}}

@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-<div class="space-y-6 max-w-7xl">
+<div class="space-y-6">
 
     {{-- Semester Header Card --}}
     <div class="relative rounded-2xl overflow-hidden animate-fade-in-up

@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-<div class="space-y-6 max-w-7xl">
+<div class="space-y-6">
 
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

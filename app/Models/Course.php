@@ -42,4 +42,9 @@ class Course extends Model
                     ->withPivot('status', 'enrolled_at')
                     ->wherePivot('status', 'active');
     }
+
+    public function gradeItems()
+    {
+        return $this->hasMany(GradeItem::class)->orderBy('order');
+    }
 }

@@ -3,7 +3,7 @@
 @section('title', 'Inicio')
 
 @section('content')
-<div class="space-y-6 max-w-7xl">
+<div class="space-y-6">
 
     {{-- Welcome --}}
     <div class="animate-fade-in-up">

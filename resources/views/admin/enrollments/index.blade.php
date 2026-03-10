@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-<div class="space-y-5 max-w-7xl">
+<div class="space-y-5">
 
     {{-- Header --}}
     <div class="flex items-center justify-between">

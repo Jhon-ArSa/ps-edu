@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-<div class="space-y-6 max-w-7xl">
+<div class="space-y-6">
 
     {{-- Welcome banner --}}
     <div class="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-2xl px-7 py-6 text-white shadow-xl shadow-primary-500/10 overflow-hidden animate-fade-in-up">

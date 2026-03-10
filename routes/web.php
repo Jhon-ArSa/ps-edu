@@ -117,6 +117,15 @@ Route::middleware(['auth', 'role:docente'])
         Route::delete('/{course}/estudiantes/{student}', [Docente\StudentController::class, 'unenroll'])->name('students.unenroll');
     });
 
+    // ── Calificaciones (Zair) ──────────────────────────────────────────────
+    Route::prefix('cursos/{course}/notas')->name('grades.')->group(function () {
+        Route::get('/',                                         [Docente\GradeController::class, 'index'])->name('index');
+        Route::post('/items',                                   [Docente\GradeController::class, 'storeItem'])->name('items.store');
+        Route::patch('/items/{gradeItem}',                      [Docente\GradeController::class, 'updateItem'])->name('items.update');
+        Route::delete('/items/{gradeItem}',                     [Docente\GradeController::class, 'destroyItem'])->name('items.destroy');
+        Route::patch('/{gradeItem}/alumnos/{user}',             [Docente\GradeController::class, 'updateGrade'])->name('update');
+    });
+
     // Intranet
     Route::get('/intranet', function () {
         return view('docente.intranet', [
@@ -149,7 +158,8 @@ Route::middleware(['auth', 'role:alumno'])
 
     Route::get('/dashboard', [Alumno\DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/mis-cursos/{course}', [Alumno\CourseController::class, 'show'])->name('courses.show');
+    Route::get('/mis-cursos/{course}',        [Alumno\CourseController::class, 'show'])->name('courses.show');
+    Route::get('/mis-cursos/{course}/notas', [Alumno\GradeController::class, 'show'])->name('grades.show');
 
     Route::get('/intranet', function () {
         return view('alumno.intranet', [
