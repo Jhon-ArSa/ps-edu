@@ -114,7 +114,7 @@
                                     </svg>
                                 </a>
                                 <form method="POST" action="{{ route('admin.courses.destroy', $course) }}"
-                                      onsubmit="return confirm('¿Eliminar este curso?')">
+                                      data-confirm="¿Eliminar este curso?">
                                     @csrf @method('DELETE')
                                     <button type="submit" title="Eliminar"
                                             class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">

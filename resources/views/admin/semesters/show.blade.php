@@ -45,11 +45,12 @@
                         Editar
                     </a>
                     @if($semester->is_planned)
-                    <form method="POST" action="{{ route('admin.semesters.activate', $semester) }}">
+                    <form method="POST" action="{{ route('admin.semesters.activate', $semester) }}"
+                          data-confirm="¿Activar este semestre? Los semestres anteriores serán cerrados."
+                          data-confirm-color="#10b981">
                         @csrf @method('PATCH')
                         <button type="submit"
-                                class="inline-flex items-center gap-2 bg-white text-emerald-700 text-sm font-bold px-4 py-2.5 rounded-xl transition-all hover:bg-emerald-50 shadow-lg"
-                                onclick="return confirm('¿Activar este semestre? Los semestres anteriores serán cerrados.')">
+                                class="inline-flex items-center gap-2 bg-white text-emerald-700 text-sm font-bold px-4 py-2.5 rounded-xl transition-all hover:bg-emerald-50 shadow-lg">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             Activar semestre
                         </button>

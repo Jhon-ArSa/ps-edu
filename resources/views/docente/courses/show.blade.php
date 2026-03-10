@@ -154,7 +154,7 @@
                         </svg>
                     </button>
                     <form method="POST" action="{{ route('docente.courses.weeks.destroy', [$course, $week]) }}"
-                          onsubmit="return confirm('¿Eliminar la Semana {{ $week->number }} y todos sus materiales y tareas?')">
+                          data-confirm="¿Eliminar la Semana {{ $week->number }} y todos sus materiales y tareas?">
                         @csrf @method('DELETE')
                         <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar semana">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -302,7 +302,7 @@
                                     </svg>
                                 </button>
                                 <form method="POST" action="{{ route('docente.courses.materials.destroy', [$course, $week, $material]) }}"
-                                      onsubmit="return confirm('¿Eliminar este material?')">
+                                      data-confirm="¿Eliminar este material?">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -486,7 +486,7 @@
                                         </svg>
                                     </button>
                                     <form method="POST" action="{{ route('docente.courses.tasks.destroy', [$course, $week, $task]) }}"
-                                          onsubmit="return confirm('¿Eliminar la tarea «{{ $task->title }}»?')">
+                                          data-confirm="¿Eliminar la tarea «{{ $task->title }}»?">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -716,7 +716,7 @@
                     </span>
                     @if($enrollment && $enrollment->status === 'active')
                     <form method="POST" action="{{ route('docente.courses.students.unenroll', [$course, $student]) }}"
-                          onsubmit="return confirm('¿Dar de baja a {{ $student->name }}?')">
+                          data-confirm="¿Dar de baja a {{ $student->name }}">
                         @csrf @method('DELETE')
                         <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Dar de baja">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

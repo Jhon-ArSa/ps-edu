@@ -106,7 +106,7 @@
                                                 </button>
                                                 <form method="POST"
                                                       action="{{ route('docente.grades.items.destroy', [$course, $item]) }}"
-                                                      onsubmit="return confirm('¿Eliminar este ítem y todas las notas asociadas?')">
+                                                      data-confirm="¿Eliminar este ítem y todas las notas asociadas?">
                                                     @csrf @method('DELETE')
                                                     <button type="submit"
                                                             class="w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50">

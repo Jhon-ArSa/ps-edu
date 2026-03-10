@@ -39,7 +39,7 @@
                         Editar
                     </a>
                     <form method="POST" action="{{ route('admin.programs.destroy', $program) }}" class="inline"
-                          onsubmit="return confirm('¿Eliminar este programa? Esta acción no se puede deshacer.')">
+                          data-confirm="¿Eliminar este programa? Esta acción no se puede deshacer.">
                         @csrf @method('DELETE')
                         <button type="submit"
                                 class="inline-flex items-center gap-2 bg-red-500/20 hover:bg-red-500/40 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2.5 rounded-xl border border-red-400/30 transition-all">
@@ -302,7 +302,7 @@
                             Editar
                         </a>
                         <form method="POST" action="{{ route('admin.programs.mentions.destroy', [$program, $mention]) }}" class="inline"
-                              onsubmit="return confirm('¿Eliminar esta mención y todo su currículo?')">
+                              data-confirm="¿Eliminar esta mención y todo su currículo?">
                             @csrf @method('DELETE')
                             <button type="submit" class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-red-500 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>

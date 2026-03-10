@@ -123,7 +123,7 @@
                                 </a>
                                 @if($user->id !== auth()->id())
                                 <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
-                                      onsubmit="return confirm('¿Desactivar este usuario?')">
+                                      data-confirm="¿Desactivar este usuario?">
                                     @csrf @method('DELETE')
                                     <button type="submit" title="Desactivar"
                                             class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">

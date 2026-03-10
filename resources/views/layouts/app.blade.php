@@ -17,6 +17,8 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+    {{-- SweetAlert2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body class="min-h-screen bg-gray-50/80 font-sans antialiased">
 
@@ -127,7 +129,11 @@
         <x-sidebar-link route="profile.edit" icon="user">Mi Perfil</x-sidebar-link>
 
         {{-- Cerrar sesión --}}
-        <form method="POST" action="{{ route('logout') }}">
+        <form method="POST" action="{{ route('logout') }}"
+              data-confirm="¿Deseas cerrar tu sesión?"
+              data-confirm-icon="question"
+              data-confirm-ok="Sí, cerrar sesión"
+              data-confirm-color="#3b82f6">
             @csrf
             <button type="submit"
                     class="sidebar-link sidebar-link-logout group w-full"
@@ -394,7 +400,11 @@
                         </div>
                         Mi Perfil
                     </a>
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}"
+                          data-confirm="¿Deseas cerrar tu sesión?"
+                          data-confirm-icon="question"
+                          data-confirm-ok="Sí, cerrar sesión"
+                          data-confirm-color="#3b82f6">
                         @csrf
                         <button type="submit"
                                 class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 text-sm font-medium transition-all duration-200 group">
@@ -487,6 +497,31 @@
     </footer>
 </div>
 
+<script>
+document.addEventListener('submit', function(e) {
+    var form = e.target;
+    var msg  = form.dataset.confirm;
+    if (!msg) return;
+    e.preventDefault();
+    Swal.fire({
+        title: form.dataset.confirmTitle || '¿Confirmar acción?',
+        text: msg,
+        icon: form.dataset.confirmIcon || 'warning',
+        showCancelButton: true,
+        confirmButtonText: form.dataset.confirmOk || 'Sí, continuar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: form.dataset.confirmColor || '#ef4444',
+        cancelButtonColor: '#6b7280',
+        reverseButtons: true,
+        focusCancel: true,
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            form.removeAttribute('data-confirm');
+            form.submit();
+        }
+    });
+});
+</script>
 @stack('scripts')
 </body>
 </html>
