@@ -82,6 +82,7 @@
             <div class="sidebar-divider-hideable" :class="sidebarCollapsed && 'sidebar-show'">
                 <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
             </div>
+            <x-sidebar-link route="notifications.index" icon="notification">Notificaciones</x-sidebar-link>
             <x-sidebar-link route="admin.settings" icon="cog">Configuración</x-sidebar-link>
 
         @elseif($role === 'docente')
@@ -105,11 +106,13 @@
                 <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
             </div>
             <x-sidebar-link route="docente.escalafon.show" icon="id-card">Escalafón</x-sidebar-link>
+            <x-sidebar-link route="notifications.index" icon="notification">Notificaciones</x-sidebar-link>
             <x-sidebar-link route="docente.soporte" icon="support">Soporte Técnico</x-sidebar-link>
 
         @elseif($role === 'alumno')
             <x-sidebar-link route="alumno.dashboard" icon="home">Inicio</x-sidebar-link>
             <x-sidebar-link route="alumno.intranet" icon="newspaper">Intranet</x-sidebar-link>
+            <x-sidebar-link route="notifications.index" icon="notification">Notificaciones</x-sidebar-link>
         @endif
 
         {{-- Cuenta --}}
@@ -203,6 +206,10 @@
         </div>
 
         {{-- Right side --}}
+        @php
+            $unreadNotifCount    = auth()->user()->unreadNotifications()->count();
+            $recentNotifications = auth()->user()->notifications()->latest()->limit(5)->get();
+        @endphp
         <div class="flex items-center gap-2.5 shrink-0">
             {{-- Date badge --}}
             <div class="hidden lg:flex items-center gap-2 text-xs text-gray-400 font-medium bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-100">
@@ -211,6 +218,131 @@
                     <path d="M3 10h18M8 2v4M16 2v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
                 <span>{{ now()->isoFormat('D MMM YYYY') }}</span>
+            </div>
+
+            {{-- Notification Bell --}}
+            <div class="relative" x-data="{ notifOpen: false }">
+                <button @click="notifOpen = !notifOpen"
+                        class="relative p-2.5 rounded-xl text-gray-500 hover:bg-primary-50 hover:text-primary-600 transition-all duration-200 active:scale-95"
+                        title="Notificaciones">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8a6 6 0 10-12 0c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.197 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.756-1.088-1.936C18.78 13.206 18 11.09 18 8z"/>
+                    </svg>
+                    @if($unreadNotifCount > 0)
+                        <span class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center px-1 animate-count">
+                            {{ $unreadNotifCount > 9 ? '9+' : $unreadNotifCount }}
+                        </span>
+                    @endif
+                </button>
+
+                {{-- Dropdown de notificaciones --}}
+                <div x-show="notifOpen" x-cloak @click.away="notifOpen = false"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+
+                    {{-- Encabezado --}}
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/60">
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-bold text-gray-800">Notificaciones</h3>
+                            @if($unreadNotifCount > 0)
+                                <span class="text-[10px] font-bold text-white bg-red-500 rounded-full px-1.5 py-0.5">{{ $unreadNotifCount }}</span>
+                            @endif
+                        </div>
+                        @if($unreadNotifCount > 0)
+                            <form action="{{ route('notifications.read-all') }}" method="POST">
+                                @csrf @method('PATCH')
+                                <button type="submit" class="text-xs text-primary-600 font-semibold hover:text-primary-800 transition-colors">
+                                    Marcar todo leído
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+
+                    {{-- Lista de notificaciones recientes --}}
+                    <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                        @forelse($recentNotifications as $notif)
+                            <a href="#"
+                               @click.prevent="
+                                   axios.patch('{{ route('notifications.read', $notif->id) }}')
+                                       .then(() => { window.location.href = '{{ addslashes($notif->data['url'] ?? url('/')) }}' })
+                               "
+                               class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors {{ is_null($notif->read_at) ? 'bg-primary-50/40' : '' }}">
+
+                                {{-- Ícono de tipo --}}
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 {{ is_null($notif->read_at) ? 'bg-primary-100' : 'bg-gray-100' }}">
+                                    @switch($notif->data['icon'] ?? 'default')
+                                        @case('task')
+                                            <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                                                <rect x="9" y="2" width="6" height="4" rx="1"/>
+                                                <path d="M9 14l2 2 4-4"/>
+                                            </svg>
+                                            @break
+                                        @case('grade')
+                                            <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                                            </svg>
+                                            @break
+                                        @case('evaluation')
+                                            <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                                                <rect x="9" y="2" width="6" height="4" rx="1"/>
+                                                <path d="M9 12h6M9 16h4"/>
+                                            </svg>
+                                            @break
+                                        @case('announcement')
+                                            <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.435 5.093A7.001 7.001 0 0111 4.176V5.882L5.435 5.093z"/>
+                                            </svg>
+                                            @break
+                                        @default
+                                            <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8a6 6 0 10-12 0c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.197 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.756-1.088-1.936C18.78 13.206 18 11.09 18 8z"/>
+                                            </svg>
+                                    @endswitch
+                                </div>
+
+                                {{-- Texto --}}
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-800 truncate leading-snug">{{ $notif->data['title'] ?? 'Notificación' }}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-snug">{{ $notif->data['body'] ?? '' }}</p>
+                                    <p class="text-[10px] text-gray-400 mt-1 font-medium">{{ $notif->created_at->diffForHumans() }}</p>
+                                </div>
+
+                                {{-- Dot de no leída --}}
+                                @if(is_null($notif->read_at))
+                                    <span class="w-2 h-2 bg-primary-500 rounded-full shrink-0 mt-2"></span>
+                                @endif
+                            </a>
+                        @empty
+                            <div class="flex flex-col items-center justify-center py-10 text-center">
+                                <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8a6 6 0 10-12 0c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.197 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.756-1.088-1.936C18.78 13.206 18 11.09 18 8z"/>
+                                    </svg>
+                                </div>
+                                <p class="text-xs font-semibold text-gray-500">Todo al día</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">No tienes notificaciones</p>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    {{-- Footer --}}
+                    @if($recentNotifications->count() > 0)
+                        <div class="border-t border-gray-100 bg-gray-50/60">
+                            <a href="{{ route('notifications.index') }}"
+                               @click="notifOpen = false"
+                               class="block text-center text-xs font-semibold text-primary-600 hover:text-primary-800 py-3 transition-colors">
+                                Ver todas las notificaciones →
+                            </a>
+                        </div>
+                    @endif
+                </div>
             </div>
 
             {{-- User pill with dropdown --}}

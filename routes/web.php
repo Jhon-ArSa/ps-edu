@@ -134,6 +134,13 @@ Route::middleware(['auth', 'role:docente'])
     Route::post('/soporte', [Docente\SupportController::class, 'send'])->name('soporte.send');
 });
 
+// ── NOTIFICACIONES (Zair — todos los roles autenticados) ─────────────────────
+Route::middleware('auth')->prefix('notificaciones')->name('notifications.')->group(function () {
+    Route::get('/',             [\App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+    Route::patch('/{id}/leer',  [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('read');
+    Route::patch('/leer-todas', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('read-all');
+});
+
 // ── ALUMNO ────────────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:alumno'])
     ->prefix('alumno')

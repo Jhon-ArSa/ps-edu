@@ -88,6 +88,13 @@
                     <circle cx="12" cy="7" r="4"/>
                 </svg>
                 @break
+            @case('notification')
+                {{-- Campana con badge dot = notificaciones del sistema (≠ comunicados) --}}
+                <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8a6 6 0 10-12 0c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.197 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.756-1.088-1.936C18.78 13.206 18 11.09 18 8z"/>
+                    <circle cx="17.5" cy="4.5" r="2.5" fill="currentColor" stroke="white" stroke-width="1.5"/>
+                </svg>
+                @break
             @default
                 <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="3" fill="currentColor"/>
