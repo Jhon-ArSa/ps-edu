@@ -80,6 +80,11 @@ Route::middleware(['auth', 'role:admin'])
 
     Route::get('/settings',  [Admin\SettingsController::class, 'index'])->name('settings');
     Route::put('/settings',  [Admin\SettingsController::class, 'update'])->name('settings.update');
+
+    // ── Reportes Admin (Zair) ─────────────────────────────────────────────
+    Route::get('/reportes',          [Admin\ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reportes/imprimir', [Admin\ReportController::class, 'print'])->name('reports.print');
+    Route::get('/reportes/exportar', [Admin\ReportController::class, 'exportCsv'])->name('reports.csv');
 });
 
 // ── DOCENTE ───────────────────────────────────────────────────────────────────
@@ -115,6 +120,13 @@ Route::middleware(['auth', 'role:docente'])
         Route::get('/{course}/estudiantes/buscar',       [Docente\StudentController::class, 'search'])->name('students.search');
         Route::post('/{course}/estudiantes',             [Docente\StudentController::class, 'enroll'])->name('students.enroll');
         Route::delete('/{course}/estudiantes/{student}', [Docente\StudentController::class, 'unenroll'])->name('students.unenroll');
+    });
+
+    // ── Reportes del curso (Zair) ─────────────────────────────────────────
+    Route::prefix('cursos/{course}/reporte')->name('reports.')->group(function () {
+        Route::get('/',         [Docente\ReportController::class, 'show'])->name('show');
+        Route::get('/imprimir', [Docente\ReportController::class, 'print'])->name('print');
+        Route::get('/exportar', [Docente\ReportController::class, 'exportCsv'])->name('csv');
     });
 
     // ── Calificaciones (Zair) ──────────────────────────────────────────────

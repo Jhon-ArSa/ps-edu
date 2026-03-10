@@ -74,6 +74,7 @@
             <x-sidebar-link route="admin.courses.index" icon="book">Cursos</x-sidebar-link>
             <x-sidebar-link route="admin.enrollments.index" icon="clipboard">Matrículas</x-sidebar-link>
             <x-sidebar-link route="admin.announcements.index" icon="bell">Comunicados</x-sidebar-link>
+            <x-sidebar-link route="admin.reports.index" icon="reports">Reportes</x-sidebar-link>
 
             <div class="sidebar-section-label sidebar-section-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
                 <span class="sidebar-section-text">Sistema</span>
