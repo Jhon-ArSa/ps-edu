@@ -25,7 +25,7 @@ Route::get('/', function () {
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/login',  [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login'])->name('login.attempt');
+    Route::post('/login', [LoginController::class, 'login'])->name('login.attempt')->middleware('throttle:login');
 
     Route::get('/forgot-password',         [PasswordResetController::class, 'showForgotForm'])->name('password.request');
     Route::post('/forgot-password',        [PasswordResetController::class, 'sendResetLink'])->name('password.email');

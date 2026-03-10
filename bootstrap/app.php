@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -27,5 +28,18 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Sesión expirada (CSRF mismatch) → redirigir al login con mensaje amigable
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, Request $request) {
+            return redirect()->route('login')
+                ->with('error', 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+        });
+
+        // Demasiados intentos de login → redirigir al login con mensaje
+        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, Request $request) {
+            if ($request->is('login')) {
+                return redirect()->route('login')
+                    ->withInput($request->only('email'))
+                    ->withErrors(['email' => 'Demasiados intentos fallidos. Espera 1 minuto antes de intentarlo nuevamente.']);
+            }
+        });
     })->create();
