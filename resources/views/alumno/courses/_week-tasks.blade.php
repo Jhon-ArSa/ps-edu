@@ -260,3 +260,146 @@
     </div>
 </div>
 @endif
+
+{{-- Evaluaciones de esta semana --}}
+{{-- Expects: $evalAttempts (Collection keyed by evaluation_id) --}}
+@php $weekEvals = $week->evaluations ?? collect(); @endphp
+
+@if($weekEvals->isNotEmpty())
+<div class="border-t border-gray-100">
+    <div class="px-5 py-2.5 bg-amber-50/50">
+        <p class="text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Evaluaciones ({{ $weekEvals->count() }})
+        </p>
+    </div>
+
+    <div class="divide-y divide-gray-50">
+        @foreach($weekEvals as $evaluation)
+        @php
+            $attempt = isset($evalAttempts) ? $evalAttempts->get($evaluation->id) : null;
+
+            if ($attempt && $attempt->status === 'in_progress') {
+                $evalBadge   = ['label' => 'En progreso', 'class' => 'bg-amber-100 text-amber-700'];
+                $evalIconBg  = 'bg-gradient-to-br from-amber-100 to-amber-50 ring-1 ring-amber-200';
+                $evalIconCol = 'text-amber-600';
+                $actionUrl   = route('alumno.evaluations.take', [$course, $evaluation]);
+                $actionLabel = 'Continuar evaluación';
+                $actionClass = 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm';
+            } elseif ($attempt && $attempt->status === 'graded') {
+                $evalBadge   = ['label' => 'Calificada', 'class' => 'bg-emerald-100 text-emerald-700'];
+                $evalIconBg  = 'bg-gradient-to-br from-emerald-100 to-emerald-50 ring-1 ring-emerald-200';
+                $evalIconCol = 'text-emerald-600';
+                $actionUrl   = route('alumno.evaluations.result', [$course, $evaluation, $attempt]);
+                $actionLabel = 'Ver resultado';
+                $actionClass = 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm';
+            } elseif ($attempt && $attempt->status === 'submitted') {
+                $evalBadge   = ['label' => 'Entregada', 'class' => 'bg-blue-100 text-blue-700'];
+                $evalIconBg  = 'bg-gradient-to-br from-blue-100 to-blue-50 ring-1 ring-blue-200';
+                $evalIconCol = 'text-blue-600';
+                $actionUrl   = route('alumno.evaluations.show', [$course, $evaluation]);
+                $actionLabel = 'Ver detalles';
+                $actionClass = 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm';
+            } elseif ($evaluation->status === 'closed' || ($evaluation->closes_at && $evaluation->closes_at->isPast())) {
+                $evalBadge   = ['label' => 'Cerrada', 'class' => 'bg-red-100 text-red-700'];
+                $evalIconBg  = 'bg-gradient-to-br from-red-100 to-red-50 ring-1 ring-red-200';
+                $evalIconCol = 'text-red-400';
+                $actionUrl   = null;
+                $actionLabel = null;
+                $actionClass = '';
+            } elseif ($evaluation->opens_at && $evaluation->opens_at->isFuture()) {
+                $evalBadge   = ['label' => 'Próximamente', 'class' => 'bg-gray-100 text-gray-600'];
+                $evalIconBg  = 'bg-gradient-to-br from-gray-100 to-gray-50 ring-1 ring-gray-200';
+                $evalIconCol = 'text-gray-400';
+                $actionUrl   = null;
+                $actionLabel = null;
+                $actionClass = '';
+            } elseif ($evaluation->isOpen()) {
+                $evalBadge   = ['label' => 'Disponible', 'class' => 'bg-green-100 text-green-700'];
+                $evalIconBg  = 'bg-gradient-to-br from-green-100 to-green-50 ring-1 ring-green-200';
+                $evalIconCol = 'text-green-600';
+                $actionUrl   = route('alumno.evaluations.show', [$course, $evaluation]);
+                $actionLabel = 'Iniciar evaluación';
+                $actionClass = 'bg-green-600 hover:bg-green-700 text-white shadow-sm';
+            } else {
+                $evalBadge   = ['label' => 'No disponible', 'class' => 'bg-gray-100 text-gray-500'];
+                $evalIconBg  = 'bg-gradient-to-br from-gray-100 to-gray-50 ring-1 ring-gray-200';
+                $evalIconCol = 'text-gray-400';
+                $actionUrl   = null;
+                $actionLabel = null;
+                $actionClass = '';
+            }
+        @endphp
+
+        <div class="px-5 py-4">
+            <div class="flex items-start gap-3">
+                {{-- Status icon --}}
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 shadow-sm {{ $evalIconBg }}">
+                    @if($attempt && $attempt->status === 'graded')
+                    <svg class="w-4.5 h-4.5 {{ $evalIconCol }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    @elseif($attempt && $attempt->status === 'submitted')
+                    <svg class="w-4.5 h-4.5 {{ $evalIconCol }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    @elseif($attempt && $attempt->status === 'in_progress')
+                    <svg class="w-4.5 h-4.5 {{ $evalIconCol }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    @else
+                    <svg class="w-4.5 h-4.5 {{ $evalIconCol }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    @endif
+                </div>
+
+                <div class="flex-1 min-w-0">
+                    {{-- Title + badges --}}
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <p class="text-sm font-semibold text-gray-900">{{ $evaluation->title }}</p>
+                        <span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium {{ $evalBadge['class'] }}">
+                            {{ $evalBadge['label'] }}
+                        </span>
+                        <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            {{ $evaluation->max_score }} pts
+                        </span>
+                        @if($evaluation->time_limit)
+                        <span class="text-xs text-gray-400 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {{ $evaluation->time_limit }} min
+                        </span>
+                        @endif
+                    </div>
+
+                    {{-- Graded score display --}}
+                    @if($attempt && $attempt->status === 'graded' && $attempt->score !== null)
+                    <div class="flex items-center gap-2.5 mt-2">
+                        <div class="px-3 py-1.5 bg-white rounded-xl text-center shadow-sm border border-emerald-100">
+                            <p class="text-xl font-bold {{ $attempt->score_color_class }}">{{ number_format($attempt->score, 1) }}</p>
+                            <p class="text-[10px] text-gray-400 font-medium">/{{ $evaluation->max_score }}</p>
+                        </div>
+                        <p class="text-xs text-emerald-700 font-medium">Nota obtenida</p>
+                    </div>
+                    @endif
+
+                    {{-- closes_at hint --}}
+                    @if($evaluation->closes_at && $evaluation->closes_at->isFuture())
+                    <p class="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Cierra {{ $evaluation->closes_at->format('d/m/Y H:i') }}
+                    </p>
+                    @endif
+
+                    {{-- Action button --}}
+                    @if($actionUrl)
+                    <div class="mt-3">
+                        <a href="{{ $actionUrl }}"
+                           class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg transition-colors {{ $actionClass }}">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {{ $actionLabel }}
+                        </a>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif

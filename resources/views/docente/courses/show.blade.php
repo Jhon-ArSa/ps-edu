@@ -154,6 +154,11 @@
                 {{ $course->students->count() }}
             </span>
         </button>
+        <a href="{{ route('docente.forum.index', $course) }}"
+           class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-teal-700 hover:bg-teal-50 transition-all ml-auto">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            Foro
+        </a>
     </div>
 
     {{-- ═══════════════════════════════════════════════════════════════════════
@@ -208,6 +213,7 @@
             $weekTasks = $week->tasks->count();
             $weekSubs  = $week->tasks->sum('submissions_count');
             $weekGrd   = $week->tasks->sum('graded_count');
+            $weekEvals = $week->evaluations->count();
         @endphp
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
              x-data="{ expanded: {{ $loop->first ? 'true' : 'false' }}, editingWeek: false, weekTab: 'materials' }"
@@ -319,6 +325,13 @@
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                         Tareas
                         <span class="px-1.5 py-0.5 rounded-full text-xs font-bold" :class="weekTab === 'tasks' ? 'bg-violet-100 text-violet-700' : 'bg-gray-100 text-gray-500'">{{ $weekTasks }}</span>
+                    </button>
+                    <button @click="weekTab = 'evaluations'"
+                            :class="weekTab === 'evaluations' ? 'border-amber-500 text-amber-700 bg-amber-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+                            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold border-b-2 rounded-t-lg transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        Evaluaciones
+                        <span class="px-1.5 py-0.5 rounded-full text-xs font-bold" :class="weekTab === 'evaluations' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'">{{ $weekEvals }}</span>
                     </button>
                 </div>
                 <div class="h-px bg-gray-100 mx-5"></div>
@@ -595,6 +608,103 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- ─── EVALUATIONS SECTION ────────────────────────────────────────── --}}
+                <div x-show="weekTab === 'evaluations'" x-cloak>
+                    <div class="divide-y divide-gray-50">
+                        @forelse($week->evaluations as $evaluation)
+                        <div class="flex items-center justify-between px-5 py-4 hover:bg-gray-50/60 transition-colors">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-gray-800 truncate">{{ $evaluation->title }}</p>
+                                    <p class="text-xs text-gray-400">{{ $evaluation->time_limit_label }} &bull; Máx. {{ $evaluation->max_score }} pts</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0 ml-3">
+                                <span class="badge {{ $evaluation->status_badge['class'] }} text-xs">{{ $evaluation->status_badge['label'] }}</span>
+                                <a href="{{ route('docente.evaluations.show', [$course, $evaluation]) }}"
+                                   class="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors">
+                                    Gestionar
+                                </a>
+                                <a href="{{ route('docente.evaluations.attempts.index', [$course, $evaluation]) }}"
+                                   class="px-3 py-1.5 text-xs font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors">
+                                    Intentos
+                                </a>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="px-5 py-10 text-center text-gray-400">
+                            <div class="text-3xl mb-2">📝</div>
+                            <p class="text-sm">No hay evaluaciones en esta semana.</p>
+                        </div>
+                        @endforelse
+                    </div>
+
+                    {{-- Agregar evaluación --}}
+                    <div x-data="{ showEvalForm: false }" class="px-5 py-4 border-t border-gray-100">
+                        <button @click="showEvalForm = !showEvalForm"
+                                class="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-amber-200 rounded-xl text-xs font-semibold text-amber-600 hover:border-amber-400 hover:bg-amber-50/50 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Agregar Evaluación
+                        </button>
+                        <div x-show="showEvalForm" x-transition class="mt-4">
+                            <form method="POST" action="{{ route('docente.evaluations.store', [$course, $week]) }}" enctype="multipart/form-data" class="space-y-3">
+                                @csrf
+                                <div>
+                                    <label class="form-label">Título *</label>
+                                    <input type="text" name="title" class="form-input" placeholder="Ej: Evaluación Parcial - Semana 4" required>
+                                </div>
+                                <div>
+                                    <label class="form-label">Archivo adjunto (opcional)</label>
+                                    <input type="file" name="file" class="form-input text-sm text-gray-600 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.jpg,.jpeg,.png">
+                                    <p class="text-xs text-gray-400 mt-1">PDF, Word, PowerPoint, ZIP o imagen. Máx. 10 MB.</p>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="form-label">Tiempo límite (min)</label>
+                                        <input type="number" name="time_limit" class="form-input" placeholder="90" min="1" max="300">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Puntaje máximo</label>
+                                        <input type="number" name="max_score" class="form-input" value="20" min="1" max="100" step="0.5">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="form-label">Apertura</label>
+                                        <input type="datetime-local" name="opens_at" class="form-input">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Cierre</label>
+                                        <input type="datetime-local" name="closes_at" class="form-input">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="form-label">Intentos máximos</label>
+                                        <input type="number" name="max_attempts" class="form-input" value="1" min="1" max="10">
+                                    </div>
+                                    <div class="flex items-end pb-2">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" name="show_results" value="1" class="rounded text-amber-500">
+                                            <span class="text-sm text-gray-700">Mostrar resultados al alumno</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" @click="showEvalForm = false" class="btn-secondary btn-sm">Cancelar</button>
+                                    <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
+                                        Crear y agregar preguntas →
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
         @empty

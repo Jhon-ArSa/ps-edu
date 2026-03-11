@@ -35,13 +35,13 @@ Documentación técnica y funcional completa del sistema de Intranet Académica 
 | Anuncios / Intranet | ✅ Implementado |
 | Perfil docente (Escalafón) | ✅ Implementado |
 | Configuración del sistema | ✅ Implementado |
-| Semestres académicos | 🔲 Pendiente |
-| Entrega de tareas (alumno) | 🔲 Pendiente |
-| Calificaciones / Libreta de notas | 🔲 Pendiente |
-| Evaluaciones en línea | 🔲 Pendiente |
-| Foro de discusión | 🔲 Pendiente |
-| Notificaciones en sistema | 🔲 Pendiente |
-| Reportes y estadísticas | 🔲 Pendiente |
+| Semestres académicos | ✅ Implementado |
+| Entrega de tareas (alumno) | ✅ Implementado |
+| Calificaciones / Libreta de notas | ✅ Implementado |
+| Notificaciones en sistema | ✅ Implementado |
+| Reportes y estadísticas | ✅ Implementado |
+| Evaluaciones en línea | ✅ Implementado |
+| Foro de discusión | ✅ Implementado |
 | Calendario académico | 🔲 Pendiente |
 
 ---
@@ -54,5 +54,5 @@ Documentación técnica y funcional completa del sistema de Intranet Académica 
 | Framework | Laravel 12.x |
 | PHP | 8.2+ |
 | Base de datos | MySQL 8 (AWS RDS) |
-| Última actualización | 2026-03-06 |
+| Última actualización | 2026-03-11 |
 | Capacidad objetivo | 200–300 estudiantes activos |

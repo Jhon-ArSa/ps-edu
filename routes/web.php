@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Docente;
 use App\Http\Controllers\Alumno;
+use App\Http\Controllers\ForumReplyController;
 use App\Models\Announcement;
 
 // ── RAÍZ → REDIRIGE SEGÚN ESTADO DE AUTENTICACIÓN ────────────────────────────
@@ -126,6 +127,20 @@ Route::middleware(['auth', 'role:docente'])
         Route::delete('/{course}/estudiantes/{student}', [Docente\StudentController::class, 'unenroll'])->name('students.unenroll');
     });
 
+    // ── Evaluaciones (fuera del grupo courses. para que el nombre sea docente.evaluations.*) ──
+    Route::prefix('cursos')->name('evaluations.')->group(function () {
+        Route::post('/{course}/semanas/{week}/evaluaciones',                              [Docente\EvaluationController::class, 'store'])->name('store');
+        Route::get('/{course}/evaluaciones/{evaluation}',                                 [Docente\EvaluationController::class, 'show'])->name('show');
+        Route::put('/{course}/evaluaciones/{evaluation}',                                 [Docente\EvaluationController::class, 'update'])->name('update');
+        Route::delete('/{course}/evaluaciones/{evaluation}',                              [Docente\EvaluationController::class, 'destroy'])->name('destroy');
+        Route::patch('/{course}/evaluaciones/{evaluation}/estado',                        [Docente\EvaluationController::class, 'toggleStatus'])->name('toggle');
+        Route::post('/{course}/evaluaciones/{evaluation}/archivo',                        [Docente\EvaluationController::class, 'updateFile'])->name('file');
+        Route::post('/{course}/evaluaciones/{evaluation}/preguntas',                      [Docente\EvaluationController::class, 'addQuestion'])->name('questions.store');
+        Route::delete('/{course}/evaluaciones/{evaluation}/preguntas/{question}',         [Docente\EvaluationController::class, 'removeQuestion'])->name('questions.destroy');
+        Route::get('/{course}/evaluaciones/{evaluation}/intentos',                        [Docente\EvaluationAttemptController::class, 'index'])->name('attempts.index');
+        Route::patch('/{course}/evaluaciones/{evaluation}/intentos/{attempt}/calificar',  [Docente\EvaluationAttemptController::class, 'gradeShort'])->name('attempts.grade');
+    });
+
     // ── Reportes del curso (Zair) ─────────────────────────────────────────
     Route::prefix('cursos/{course}/reporte')->name('reports.')->group(function () {
         Route::get('/',         [Docente\ReportController::class, 'show'])->name('show');
@@ -142,14 +157,22 @@ Route::middleware(['auth', 'role:docente'])
         Route::patch('/{gradeItem}/alumnos/{user}',             [Docente\GradeController::class, 'updateGrade'])->name('update');
     });
 
+    // ── Foro del curso ────────────────────────────────────────────────────────
+    Route::prefix('cursos/{course}/foro')->name('forum.')->group(function () {
+        Route::get('/',               [Docente\ForumController::class, 'index'])->name('index');
+        Route::post('/',              [Docente\ForumController::class, 'store'])->name('store');
+        Route::get('/{topic}',        [Docente\ForumController::class, 'show'])->name('show');
+        Route::delete('/{topic}',     [Docente\ForumController::class, 'destroy'])->name('destroy');
+        Route::patch('/{topic}/fijar',  [Docente\ForumController::class, 'pin'])->name('pin');
+        Route::patch('/{topic}/cerrar', [Docente\ForumController::class, 'close'])->name('close');
+    });
+
     // Intranet
     Route::get('/intranet', function () {
         return view('docente.intranet', [
             'announcements' => Announcement::published()->forRole('docente')->latest('published_at')->paginate(10),
         ]);
     })->name('intranet');
-
-    // Escalafón
     Route::get('/escalafon',        [Docente\EscalafonController::class, 'show'])->name('escalafon.show');
     Route::get('/escalafon/editar', [Docente\EscalafonController::class, 'edit'])->name('escalafon.edit');
     Route::put('/escalafon',        [Docente\EscalafonController::class, 'update'])->name('escalafon.update');
@@ -181,9 +204,30 @@ Route::middleware(['auth', 'role:alumno'])
     Route::post('/mis-cursos/{course}/tareas/{task}/entregar',                       [Alumno\SubmissionController::class, 'store'])->name('submissions.store');
     Route::post('/mis-cursos/{course}/tareas/{task}/entregas/{submission}',           [Alumno\SubmissionController::class, 'update'])->name('submissions.update');
 
+    // Evaluaciones en línea
+    Route::get('/mis-cursos/{course}/evaluaciones/{evaluation}',            [Alumno\EvaluationController::class, 'show'])->name('evaluations.show');
+    Route::post('/mis-cursos/{course}/evaluaciones/{evaluation}/iniciar',   [Alumno\EvaluationController::class, 'start'])->name('evaluations.start');
+    Route::get('/mis-cursos/{course}/evaluaciones/{evaluation}/tomar',      [Alumno\EvaluationController::class, 'take'])->name('evaluations.take');
+    Route::post('/mis-cursos/{course}/evaluaciones/{evaluation}/enviar',    [Alumno\EvaluationController::class, 'submit'])->name('evaluations.submit');
+    Route::get('/mis-cursos/{course}/evaluaciones/{evaluation}/resultado/{attempt}', [Alumno\EvaluationController::class, 'result'])->name('evaluations.result');
+
+    // Foro del curso
+    Route::prefix('mis-cursos/{course}/foro')->name('forum.')->group(function () {
+        Route::get('/',          [Alumno\ForumController::class, 'index'])->name('index');
+        Route::post('/',         [Alumno\ForumController::class, 'store'])->name('store');
+        Route::get('/{topic}',   [Alumno\ForumController::class, 'show'])->name('show');
+        Route::delete('/{topic}',[Alumno\ForumController::class, 'destroy'])->name('destroy');
+    });
+
     Route::get('/intranet', function () {
         return view('alumno.intranet', [
             'announcements' => Announcement::published()->forRole('alumno')->latest('published_at')->paginate(10),
         ]);
     })->name('intranet');
+});
+
+// ── FORO — RESPUESTAS (todos los roles autenticados) ─────────────────────────
+Route::middleware('auth')->prefix('foro')->name('forum.replies.')->group(function () {
+    Route::post('/{topic}/respuestas',   [ForumReplyController::class, 'store'])->name('store');
+    Route::delete('/{topic}/respuestas/{reply}', [ForumReplyController::class, 'destroy'])->name('destroy');
 });

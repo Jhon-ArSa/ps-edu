@@ -22,4 +22,9 @@ class Week extends Model
     {
         return $this->hasMany(Task::class)->orderBy('created_at');
     }
+
+    public function evaluations()
+    {
+        return $this->hasMany(Evaluation::class)->orderBy('created_at');
+    }
 }

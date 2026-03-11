@@ -186,6 +186,11 @@
             Mis Tareas
             <span class="text-xs px-1.5 py-0.5 rounded-full" :class="activeTab === 'tasks' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'">{{ $stats['totalTasks'] }}</span>
         </button>
+        <a href="{{ route('alumno.forum.index', $course) }}"
+           class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-teal-700 hover:bg-teal-50 transition-all ml-auto">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            Foro
+        </a>
     </div>
 
     {{-- ═══════════════════════════════════════════════════════════════════════
@@ -212,6 +217,7 @@
         @php
             $weekMats  = $week->materials->count();
             $weekTasks = $week->tasks->where('status', 'active')->count();
+            $weekEvals = $week->evaluations->count();
             $weekSubmittedCount = $week->tasks->where('status', 'active')->filter(fn($t) => $submissions->has($t->id))->count();
         @endphp
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
@@ -244,6 +250,13 @@
                             <span class="font-medium text-violet-600">{{ $weekSubmittedCount }}/{{ $weekTasks }}</span> entregadas
                         </span>
                         @endif
+                        @if($weekEvals > 0)
+                        <span class="text-gray-200">·</span>
+                        <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                            <svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            <span class="font-medium text-amber-600">{{ $weekEvals }}</span> {{ $weekEvals === 1 ? 'evaluación' : 'evaluaciones' }}
+                        </span>
+                        @endif
                     </div>
                 </div>
                 <svg class="w-4 h-4 text-gray-400 transition-transform shrink-0" :class="expanded ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +282,7 @@
                 @endif
 
                 {{-- Materials --}}
-                @if($week->materials->isEmpty() && $weekTasks === 0)
+                @if($week->materials->isEmpty() && $weekTasks === 0 && $weekEvals === 0)
                 <div class="px-5 py-6 text-center border-t border-gray-100">
                     <p class="text-xs text-gray-400">Sin contenido disponible en esta semana.</p>
                 </div>
@@ -347,7 +360,7 @@
                 @endif
 
                 {{-- Tasks in content tab --}}
-                @include('alumno.courses._week-tasks', ['week' => $week, 'course' => $course, 'submissions' => $submissions])
+                @include('alumno.courses._week-tasks', ['week' => $week, 'course' => $course, 'submissions' => $submissions, 'evalAttempts' => $evalAttempts])
 
                 @endif
             </div>
