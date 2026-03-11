@@ -18,25 +18,19 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
-        $validated = $request->validate([
-            'name'  => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'dni'   => 'nullable|string|max:20|unique:users,dni,' . $user->id,
-        ]);
-
-        $user->update($validated);
-
-        // Update role-specific profile
-        if ($user->isDocente()) {
-            $user->docenteProfile()->updateOrCreate(
-                ['user_id' => $user->id],
-                $request->only(['title', 'degree', 'specialty', 'category', 'years_of_service', 'bio'])
-            );
-        } elseif ($user->isAlumno()) {
-            $user->alumnoProfile()->updateOrCreate(
-                ['user_id' => $user->id],
-                $request->only(['code', 'promotion_year', 'program'])
-            );
+        if ($user->isAdmin()) {
+            $validated = $request->validate([
+                'name'  => 'required|string|max:255',
+                'phone' => 'nullable|string|max:20',
+                'dni'   => 'nullable|string|max:20|unique:users,dni,' . $user->id,
+            ]);
+            $user->update($validated);
+        } else {
+            // Docentes y alumnos solo pueden cambiar su teléfono
+            $validated = $request->validate([
+                'phone' => 'nullable|string|max:20',
+            ]);
+            $user->update($validated);
         }
 
         return back()->with('success', 'Perfil actualizado exitosamente.');

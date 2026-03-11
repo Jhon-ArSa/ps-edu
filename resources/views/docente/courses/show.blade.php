@@ -11,119 +11,213 @@
 @section('content')
 <div class="space-y-5" x-data="courseManager()">
 
-    {{-- Course Header --}}
-    <div class="bg-gradient-to-r from-primary-700 to-primary-900 rounded-xl p-6 text-white shadow-sm">
-        <div class="flex items-start justify-between gap-4">
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap mb-1">
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold
-                        {{ $course->status === 'active' ? 'bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/30' : 'bg-white/10 text-white/60 ring-1 ring-white/20' }}">
-                        <span class="w-1.5 h-1.5 rounded-full {{ $course->status === 'active' ? 'bg-emerald-400' : 'bg-white/40' }}"></span>
-                        {{ $course->status === 'active' ? 'Activo' : 'Inactivo' }}
-                    </span>
-                    <span class="text-xs font-mono text-primary-200">{{ $course->code }}</span>
-                </div>
-                <h1 class="text-2xl font-bold text-white leading-tight truncate">{{ $course->name }}</h1>
-                @if($course->description)
-                <p class="mt-1 text-primary-200 text-sm line-clamp-2">{{ $course->description }}</p>
+    {{-- ═══════════════════════════════════════════════════════════════════════
+         COURSE HEADER — gradient hero card
+    ═══════════════════════════════════════════════════════════════════════ --}}
+    <div class="relative bg-gradient-to-br from-primary-700 via-primary-800 to-indigo-900 rounded-2xl overflow-hidden shadow-lg animate-fade-in-up">
+        {{-- Pattern overlay --}}
+        <div class="absolute inset-0 opacity-[0.04]" style="background-image:url(&quot;data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E&quot;)"></div>
+        <div class="absolute -top-16 -right-16 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-primary-400/10 rounded-full blur-3xl"></div>
+
+        <div class="relative px-7 py-6">
+            {{-- Top row: badges --}}
+            <div class="flex items-center gap-2 flex-wrap mb-3">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
+                    {{ $course->status === 'active' ? 'bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/30' : 'bg-white/10 text-white/60 ring-1 ring-white/20' }}">
+                    <span class="w-1.5 h-1.5 rounded-full {{ $course->status === 'active' ? 'bg-emerald-400 animate-pulse' : 'bg-white/40' }}"></span>
+                    {{ $course->status === 'active' ? 'Activo' : 'Inactivo' }}
+                </span>
+                <span class="text-xs font-mono text-primary-200/80 bg-white/10 px-2 py-0.5 rounded-md">{{ $course->code }}</span>
+                @if($course->semesterPeriod)
+                <span class="inline-flex items-center gap-1 text-xs text-primary-200 bg-white/10 px-2 py-0.5 rounded-md">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    {{ $course->semesterPeriod->name }}
+                </span>
+                @endif
+                @if($course->programBelongs)
+                <span class="inline-flex items-center gap-1 text-xs text-primary-200 bg-white/10 px-2 py-0.5 rounded-md">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    {{ $course->programBelongs->name }}
+                </span>
                 @endif
             </div>
-            <div class="flex flex-col items-end gap-2 shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="text-center">
-                        <p class="text-2xl font-bold text-white">{{ $course->weeks->count() }}</p>
-                        <p class="text-xs text-primary-200">Semanas</p>
-                    </div>
-                    <div class="w-px h-8 bg-white/20"></div>
-                    <div class="text-center">
-                        <p class="text-2xl font-bold text-white">{{ $course->students->count() }}</p>
-                        <p class="text-xs text-primary-200">Alumnos</p>
-                    </div>
-                    <div class="w-px h-8 bg-white/20"></div>
-                    <div class="text-center">
-                        <p class="text-2xl font-bold text-white">{{ $course->weeks->sum(fn($w) => $w->materials->count()) }}</p>
-                        <p class="text-xs text-primary-200">Materiales</p>
-                    </div>
+
+            {{-- Title --}}
+            <h1 class="text-2xl lg:text-3xl font-extrabold text-white leading-tight tracking-tight">{{ $course->name }}</h1>
+            @if($course->description)
+            <p class="mt-2 text-primary-200/80 text-sm max-w-2xl leading-relaxed">{{ $course->description }}</p>
+            @endif
+
+            {{-- Quick actions --}}
+            <div class="flex items-center gap-2 mt-5 pt-4 border-t border-white/10">
+                <a href="{{ route('docente.grades.index', $course) }}"
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg backdrop-blur-sm border border-white/10 transition-all">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    Calificaciones
+                </a>
+                <a href="{{ route('docente.reports.show', $course) }}"
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg backdrop-blur-sm border border-white/10 transition-all">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════════════════════════
+         STATS DASHBOARD — mini cards
+    ═══════════════════════════════════════════════════════════════════════ --}}
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 animate-fade-in-up delay-1">
+        <div class="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">{{ $course->weeks->count() }}</p>
+                    <p class="text-[11px] text-gray-400 font-medium">Semanas</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">{{ $course->students->count() }}</p>
+                    <p class="text-[11px] text-gray-400 font-medium">Alumnos</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['totalMaterials'] }}</p>
+                    <p class="text-[11px] text-gray-400 font-medium">Materiales</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['totalTasks'] }}</p>
+                    <p class="text-[11px] text-gray-400 font-medium">Tareas</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow col-span-2 md:col-span-1">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl {{ $stats['pendingGrading'] > 0 ? 'bg-amber-50' : 'bg-emerald-50' }} flex items-center justify-center shrink-0">
+                    @if($stats['pendingGrading'] > 0)
+                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    @else
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    @endif
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['pendingGrading'] }}</p>
+                    <p class="text-[11px] {{ $stats['pendingGrading'] > 0 ? 'text-amber-500 font-semibold' : 'text-gray-400' }} font-medium">Por calificar</p>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Tabs --}}
-    <div class="flex gap-1 bg-white border border-gray-200 rounded-xl p-1">
+    {{-- ═══════════════════════════════════════════════════════════════════════
+         MAIN TABS
+    ═══════════════════════════════════════════════════════════════════════ --}}
+    <div class="bg-white border border-gray-200 rounded-xl p-1.5 flex gap-1 animate-fade-in-up delay-1">
         <button @click="activeTab = 'content'"
-                :class="activeTab === 'content' ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'"
-                class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <span>Contenido del Curso</span>
-            <span class="bg-white/20 text-xs px-1.5 py-0.5 rounded-full" :class="activeTab === 'content' ? 'text-white' : 'bg-gray-100 text-gray-500'">
+                :class="activeTab === 'content' ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+                class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            Contenido del Curso
+            <span class="text-xs px-1.5 py-0.5 rounded-full"
+                  :class="activeTab === 'content' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'">
                 {{ $course->weeks->count() }}
             </span>
         </button>
         <button @click="activeTab = 'students'"
-                :class="activeTab === 'students' ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'"
-                class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-            </svg>
-            <span>Estudiantes</span>
-            <span class="text-xs px-1.5 py-0.5 rounded-full" :class="activeTab === 'students' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'">
+                :class="activeTab === 'students' ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+                class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            Estudiantes
+            <span class="text-xs px-1.5 py-0.5 rounded-full"
+                  :class="activeTab === 'students' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'">
                 {{ $course->students->count() }}
             </span>
         </button>
-        <a href="{{ route('docente.grades.index', $course) }}"
-           class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all text-gray-600 hover:bg-gray-100">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-                <rect x="9" y="3" width="6" height="4" rx="1"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6M9 16h4"/>
-            </svg>
-            <span>Calificaciones</span>
-        </a>
-        <a href="{{ route('docente.reports.show', $course) }}"
-           class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all text-gray-600 hover:bg-gray-100">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
-            </svg>
-            <span>Reporte</span>
-        </a>
+    </div>
 
-    {{-- Content Tab --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════
+         CONTENT TAB
+    ═══════════════════════════════════════════════════════════════════════ --}}
     <div x-show="activeTab === 'content'" class="space-y-4">
 
-        {{-- Add Week --}}
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
-            <div class="flex items-center gap-2 mb-3">
-                <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                <span class="text-sm font-semibold text-gray-900">Agregar nueva semana</span>
-                <span class="text-xs text-gray-400">({{ $course->weeks->count() }}/16)</span>
-            </div>
-            <form method="POST" action="{{ route('docente.courses.weeks.store', $course) }}" class="flex gap-3">
-                @csrf
-                <div class="flex-1">
-                    <input type="text" name="title" placeholder="Título de la semana (ej: Introducción a la materia)"
-                           class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent">
+        {{-- Toolbar: Add week + Expand/Collapse --}}
+        <div class="flex items-stretch gap-3">
+            <div class="flex-1 bg-white rounded-xl border border-gray-200 p-4">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-7 h-7 rounded-lg bg-primary-100 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-900">Agregar nueva semana</span>
+                    <span class="text-xs text-gray-400">({{ $course->weeks->count() }}/16)</span>
                 </div>
-                <button type="submit"
-                        class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap shadow-sm">
-                    + Agregar Semana
+                <form method="POST" action="{{ route('docente.courses.weeks.store', $course) }}" class="flex gap-3">
+                    @csrf
+                    <div class="flex-1">
+                        <input type="text" name="title" placeholder="Título de la semana (ej: Introducción a la materia)"
+                               class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent">
+                    </div>
+                    <button type="submit"
+                            class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap shadow-sm">
+                        + Agregar Semana
+                    </button>
+                </form>
+            </div>
+            @if($course->weeks->count() > 1)
+            <div class="flex flex-col gap-1.5 shrink-0">
+                <button @click="$dispatch('expand-all')"
+                        class="flex-1 flex items-center gap-1.5 px-3 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 hover:border-primary-200 transition-colors"
+                        title="Expandir todas">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                    Expandir
                 </button>
-            </form>
+                <button @click="$dispatch('collapse-all')"
+                        class="flex-1 flex items-center gap-1.5 px-3 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors"
+                        title="Colapsar todas">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/></svg>
+                    Colapsar
+                </button>
+            </div>
+            @endif
         </div>
 
-        {{-- Weeks --}}
+        {{-- Weeks list --}}
         @forelse($course->weeks->sortBy('number') as $week)
-        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm"
-             x-data="{ expanded: {{ $loop->first ? 'true' : 'false' }}, editingWeek: false, weekTab: 'materials' }">
+        @php
+            $weekMats  = $week->materials->count();
+            $weekTasks = $week->tasks->count();
+            $weekSubs  = $week->tasks->sum('submissions_count');
+            $weekGrd   = $week->tasks->sum('graded_count');
+        @endphp
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+             x-data="{ expanded: {{ $loop->first ? 'true' : 'false' }}, editingWeek: false, weekTab: 'materials' }"
+             @expand-all.window="expanded = true"
+             @collapse-all.window="expanded = false">
 
             {{-- Week Header --}}
-            <div class="flex items-center gap-3 px-5 py-3.5 border-b border-gray-100 bg-gray-50/50">
+            <div class="flex items-center gap-3 px-5 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
                 <button @click="expanded = !expanded" class="flex items-center gap-3 flex-1 text-left">
-                    <div class="w-8 h-8 rounded-full bg-primary-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-sm">
                         {{ $week->number }}
                     </div>
                     <div class="flex-1 min-w-0">
@@ -131,21 +225,31 @@
                             <span class="text-xs font-bold text-primary-600 uppercase tracking-wider">Semana {{ $week->number }}</span>
                             <span x-show="!editingWeek" class="text-sm font-semibold text-gray-900">{{ $week->title ?? '' }}</span>
                         </div>
-                        <div class="flex items-center gap-3 mt-0.5">
-                            <span class="text-xs text-gray-400">
-                                <span class="font-medium text-blue-600">{{ $week->materials->count() }}</span> materiales
+                        <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                            <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                                <svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <span class="font-medium text-blue-600">{{ $weekMats }}</span> materiales
                             </span>
-                            <span class="text-gray-300">·</span>
-                            <span class="text-xs text-gray-400">
-                                <span class="font-medium text-violet-600">{{ $week->tasks->count() }}</span> tareas
+                            <span class="text-gray-200">·</span>
+                            <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                                <svg class="w-3 h-3 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                                <span class="font-medium text-violet-600">{{ $weekTasks }}</span> tareas
                             </span>
+                            @if($weekSubs > 0)
+                            <span class="text-gray-200">·</span>
+                            <span class="inline-flex items-center gap-1 text-xs">
+                                <svg class="w-3 h-3 {{ $weekGrd < $weekSubs ? 'text-amber-400' : 'text-emerald-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span class="font-medium {{ $weekGrd < $weekSubs ? 'text-amber-600' : 'text-emerald-600' }}">{{ $weekGrd }}/{{ $weekSubs }}</span>
+                                <span class="text-gray-400">calificadas</span>
+                            </span>
+                            @endif
                         </div>
                     </div>
                     <svg class="w-4 h-4 text-gray-400 transition-transform shrink-0" :class="expanded ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                     </svg>
                 </button>
-                <div class="flex items-center gap-1 shrink-0">
+                <div class="flex items-center gap-0.5 shrink-0">
                     <button @click="editingWeek = !editingWeek; expanded = true"
                             class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                             title="Editar semana">
@@ -186,7 +290,9 @@
             </div>
 
             {{-- Expanded content --}}
-            <div x-show="expanded">
+            <div x-show="expanded" x-transition:enter="transition-all duration-200 ease-out"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0">
                 @if($week->description)
                 <div class="px-5 py-3 bg-blue-50/40 border-b border-gray-100">
                     <p class="text-sm text-gray-600 flex items-start gap-2">
@@ -198,63 +304,42 @@
                 </div>
                 @endif
 
-                {{-- Sub-tabs: Materials / Tasks --}}
+                {{-- Sub-tabs --}}
                 <div class="flex gap-1 px-5 pt-4 pb-0">
                     <button @click="weekTab = 'materials'"
                             :class="weekTab === 'materials' ? 'border-blue-500 text-blue-700 bg-blue-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                             class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold border-b-2 rounded-t-lg transition-all">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         Materiales
-                        <span class="px-1.5 py-0.5 rounded-full text-xs font-bold"
-                              :class="weekTab === 'materials' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'">
-                            {{ $week->materials->count() }}
-                        </span>
+                        <span class="px-1.5 py-0.5 rounded-full text-xs font-bold" :class="weekTab === 'materials' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'">{{ $weekMats }}</span>
                     </button>
                     <button @click="weekTab = 'tasks'"
                             :class="weekTab === 'tasks' ? 'border-violet-500 text-violet-700 bg-violet-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                             class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold border-b-2 rounded-t-lg transition-all">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                        </svg>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                         Tareas
-                        <span class="px-1.5 py-0.5 rounded-full text-xs font-bold"
-                              :class="weekTab === 'tasks' ? 'bg-violet-100 text-violet-700' : 'bg-gray-100 text-gray-500'">
-                            {{ $week->tasks->count() }}
-                        </span>
+                        <span class="px-1.5 py-0.5 rounded-full text-xs font-bold" :class="weekTab === 'tasks' ? 'bg-violet-100 text-violet-700' : 'bg-gray-100 text-gray-500'">{{ $weekTasks }}</span>
                     </button>
                 </div>
                 <div class="h-px bg-gray-100 mx-5"></div>
 
-                {{-- ─── MATERIALS SECTION ──────────────────────────────────────────────── --}}
+                {{-- ─── MATERIALS SECTION ──────────────────────────────────────────── --}}
                 <div x-show="weekTab === 'materials'">
-
-                    {{-- Material list --}}
                     <div class="divide-y divide-gray-50">
                         @forelse($week->materials->sortBy('order') as $material)
                         <div class="flex items-start gap-3 px-5 py-3.5 group hover:bg-gray-50/60 transition-colors"
                              x-data="{ editMat: false }">
-
-                            {{-- Type icon --}}
                             @if($material->type === 'file')
                             <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             </div>
                             @elseif($material->type === 'video')
                             <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
-                                <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
+                                <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             </div>
                             @else
                             <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                                </svg>
+                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                             </div>
                             @endif
 
@@ -265,58 +350,43 @@
                                 @endif
                                 <div class="mt-1">
                                     @if($material->type === 'file')
-                                        <a href="{{ $material->download_url }}" target="_blank"
-                                           class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline font-medium">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                            </svg>
+                                        <a href="{{ $material->download_url }}" target="_blank" class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline font-medium">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                             Descargar
                                         </a>
                                     @elseif($material->type === 'link' || $material->type === 'video')
-                                        <a href="{{ $material->url }}" target="_blank"
-                                           class="inline-flex items-center gap-1 text-xs text-primary-600 hover:underline truncate max-w-xs font-medium">
-                                            <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                            </svg>
+                                        <a href="{{ $material->url }}" target="_blank" class="inline-flex items-center gap-1 text-xs text-primary-600 hover:underline truncate max-w-xs font-medium">
+                                            <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                                             Abrir enlace
                                         </a>
                                     @endif
                                 </div>
                             </div>
 
-                            {{-- Edit material inline --}}
                             <form x-show="editMat" x-cloak method="POST"
                                   action="{{ route('docente.courses.materials.update', [$course, $week, $material]) }}"
                                   class="flex-1 flex gap-2 items-center">
                                 @csrf @method('PUT')
-                                <input type="text" name="title" value="{{ $material->title }}"
-                                       class="flex-1 px-2.5 py-1.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
+                                <input type="text" name="title" value="{{ $material->title }}" class="flex-1 px-2.5 py-1.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
                                 <button type="submit" class="px-3 py-1.5 bg-primary-600 text-white text-xs font-semibold rounded-lg hover:bg-primary-700">OK</button>
                                 <button type="button" @click="editMat = false" class="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded-lg hover:bg-gray-200">✕</button>
                             </form>
 
                             <div class="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button @click="editMat = !editMat" class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Editar">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </button>
-                                <form method="POST" action="{{ route('docente.courses.materials.destroy', [$course, $week, $material]) }}"
-                                      data-confirm="¿Eliminar este material?">
+                                <form method="POST" action="{{ route('docente.courses.materials.destroy', [$course, $week, $material]) }}" data-confirm="¿Eliminar este material?">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>
                             </div>
                         </div>
                         @empty
                         <div class="px-5 py-6 text-center">
-                            <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
+                            <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             <p class="text-xs text-gray-400">Sin materiales. Agrega el primero abajo.</p>
                         </div>
                         @endforelse
@@ -325,54 +395,35 @@
                     {{-- Add material --}}
                     <div class="px-5 py-4 bg-blue-50/40 border-t border-blue-100/60" x-data="{ type: 'file' }">
                         <p class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             Agregar material
                         </p>
-                        <form method="POST" action="{{ route('docente.courses.materials.store', [$course, $week]) }}"
-                              enctype="multipart/form-data" class="space-y-3">
+                        <form method="POST" action="{{ route('docente.courses.materials.store', [$course, $week]) }}" enctype="multipart/form-data" class="space-y-3">
                             @csrf
-
                             <div class="flex gap-2">
                                 <label class="flex-1">
                                     <input type="radio" name="type" value="file" x-model="type" class="sr-only peer">
-                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 cursor-pointer text-center px-3 py-2 rounded-lg border border-gray-300 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
-                                        📄 Archivo
-                                    </div>
+                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 cursor-pointer text-center px-3 py-2 rounded-lg border border-gray-300 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">📄 Archivo</div>
                                 </label>
                                 <label class="flex-1">
                                     <input type="radio" name="type" value="link" x-model="type" class="sr-only peer">
-                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 cursor-pointer text-center px-3 py-2 rounded-lg border border-gray-300 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
-                                        🔗 Enlace
-                                    </div>
+                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 cursor-pointer text-center px-3 py-2 rounded-lg border border-gray-300 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">🔗 Enlace</div>
                                 </label>
                                 <label class="flex-1">
                                     <input type="radio" name="type" value="video" x-model="type" class="sr-only peer">
-                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 cursor-pointer text-center px-3 py-2 rounded-lg border border-gray-300 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
-                                        🎬 Video
-                                    </div>
+                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 cursor-pointer text-center px-3 py-2 rounded-lg border border-gray-300 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">🎬 Video</div>
                                 </label>
                             </div>
-
-                            <input type="text" name="title" required placeholder="Título del material *"
-                                   class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white">
-
+                            <input type="text" name="title" required placeholder="Título del material *" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white">
                             <div x-show="type === 'file'">
-                                <input type="file" name="file"
-                                       class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                <input type="file" name="file" class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                             </div>
                             <div x-show="type !== 'file'">
-                                <input type="url" name="url" placeholder="https://…"
-                                       class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white">
+                                <input type="url" name="url" placeholder="https://…" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white">
                             </div>
-
                             <div class="flex justify-end">
-                                <button type="submit"
-                                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                    </svg>
+                                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                                     Subir material
                                 </button>
                             </div>
@@ -380,34 +431,34 @@
                     </div>
                 </div>
 
-                {{-- ─── TASKS SECTION ──────────────────────────────────────────────────── --}}
+                {{-- ─── TASKS SECTION ──────────────────────────────────────────────── --}}
                 <div x-show="weekTab === 'tasks'" x-cloak>
-
-                    {{-- Task list --}}
                     <div class="divide-y divide-gray-50">
                         @forelse($week->tasks as $task)
                         <div class="px-5 py-4 group hover:bg-gray-50/60 transition-colors"
                              x-data="{ showDetails: false, editTask: false }">
-
                             <div class="flex items-start gap-3">
-                                {{-- Task icon --}}
-                                <div class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
-                                    <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                                    </svg>
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5
+                                    @if($task->submissions_count > 0 && $task->graded_count === $task->submissions_count) bg-emerald-100
+                                    @elseif($task->submissions_count > 0) bg-amber-100
+                                    @else bg-violet-100
+                                    @endif">
+                                    @if($task->submissions_count > 0 && $task->graded_count === $task->submissions_count)
+                                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    @elseif($task->submissions_count > 0)
+                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    @else
+                                    <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                                    @endif
                                 </div>
 
                                 <div class="flex-1 min-w-0" x-show="!editTask">
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <p class="text-sm font-semibold text-gray-900">{{ $task->title }}</p>
                                         @php $badge = $task->due_date_badge; @endphp
-                                        <span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium {{ $badge['class'] }}">
-                                            {{ $badge['label'] }}
-                                        </span>
+                                        <span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium {{ $badge['class'] }}">{{ $badge['label'] }}</span>
                                         <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                            </svg>
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                                             {{ $task->max_score }} pts
                                         </span>
                                         @if($task->status === 'inactive')
@@ -418,11 +469,8 @@
                                     <p class="text-xs text-gray-500 mt-1">{{ $task->description }}</p>
                                     @endif
                                     @if($task->instructions || $task->file_path)
-                                    <button @click="showDetails = !showDetails"
-                                            class="mt-2 text-xs text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1">
-                                        <svg class="w-3 h-3 transition-transform" :class="showDetails ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                        </svg>
+                                    <button @click="showDetails = !showDetails" class="mt-2 text-xs text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1">
+                                        <svg class="w-3 h-3 transition-transform" :class="showDetails ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                         <span x-text="showDetails ? 'Ocultar detalles' : 'Ver instrucciones'"></span>
                                     </button>
                                     <div x-show="showDetails" x-cloak class="mt-2 space-y-2">
@@ -430,68 +478,64 @@
                                         <div class="p-3 bg-violet-50 rounded-lg text-xs text-gray-700 whitespace-pre-line">{{ $task->instructions }}</div>
                                         @endif
                                         @if($task->file_path)
-                                        <a href="{{ Storage::url($task->file_path) }}" target="_blank"
-                                           class="inline-flex items-center gap-1.5 text-xs text-violet-600 hover:underline font-medium">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                            </svg>
+                                        <a href="{{ Storage::url($task->file_path) }}" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-violet-600 hover:underline font-medium">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                             Descargar guía/anexo
                                         </a>
                                         @endif
                                     </div>
                                     @endif
+
+                                    {{-- Entregas --}}
+                                    <div class="mt-3 flex items-center gap-3 pt-2.5 border-t border-gray-100">
+                                        <div class="flex items-center gap-1.5 text-xs">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                            <span class="font-medium text-gray-600">{{ $task->submissions_count }} / {{ $course->students->count() }} entregas</span>
+                                            @if($task->graded_count > 0)
+                                            <span class="text-emerald-600 font-medium">({{ $task->graded_count }} calificadas)</span>
+                                            @endif
+                                        </div>
+                                        <a href="{{ route('docente.courses.submissions.index', [$course, $task]) }}" class="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-semibold">
+                                            Ver entregas →
+                                        </a>
+                                    </div>
                                 </div>
 
                                 {{-- Edit task inline --}}
                                 <form x-show="editTask" x-cloak method="POST"
                                       action="{{ route('docente.courses.tasks.update', [$course, $week, $task]) }}"
-                                      enctype="multipart/form-data"
-                                      class="flex-1 space-y-3">
+                                      enctype="multipart/form-data" class="flex-1 space-y-3">
                                     @csrf @method('PUT')
                                     <div class="grid grid-cols-2 gap-3">
                                         <div class="col-span-2">
-                                            <input type="text" name="title" value="{{ $task->title }}" required
-                                                   placeholder="Título de la tarea *"
-                                                   class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
+                                            <input type="text" name="title" value="{{ $task->title }}" required placeholder="Título de la tarea *" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
                                         </div>
                                         <div>
                                             <label class="text-xs text-gray-600 font-medium block mb-1">Fecha límite</label>
-                                            <input type="datetime-local" name="due_date" value="{{ $task->due_date ? $task->due_date->format('Y-m-d\TH:i') : '' }}"
-                                                   class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
+                                            <input type="datetime-local" name="due_date" value="{{ $task->due_date ? $task->due_date->format('Y-m-d\TH:i') : '' }}" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
                                         </div>
                                         <div>
                                             <label class="text-xs text-gray-600 font-medium block mb-1">Puntaje máximo</label>
-                                            <input type="number" name="max_score" value="{{ $task->max_score }}" min="1" max="1000"
-                                                   class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
+                                            <input type="number" name="max_score" value="{{ $task->max_score }}" min="1" max="1000" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
                                         </div>
                                         <div class="col-span-2">
-                                            <textarea name="description" rows="2" placeholder="Descripción breve"
-                                                      class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none">{{ $task->description }}</textarea>
+                                            <textarea name="description" rows="2" placeholder="Descripción breve" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none">{{ $task->description }}</textarea>
                                         </div>
                                     </div>
                                     <div class="flex gap-2">
-                                        <button type="submit" class="px-4 py-2 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors">
-                                            Guardar cambios
-                                        </button>
-                                        <button type="button" @click="editTask = false" class="px-4 py-2 bg-gray-100 text-gray-600 text-xs rounded-lg hover:bg-gray-200 transition-colors">
-                                            Cancelar
-                                        </button>
+                                        <button type="submit" class="px-4 py-2 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors">Guardar cambios</button>
+                                        <button type="button" @click="editTask = false" class="px-4 py-2 bg-gray-100 text-gray-600 text-xs rounded-lg hover:bg-gray-200 transition-colors">Cancelar</button>
                                     </div>
                                 </form>
 
                                 <div class="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button @click="editTask = !editTask" class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Editar">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                     </button>
-                                    <form method="POST" action="{{ route('docente.courses.tasks.destroy', [$course, $week, $task]) }}"
-                                          data-confirm="¿Eliminar la tarea «{{ $task->title }}»?">
+                                    <form method="POST" action="{{ route('docente.courses.tasks.destroy', [$course, $week, $task]) }}" data-confirm="¿Eliminar la tarea «{{ $task->title }}»?">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                            </svg>
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                         </button>
                                     </form>
                                 </div>
@@ -500,9 +544,7 @@
                         @empty
                         <div class="px-5 py-6 text-center">
                             <div class="w-12 h-12 rounded-full bg-violet-50 flex items-center justify-center mx-auto mb-3">
-                                <svg class="w-6 h-6 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                                </svg>
+                                <svg class="w-6 h-6 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                             </div>
                             <p class="text-sm text-gray-500 font-medium">Sin tareas asignadas</p>
                             <p class="text-xs text-gray-400 mt-0.5">Usa el formulario de abajo para crear la primera tarea.</p>
@@ -511,75 +553,41 @@
                     </div>
 
                     {{-- Add task --}}
-                    <div class="px-5 py-4 bg-violet-50/40 border-t border-violet-100/60"
-                         x-data="{ showForm: false }">
-                        <button @click="showForm = !showForm"
-                                class="w-full flex items-center justify-between text-xs font-bold text-violet-700 uppercase tracking-wider py-1 hover:text-violet-900 transition-colors">
+                    <div class="px-5 py-4 bg-violet-50/40 border-t border-violet-100/60" x-data="{ showForm: false }">
+                        <button @click="showForm = !showForm" class="w-full flex items-center justify-between text-xs font-bold text-violet-700 uppercase tracking-wider py-1 hover:text-violet-900 transition-colors">
                             <span class="flex items-center gap-1.5">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                 Agregar tarea
                             </span>
-                            <svg class="w-4 h-4 transition-transform" :class="showForm ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
+                            <svg class="w-4 h-4 transition-transform" :class="showForm ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
-
                         <div x-show="showForm" x-cloak class="mt-4">
-                            <form method="POST" action="{{ route('docente.courses.tasks.store', [$course, $week]) }}"
-                                  enctype="multipart/form-data" class="space-y-3">
+                            <form method="POST" action="{{ route('docente.courses.tasks.store', [$course, $week]) }}" enctype="multipart/form-data" class="space-y-3">
                                 @csrf
-
-                                <div>
-                                    <input type="text" name="title" required placeholder="Título de la tarea *"
-                                           class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent bg-white">
-                                </div>
-
+                                <input type="text" name="title" required placeholder="Título de la tarea *" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent bg-white">
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="text-xs text-gray-600 font-semibold block mb-1">Fecha y hora límite</label>
-                                        <input type="datetime-local" name="due_date"
-                                               class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
+                                        <input type="datetime-local" name="due_date" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
                                     </div>
                                     <div>
                                         <label class="text-xs text-gray-600 font-semibold block mb-1">Puntaje máximo</label>
-                                        <input type="number" name="max_score" value="20" min="1" max="1000"
-                                               class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
+                                        <input type="number" name="max_score" value="20" min="1" max="1000" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
                                     </div>
                                 </div>
-
-                                <div>
-                                    <textarea name="description" rows="2" placeholder="Descripción breve de la tarea (opcional)"
-                                              class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none"></textarea>
-                                </div>
-
-                                <div>
-                                    <textarea name="instructions" rows="3" placeholder="Instrucciones detalladas (rúbrica, pasos a seguir, formato, etc.)"
-                                              class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none"></textarea>
-                                </div>
-
+                                <textarea name="description" rows="2" placeholder="Descripción breve de la tarea (opcional)" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none"></textarea>
+                                <textarea name="instructions" rows="3" placeholder="Instrucciones detalladas (rúbrica, pasos a seguir, formato, etc.)" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none"></textarea>
                                 <div class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                                    </svg>
+                                    <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
                                     <div class="flex-1">
-                                        <input type="file" name="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip"
-                                               class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
+                                        <input type="file" name="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
                                         <p class="text-xs text-gray-400 mt-0.5">Adjuntar guía o rúbrica (PDF, Word, PPT, ZIP — máx. 20 MB)</p>
                                     </div>
                                 </div>
-
                                 <div class="flex justify-end gap-2">
-                                    <button type="button" @click="showForm = false"
-                                            class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-sm rounded-lg hover:bg-gray-50 transition-colors">
-                                        Cancelar
-                                    </button>
-                                    <button type="submit"
-                                            class="inline-flex items-center gap-1.5 px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                        </svg>
+                                    <button type="button" @click="showForm = false" class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-sm rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
+                                    <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                         Crear tarea
                                     </button>
                                 </div>
@@ -592,9 +600,7 @@
         @empty
         <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
             <div class="w-16 h-16 rounded-full bg-primary-50 flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                </svg>
+                <svg class="w-8 h-8 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
             </div>
             <h3 class="text-sm font-semibold text-gray-900 mb-1">El curso no tiene semanas aún</h3>
             <p class="text-xs text-gray-400">Usa el formulario de arriba para agregar la primera semana.</p>
@@ -602,7 +608,9 @@
         @endforelse
     </div>
 
-    {{-- ─── STUDENTS TAB ────────────────────────────────────────────────────── --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════
+         STUDENTS TAB
+    ═══════════════════════════════════════════════════════════════════════ --}}
     <div x-show="activeTab === 'students'" class="space-y-4" x-cloak>
 
         {{-- Search & enroll --}}
@@ -624,26 +632,18 @@
              }">
             <div class="flex items-center gap-2 mb-4">
                 <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
-                    <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                    </svg>
+                    <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                 </div>
                 <h3 class="text-sm font-semibold text-gray-900">Matricular alumno</h3>
             </div>
             <div class="flex gap-3">
                 <div class="flex-1 relative">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <input type="text" x-model="query"
-                           @input.debounce.400ms="search()"
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" x-model="query" @input.debounce.400ms="search()"
                            class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                            placeholder="Buscar por nombre, email o DNI…">
                     <div x-show="loading" class="absolute right-3 top-1/2 -translate-y-1/2">
-                        <svg class="w-4 h-4 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                        <svg class="w-4 h-4 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     </div>
                 </div>
             </div>
@@ -651,8 +651,7 @@
                 <template x-for="student in results" :key="student.id">
                     <div class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 text-xs font-bold shrink-0"
-                                 x-text="student.name.charAt(0).toUpperCase()"></div>
+                            <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 text-xs font-bold shrink-0" x-text="student.name.charAt(0).toUpperCase()"></div>
                             <div>
                                 <p class="text-sm font-medium text-gray-900" x-text="student.name"></p>
                                 <p class="text-xs text-gray-400" x-text="student.email"></p>
@@ -661,9 +660,7 @@
                         <form method="POST" action="{{ route('docente.courses.students.enroll', $course) }}">
                             @csrf
                             <input type="hidden" name="user_id" :value="student.id">
-                            <button type="submit" class="px-3 py-1.5 bg-primary-600 text-white text-xs font-semibold rounded-lg hover:bg-primary-700 transition-colors">
-                                Matricular
-                            </button>
+                            <button type="submit" class="px-3 py-1.5 bg-primary-600 text-white text-xs font-semibold rounded-lg hover:bg-primary-700 transition-colors">Matricular</button>
                         </form>
                     </div>
                 </template>
@@ -675,23 +672,17 @@
 
         {{-- Enrolled students --}}
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50/80 to-white">
                 <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <h3 class="text-sm font-semibold text-gray-900">Alumnos matriculados</h3>
                 </div>
-                <span class="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-full">
-                    {{ $course->students->count() }} alumnos
-                </span>
+                <span class="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-full">{{ $course->students->count() }} alumnos</span>
             </div>
             @if($course->students->isEmpty())
             <div class="p-10 text-center">
                 <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                    <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
+                    <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 </div>
                 <p class="text-sm text-gray-500 font-medium">Sin alumnos matriculados</p>
                 <p class="text-xs text-gray-400 mt-0.5">Busca alumnos arriba para matricularlos.</p>
@@ -701,7 +692,7 @@
                 @foreach($course->students as $student)
                 @php $enrollment = $course->enrollments->firstWhere('user_id', $student->id); @endphp
                 <div class="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50/60 transition-colors">
-                    <div class="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-sm font-bold shrink-0">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm">
                         {{ strtoupper(substr($student->name, 0, 1)) }}
                     </div>
                     <div class="flex-1 min-w-0">
@@ -709,19 +700,16 @@
                         <p class="text-xs text-gray-400">{{ $student->email }}</p>
                     </div>
                     @if($student->alumnoProfile?->dni)
-                    <span class="text-xs text-gray-400 font-mono">{{ $student->alumnoProfile->dni }}</span>
+                    <span class="text-xs text-gray-400 font-mono bg-gray-50 px-2 py-0.5 rounded">{{ $student->alumnoProfile->dni }}</span>
                     @endif
                     <span class="text-xs px-2.5 py-1 rounded-full font-medium {{ $enrollment && $enrollment->status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500' }}">
                         {{ $enrollment && $enrollment->status === 'active' ? 'Activo' : 'Baja' }}
                     </span>
                     @if($enrollment && $enrollment->status === 'active')
-                    <form method="POST" action="{{ route('docente.courses.students.unenroll', [$course, $student]) }}"
-                          data-confirm="¿Dar de baja a {{ $student->name }}">
+                    <form method="POST" action="{{ route('docente.courses.students.unenroll', [$course, $student]) }}" data-confirm="¿Dar de baja a {{ $student->name }}?">
                         @csrf @method('DELETE')
                         <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Dar de baja">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/>
-                            </svg>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/></svg>
                         </button>
                     </form>
                     @endif

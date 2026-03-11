@@ -21,6 +21,16 @@ class Task extends Model
         return $this->belongsTo(Week::class);
     }
 
+    public function submissions()
+    {
+        return $this->hasMany(Submission::class);
+    }
+
+    public function submissionFor(int $userId): ?Submission
+    {
+        return $this->submissions->firstWhere('user_id', $userId);
+    }
+
     public function getFileUrlAttribute(): ?string
     {
         return $this->file_path ? asset('storage/' . $this->file_path) : null;

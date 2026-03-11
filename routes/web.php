@@ -116,6 +116,10 @@ Route::middleware(['auth', 'role:docente'])
         Route::put('/{course}/semanas/{week}/tareas/{task}',       [Docente\TaskController::class, 'update'])->name('tasks.update');
         Route::delete('/{course}/semanas/{week}/tareas/{task}',    [Docente\TaskController::class, 'destroy'])->name('tasks.destroy');
 
+        // Entregas de tareas (Juan)
+        Route::get('/{course}/tareas/{task}/entregas',                                [Docente\SubmissionController::class, 'index'])->name('submissions.index');
+        Route::patch('/{course}/tareas/{task}/entregas/{submission}/calificar',       [Docente\SubmissionController::class, 'grade'])->name('submissions.grade');
+
         // Alumnos
         Route::get('/{course}/estudiantes/buscar',       [Docente\StudentController::class, 'search'])->name('students.search');
         Route::post('/{course}/estudiantes',             [Docente\StudentController::class, 'enroll'])->name('students.enroll');
@@ -172,6 +176,10 @@ Route::middleware(['auth', 'role:alumno'])
 
     Route::get('/mis-cursos/{course}',        [Alumno\CourseController::class, 'show'])->name('courses.show');
     Route::get('/mis-cursos/{course}/notas', [Alumno\GradeController::class, 'show'])->name('grades.show');
+
+    // Entregas de tareas (Juan)
+    Route::post('/mis-cursos/{course}/tareas/{task}/entregar',                       [Alumno\SubmissionController::class, 'store'])->name('submissions.store');
+    Route::post('/mis-cursos/{course}/tareas/{task}/entregas/{submission}',           [Alumno\SubmissionController::class, 'update'])->name('submissions.update');
 
     Route::get('/intranet', function () {
         return view('alumno.intranet', [

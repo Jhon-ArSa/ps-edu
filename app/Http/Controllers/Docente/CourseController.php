@@ -22,9 +22,29 @@ class CourseController extends Controller
     {
         $this->authorize('manage', $course);
 
-        $course->load(['weeks.materials', 'weeks.tasks', 'students.alumnoProfile', 'enrollments']);
+        $course->load([
+            'semesterPeriod',
+            'programBelongs',
+            'weeks.materials',
+            'weeks.tasks' => function ($q) {
+                $q->withCount([
+                    'submissions',
+                    'submissions as graded_count' => fn($s) => $s->where('status', 'graded'),
+                ]);
+            },
+            'students.alumnoProfile',
+            'enrollments',
+        ]);
         $weekNumbers = $course->weeks->pluck('number')->toArray();
 
-        return view('docente.courses.show', compact('course', 'weekNumbers'));
+        $totalMaterials  = $course->weeks->sum(fn($w) => $w->materials->count());
+        $totalTasks      = $course->weeks->sum(fn($w) => $w->tasks->count());
+        $totalSubmissions = $course->weeks->sum(fn($w) => $w->tasks->sum('submissions_count'));
+        $totalGraded     = $course->weeks->sum(fn($w) => $w->tasks->sum('graded_count'));
+        $pendingGrading  = $totalSubmissions - $totalGraded;
+
+        $stats = compact('totalMaterials', 'totalTasks', 'totalSubmissions', 'totalGraded', 'pendingGrading');
+
+        return view('docente.courses.show', compact('course', 'weekNumbers', 'stats'));
     }
 }
