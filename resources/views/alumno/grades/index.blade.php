@@ -37,7 +37,7 @@
             foreach ($items as $itm) {
                 $g = $grades->get($itm->id);
                 if (! $g || $g->score === null) continue;
-                $norm = ($g->score / $itm->max_score) * 20.0;
+                $norm = (min((float) $g->score, (float) $itm->max_score) / $itm->max_score) * 20.0;
                 if ($useWeighted && $itm->weight > 0) { $wSum += $norm * $itm->weight; $wW += $itm->weight; }
                 $sSum += $norm; $sC++;
             }
@@ -118,7 +118,7 @@
                         <td class="px-4 py-3.5 text-center">
                             @if($grade?->score !== null)
                                 @php
-                                    $norm = ($grade->score / $item->max_score) * 20;
+                                    $norm = (min((float) $grade->score, (float) $item->max_score) / $item->max_score) * 20;
                                     $cls  = $norm < 11 ? 'bg-red-100 text-red-700'
                                           : ($norm < 14 ? 'bg-amber-100 text-amber-700'
                                           : 'bg-emerald-100 text-emerald-700');

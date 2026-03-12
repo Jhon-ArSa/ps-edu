@@ -86,6 +86,19 @@ Route::middleware(['auth', 'role:admin'])
     Route::get('/reportes',          [Admin\ReportController::class, 'index'])->name('reports.index');
     Route::get('/reportes/imprimir', [Admin\ReportController::class, 'print'])->name('reports.print');
     Route::get('/reportes/exportar', [Admin\ReportController::class, 'exportCsv'])->name('reports.csv');
+
+    // Detalle de curso para admin (reutiliza el controller de docente; CoursePolicy::manage ya permite al admin)
+    Route::prefix('/reportes/cursos/{course}')->name('reports.course.')->group(function () {
+        Route::get('/',         [Docente\ReportController::class, 'show'])->name('show');
+        Route::get('/imprimir', [Docente\ReportController::class, 'print'])->name('print');
+        Route::get('/exportar', [Docente\ReportController::class, 'exportCsv'])->name('csv');
+    });
+
+    // Intranet (vista de comunicados publicados para el admin)
+    Route::get('/intranet', [Admin\AnnouncementController::class, 'intranet'])->name('intranet');
+
+    // ── Supervisión de foros ──────────────────────────────────────────────
+    Route::get('/foro', [Admin\ForumController::class, 'index'])->name('forum.index');
 });
 
 // ── DOCENTE ───────────────────────────────────────────────────────────────────
@@ -151,6 +164,7 @@ Route::middleware(['auth', 'role:docente'])
     // ── Calificaciones (Zair) ──────────────────────────────────────────────
     Route::prefix('cursos/{course}/notas')->name('grades.')->group(function () {
         Route::get('/',                                         [Docente\GradeController::class, 'index'])->name('index');
+        Route::get('/exportar',                                 [Docente\GradeController::class, 'exportCsv'])->name('csv');
         Route::post('/items',                                   [Docente\GradeController::class, 'storeItem'])->name('items.store');
         Route::patch('/items/{gradeItem}',                      [Docente\GradeController::class, 'updateItem'])->name('items.update');
         Route::delete('/items/{gradeItem}',                     [Docente\GradeController::class, 'destroyItem'])->name('items.destroy');
@@ -197,7 +211,9 @@ Route::middleware(['auth', 'role:alumno'])
 
     Route::get('/dashboard', [Alumno\DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/mis-cursos/{course}',        [Alumno\CourseController::class, 'show'])->name('courses.show');
+    Route::get('/mis-cursos',             [Alumno\CourseController::class, 'index'])->name('courses.index');
+    Route::get('/mis-cursos/{course}',    [Alumno\CourseController::class, 'show'])->name('courses.show');
+    Route::get('/mis-notas',              [Alumno\GradeController::class, 'index'])->name('grades.index');
     Route::get('/mis-cursos/{course}/notas', [Alumno\GradeController::class, 'show'])->name('grades.show');
 
     // Entregas de tareas (Juan)

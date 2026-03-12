@@ -57,7 +57,10 @@
 
     {{-- Navigation --}}
     <nav class="flex-1 overflow-y-auto overflow-x-hidden sidebar-scroll py-3 space-y-0.5" :class="sidebarCollapsed ? 'md:px-2 px-3' : 'px-3'">
-        @php $role = auth()->user()->role; @endphp
+        @php
+            $role             = auth()->user()->role;
+            $unreadNotifCount = auth()->user()->unreadNotifications()->count();
+        @endphp
 
         @if($role === 'admin')
             <x-sidebar-link route="admin.dashboard" icon="home">Dashboard</x-sidebar-link>
@@ -76,7 +79,9 @@
             <x-sidebar-link route="admin.courses.index" icon="book">Cursos</x-sidebar-link>
             <x-sidebar-link route="admin.enrollments.index" icon="clipboard">Matrículas</x-sidebar-link>
             <x-sidebar-link route="admin.announcements.index" icon="bell">Comunicados</x-sidebar-link>
+            <x-sidebar-link route="admin.intranet" icon="newspaper">Intranet</x-sidebar-link>
             <x-sidebar-link route="admin.reports.index" icon="reports">Reportes</x-sidebar-link>
+            <x-sidebar-link route="admin.forum.index" icon="forum">Foros</x-sidebar-link>
 
             <div class="sidebar-section-label sidebar-section-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
                 <span class="sidebar-section-text">Sistema</span>
@@ -85,7 +90,7 @@
             <div class="sidebar-divider-hideable" :class="sidebarCollapsed && 'sidebar-show'">
                 <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
             </div>
-            <x-sidebar-link route="notifications.index" icon="notification">Notificaciones</x-sidebar-link>
+            <x-sidebar-link route="notifications.index" icon="notification" :badge="$unreadNotifCount">Notificaciones</x-sidebar-link>
             <x-sidebar-link route="admin.settings" icon="cog">Configuración</x-sidebar-link>
 
         @elseif($role === 'docente')
@@ -109,13 +114,31 @@
                 <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
             </div>
             <x-sidebar-link route="docente.escalafon.show" icon="id-card">Escalafón</x-sidebar-link>
-            <x-sidebar-link route="notifications.index" icon="notification">Notificaciones</x-sidebar-link>
+            <x-sidebar-link route="notifications.index" icon="notification" :badge="$unreadNotifCount">Notificaciones</x-sidebar-link>
             <x-sidebar-link route="docente.soporte" icon="support">Soporte Técnico</x-sidebar-link>
 
         @elseif($role === 'alumno')
             <x-sidebar-link route="alumno.dashboard" icon="home">Inicio</x-sidebar-link>
+
+            <div class="sidebar-section-label sidebar-section-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
+                <span class="sidebar-section-text">Académico</span>
+                <div class="sidebar-section-line"></div>
+            </div>
+            <div class="sidebar-divider-hideable" :class="sidebarCollapsed && 'sidebar-show'">
+                <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+            </div>
+            <x-sidebar-link route="alumno.courses.index" icon="book">Mis Cursos</x-sidebar-link>
+            <x-sidebar-link route="alumno.grades.index" icon="grades">Mis Notas</x-sidebar-link>
             <x-sidebar-link route="alumno.intranet" icon="newspaper">Intranet</x-sidebar-link>
-            <x-sidebar-link route="notifications.index" icon="notification">Notificaciones</x-sidebar-link>
+
+            <div class="sidebar-section-label sidebar-section-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
+                <span class="sidebar-section-text">Personal</span>
+                <div class="sidebar-section-line"></div>
+            </div>
+            <div class="sidebar-divider-hideable" :class="sidebarCollapsed && 'sidebar-show'">
+                <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+            </div>
+            <x-sidebar-link route="notifications.index" icon="notification" :badge="$unreadNotifCount">Notificaciones</x-sidebar-link>
         @endif
 
         {{-- Cuenta --}}
@@ -214,7 +237,6 @@
 
         {{-- Right side --}}
         @php
-            $unreadNotifCount    = auth()->user()->unreadNotifications()->count();
             $recentNotifications = auth()->user()->notifications()->latest()->limit(5)->get();
         @endphp
         <div class="flex items-center gap-2.5 shrink-0">
@@ -273,10 +295,11 @@
                     {{-- Lista de notificaciones recientes --}}
                     <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
                         @forelse($recentNotifications as $notif)
-                            <a href="#"
+                            <a href="{{ $notif->data['url'] ?? url('/') }}"
                                @click.prevent="
                                    axios.patch('{{ route('notifications.read', $notif->id) }}')
-                                       .then(() => { window.location.href = '{{ addslashes($notif->data['url'] ?? url('/')) }}' })
+                                       .then(() => { window.location.href = $el.href })
+                                       .catch(() => { window.location.href = $el.href })
                                "
                                class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors {{ is_null($notif->read_at) ? 'bg-primary-50/40' : '' }}">
 
@@ -307,7 +330,12 @@
                                                 <path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.435 5.093A7.001 7.001 0 0111 4.176V5.882L5.435 5.093z"/>
                                             </svg>
                                             @break
-                                        @default
+                                        @case('course')
+                                            <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M12 3L1 9l11 6 11-6-11-6z"/>
+                                                <path d="M5 12v5a7 7 0 0014 0v-5"/>
+                                            </svg>
+                                            @break
                                             <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8a6 6 0 10-12 0c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.197 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.756-1.088-1.936C18.78 13.206 18 11.09 18 8z"/>
                                             </svg>

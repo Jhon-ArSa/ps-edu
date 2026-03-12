@@ -53,7 +53,7 @@ class ReportController extends Controller
                 $scoresRaw[$item->id] = $score;
 
                 if ($score === null) continue;
-                $norm = ($score / $item->max_score) * 20.0;
+                $norm = (min((float) $score, (float) $item->max_score) / $item->max_score) * 20.0;
                 if ($useWeighted && $item->weight > 0) { $wSum += $norm * $item->weight; $wW += $item->weight; }
                 $sSum += $norm; $sC++;
             }
@@ -94,9 +94,11 @@ class ReportController extends Controller
         // Jhon — resumen de intentos de evaluación por alumno
         $attemptStats = $this->attemptStats($course, $students->pluck('id'));
 
+        $routePrefix = auth()->user()->role === 'admin' ? 'admin.reports.course' : 'docente.reports';
+
         return view('docente.reports.show', compact(
             'course', 'items', 'studentRows', 'gradesMap',
-            'courseStats', 'submissionStats', 'attemptStats'
+            'courseStats', 'submissionStats', 'attemptStats', 'routePrefix'
         ));
     }
 
@@ -129,7 +131,7 @@ class ReportController extends Controller
                 $grade = $gradesMap[$item->id][$student->id] ?? null;
                 $scoresRaw[$item->id] = $grade?->score;
                 if ($grade?->score === null) continue;
-                $norm = ($grade->score / $item->max_score) * 20.0;
+                $norm = (min((float) $grade->score, (float) $item->max_score) / $item->max_score) * 20.0;
                 if ($useWeighted && $item->weight > 0) { $wSum += $norm * $item->weight; $wW += $item->weight; }
                 $sSum += $norm; $sC++;
             }
@@ -186,7 +188,7 @@ class ReportController extends Controller
                 $score  = $grade?->score;
                 $row[]  = $score !== null ? number_format($score, 1) : '';
                 if ($score !== null) {
-                    $norm = ($score / $item->max_score) * 20.0;
+                    $norm = (min((float) $score, (float) $item->max_score) / $item->max_score) * 20.0;
                     if ($useWeighted && $item->weight > 0) { $wSum += $norm * $item->weight; $wW += $item->weight; }
                     $sSum += $norm; $sC++;
                 }
@@ -258,18 +260,25 @@ class ReportController extends Controller
                 ->where('weeks.course_id', $course->id)
                 ->pluck('evaluations.id');
 
-            if ($evalIds->isEmpty()) return ['available' => true, 'completed' => 0, 'total' => 0];
+            if ($evalIds->isEmpty()) return ['available' => true, 'total_attempts' => 0, 'passed' => 0, 'total' => 0];
 
-            $completed = DB::table('evaluation_attempts')
+            $total_attempts = DB::table('evaluation_attempts')
                 ->whereIn('evaluation_id', $evalIds)
                 ->whereIn('user_id', $studentIds)
                 ->whereNotNull('submitted_at')
                 ->count();
 
+            $passed = DB::table('evaluation_attempts')
+                ->whereIn('evaluation_id', $evalIds)
+                ->whereIn('user_id', $studentIds)
+                ->where('status', 'graded')
+                ->count();
+
             return [
-                'available' => true,
-                'completed' => $completed,
-                'total'     => $evalIds->count() * $studentIds->count(),
+                'available'      => true,
+                'total_attempts' => $total_attempts,
+                'passed'         => $passed,
+                'total'          => $evalIds->count() * $studentIds->count(),
             ];
         } catch (\Throwable) {
             return ['available' => false];

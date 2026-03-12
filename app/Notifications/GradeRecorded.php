@@ -4,11 +4,10 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Notification;
 
-class TaskGraded extends Notification
+class GradeRecorded extends Notification
 {
-
     public function __construct(
-        private readonly string $taskTitle,
+        private readonly string $itemName,
         private readonly int    $courseId,
         private readonly string $courseName,
         private readonly float  $score,
@@ -26,10 +25,10 @@ class TaskGraded extends Notification
         $maxScore = number_format($this->maxScore, 1);
 
         return [
-            'icon'      => 'grade',
-            'title'     => 'Tarea calificada',
-            'body'      => "Tu tarea \"{$this->taskTitle}\" fue calificada con {$score} / {$maxScore} en {$this->courseName}.",
-            'url'       => route('alumno.courses.show', $this->courseId),
+            'icon'  => 'grade',
+            'title' => 'Nota registrada',
+            'body'  => "Tu calificación en \"{$this->itemName}\" es {$score} / {$maxScore} en {$this->courseName}.",
+            'url'   => route('alumno.courses.show', $this->courseId),
         ];
     }
 }

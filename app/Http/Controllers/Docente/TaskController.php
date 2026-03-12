@@ -7,7 +7,9 @@ use App\Models\Course;
 use App\Models\GradeItem;
 use App\Models\Task;
 use App\Models\Week;
+use App\Notifications\NewTaskPublished;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
@@ -36,6 +38,16 @@ class TaskController extends Controller
 
         // Registrar columna en la libreta de notas
         GradeItem::syncFromTask($task->load('week'));
+
+        // Notificar a alumnos matriculados activos
+        $students = $course->students()->get();
+        if ($students->isNotEmpty()) {
+            Notification::send($students, new NewTaskPublished(
+                taskTitle:  $task->title,
+                courseId:   $course->id,
+                courseName: $course->name,
+            ));
+        }
 
         return back()->with('success', 'Tarea "' . $request->title . '" creada exitosamente.');
     }
@@ -67,6 +79,11 @@ class TaskController extends Controller
         if ($task->file_path) {
             Storage::disk('public')->delete($task->file_path);
         }
+
+        // Eliminar el ítem de la libreta de notas asociado a esta tarea
+        GradeItem::where('type', GradeItem::TYPE_TASK)
+            ->where('reference_id', $task->id)
+            ->delete();
 
         $task->delete();
 

@@ -1,4 +1,4 @@
-@props(['route', 'icon' => 'dot'])
+@props(['route', 'icon' => 'dot', 'badge' => 0])
 
 @php
     $active = request()->routeIs($route) || request()->routeIs($route . '.*');
@@ -89,10 +89,8 @@
                 </svg>
                 @break
             @case('notification')
-                {{-- Campana con badge dot = notificaciones del sistema (≠ comunicados) --}}
                 <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8a6 6 0 10-12 0c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.197 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.756-1.088-1.936C18.78 13.206 18 11.09 18 8z"/>
-                    <circle cx="17.5" cy="4.5" r="2.5" fill="currentColor" stroke="white" stroke-width="1.5"/>
                 </svg>
                 @break
             @case('grades')
@@ -109,6 +107,12 @@
                     <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
                 </svg>
                 @break
+            @case('forum')
+                {{-- Bocadillo de chat = foro --}}
+                <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 01.707-.527 48.77 48.77 0 005.5-.498c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+                </svg>
+                @break
             @default
                 <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="3" fill="currentColor"/>
@@ -116,7 +120,11 @@
         @endswitch
     </div>
     <span class="flex-1 sidebar-link-text whitespace-nowrap overflow-hidden sidebar-hideable" x-bind:class="$root.sidebarCollapsed && 'sidebar-hide'">{{ $slot }}</span>
-    @if($active)
+    @if($badge > 0)
+        <span class="shrink-0 min-w-[18px] h-[18px] bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center px-1 sidebar-hideable" x-bind:class="$root.sidebarCollapsed && 'sidebar-hide'">
+            {{ $badge > 9 ? '9+' : $badge }}
+        </span>
+    @elseif($active)
         <span class="sidebar-active-dot shrink-0 sidebar-hideable" x-bind:class="$root.sidebarCollapsed && 'sidebar-hide'"></span>
     @endif
 </a>

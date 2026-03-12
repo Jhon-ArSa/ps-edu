@@ -8,6 +8,8 @@ use App\Models\Enrollment;
 use App\Models\Program;
 use App\Models\Semester;
 use App\Models\User;
+use App\Notifications\CourseAssigned;
+use App\Notifications\NewEnrollment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -76,7 +78,8 @@ class CourseController extends Controller
         $studentIds = $validated['students'] ?? [];
         unset($validated['students']);
 
-        DB::transaction(function () use ($validated, $studentIds) {
+        $course = null;
+        DB::transaction(function () use ($validated, $studentIds, &$course) {
             $course = Course::create($validated);
 
             if (!empty($studentIds)) {
@@ -91,6 +94,15 @@ class CourseController extends Controller
                 Enrollment::insert($enrollments->toArray());
             }
         });
+
+        // Notificar al docente asignado
+        $course->teacher?->notify(new CourseAssigned($course->id, $course->name));
+
+        // Notificar a los alumnos matriculados al crear
+        if (!empty($studentIds)) {
+            User::whereIn('id', $studentIds)->get()
+                ->each->notify(new NewEnrollment($course->id, $course->name));
+        }
 
         return redirect()->route('admin.courses.index')
             ->with('success', 'Curso creado exitosamente.');
@@ -141,7 +153,10 @@ class CourseController extends Controller
         $studentIds = collect($validated['students'] ?? [])->map(fn ($id) => (int) $id);
         unset($validated['students']);
 
-        DB::transaction(function () use ($course, $validated, $studentIds) {
+        $oldTeacherId = $course->teacher_id;
+        $toAdd        = collect();
+
+        DB::transaction(function () use ($course, $validated, $studentIds, &$toAdd) {
             $course->update($validated);
 
             $currentEnrolled = $course->enrollments()->where('status', 'active')->pluck('user_id');
@@ -161,6 +176,17 @@ class CourseController extends Controller
                 );
             }
         });
+
+        // Notificar al nuevo docente si cambió
+        if ($oldTeacherId !== $course->teacher_id) {
+            $course->teacher?->notify(new CourseAssigned($course->id, $course->name));
+        }
+
+        // Notificar a los alumnos recién matriculados
+        if ($toAdd->isNotEmpty()) {
+            User::whereIn('id', $toAdd->toArray())->get()
+                ->each->notify(new NewEnrollment($course->id, $course->name));
+        }
 
         return redirect()->route('admin.courses.index')
             ->with('success', 'Curso actualizado exitosamente.');

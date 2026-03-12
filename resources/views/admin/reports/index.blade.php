@@ -275,12 +275,10 @@
                                 @endif
                             </td>
                             <td class="px-5 py-3.5 text-right">
-                                @if($report['course']->teacher_id)
-                                    <a href="{{ route('docente.reports.show', $report['course']) }}"
-                                       class="text-xs text-primary-600 hover:text-primary-700 font-medium hover:underline">
-                                        Ver detalle
-                                    </a>
-                                @endif
+                                <a href="{{ route('admin.reports.course.show', $report['course']) }}"
+                                   class="text-xs text-primary-600 hover:text-primary-700 font-medium hover:underline">
+                                    Ver detalle
+                                </a>
                             </td>
                         </tr>
                         @endforeach

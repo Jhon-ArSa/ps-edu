@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class NotificationController extends Controller
@@ -24,8 +25,9 @@ class NotificationController extends Controller
     /**
      * Marcar una notificación como leída y redirigir a su URL destino.
      * Verifica que la notificación pertenezca al usuario (prevención de IDOR).
+     * Si la petición es AJAX, retorna 204 (el frontend maneja la navegación).
      */
-    public function markAsRead(string $id): RedirectResponse
+    public function markAsRead(Request $request, string $id): Response|RedirectResponse
     {
         $notification = auth()->user()
             ->notifications()
@@ -33,6 +35,12 @@ class NotificationController extends Controller
 
         $notification->markAsRead();
 
+        // Petición AJAX (dropdown del header): solo confirmar éxito, el JS navega
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->noContent();
+        }
+
+        // Formulario HTML (página de notificaciones): redirigir al recurso
         $url = $notification->data['url'] ?? url('/');
 
         // Prevenir open redirect: solo URLs del mismo dominio o rutas relativas

@@ -15,8 +15,7 @@
          COURSE HEADER — gradient hero card
     ═══════════════════════════════════════════════════════════════════════ --}}
     <div class="relative bg-gradient-to-br from-primary-700 via-primary-800 to-indigo-900 rounded-2xl overflow-hidden shadow-lg animate-fade-in-up">
-        {{-- Pattern overlay --}}
-        <div class="absolute inset-0 opacity-[0.04]" style="background-image:url(&quot;data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E&quot;)"></div>
+        {{-- Gradient overlays --}}
         <div class="absolute -top-16 -right-16 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
         <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-primary-400/10 rounded-full blur-3xl"></div>
 

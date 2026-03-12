@@ -103,7 +103,10 @@
             </div>
             <div class="space-y-3">
                 @forelse($latestAnnouncements as $ann)
-                <div class="card hover:-translate-y-0.5 transition-all duration-200">
+                <div class="card hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
+                    @if($ann->image_path)
+                    <img src="{{ $ann->image_url }}" alt="{{ $ann->title }}" class="w-full h-28 object-cover">
+                    @endif
                     <div class="p-5">
                         <p class="text-sm font-semibold text-gray-800 leading-tight">{{ $ann->title }}</p>
                         <p class="text-xs text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">{{ Str::limit(strip_tags($ann->content), 80) }}</p>
