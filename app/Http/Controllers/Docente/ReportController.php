@@ -213,10 +213,6 @@ class ReportController extends Controller
     private function submissionStats(Course $course, $studentIds): array
     {
         try {
-            if (! \Schema::hasTable('submissions') || ! \Schema::hasTable('tasks')) {
-                return ['available' => false];
-            }
-
             $taskIds = DB::table('tasks')
                 ->join('weeks', 'weeks.id', '=', 'tasks.week_id')
                 ->where('weeks.course_id', $course->id)
@@ -257,10 +253,6 @@ class ReportController extends Controller
     private function attemptStats(Course $course, $studentIds): array
     {
         try {
-            if (! \Schema::hasTable('evaluation_attempts') || ! \Schema::hasTable('evaluations')) {
-                return ['available' => false];
-            }
-
             $evalIds = DB::table('evaluations')
                 ->join('weeks', 'weeks.id', '=', 'evaluations.week_id')
                 ->where('weeks.course_id', $course->id)

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Docente;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\GradeItem;
 use App\Models\Task;
 use App\Models\Week;
 use Illuminate\Http\Request;
@@ -31,7 +32,10 @@ class TaskController extends Controller
             $data['file_path'] = $request->file('file')->store("tasks/{$course->id}", 'public');
         }
 
-        Task::create($data);
+        $task = Task::create($data);
+
+        // Registrar columna en la libreta de notas
+        GradeItem::syncFromTask($task->load('week'));
 
         return back()->with('success', 'Tarea "' . $request->title . '" creada exitosamente.');
     }
@@ -49,6 +53,9 @@ class TaskController extends Controller
         ]);
 
         $task->update($request->only(['title', 'description', 'instructions', 'due_date', 'max_score']));
+
+        // Sincronizar nombre/max_score en la libreta de notas
+        GradeItem::syncFromTask($task->load('week'));
 
         return back()->with('success', 'Tarea actualizada.');
     }

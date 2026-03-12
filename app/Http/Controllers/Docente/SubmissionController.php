@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Docente;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\Grade;
 use App\Models\Submission;
 use App\Models\Task;
 use Illuminate\Http\Request;
@@ -65,6 +66,9 @@ class SubmissionController extends Controller
             'graded_at' => now(),
             'graded_by' => auth()->id(),
         ]);
+
+        // Propagar la nota a la libreta de calificaciones
+        Grade::recordFromSubmission($submission->fresh());
 
         return back()->with('success', 'Entrega de ' . $submission->student->name . ' calificada con ' . $request->score . '/' . $task->max_score . '.');
     }
