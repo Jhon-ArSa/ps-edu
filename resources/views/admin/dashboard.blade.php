@@ -380,4 +380,10 @@
     </div>
 
 </div>
+
+{{-- Modal emergente para anuncios importantes --}}
+@if(isset($latestAnnouncements) && $latestAnnouncements->count() > 0)
+    <x-announcement-modal :announcement="$latestAnnouncements->first()" />
+@endif
+
 @endsection

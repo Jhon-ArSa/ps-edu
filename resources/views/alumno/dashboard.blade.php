@@ -193,4 +193,10 @@
     </div>
 
 </div>
+
+{{-- Modal emergente para anuncios importantes --}}
+@if($latestAnnouncements->count() > 0)
+    <x-announcement-modal :announcement="$latestAnnouncements->first()" />
+@endif
+
 @endsection

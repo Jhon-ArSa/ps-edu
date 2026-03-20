@@ -12,7 +12,22 @@ class Announcement extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+        if (!$this->image_path) {
+            return null;
+        }
+
+        // Verificar si el archivo existe antes de retornar la URL
+        $fullPath = storage_path('app/public/' . $this->image_path);
+        if (!file_exists($fullPath)) {
+            return null;
+        }
+
+        return asset('storage/' . $this->image_path);
+    }
+
+    public function hasValidImage(): bool
+    {
+        return $this->image_path && file_exists(storage_path('app/public/' . $this->image_path));
     }
 
     protected function casts(): array

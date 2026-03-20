@@ -33,17 +33,57 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Imagen del comunicado <span class="text-gray-400 font-normal">(opcional, máx. 2 MB)</span></label>
+
+                {{-- Imagen actual --}}
                 @if($announcement->image_path)
-                <div class="mb-2 flex items-center gap-3">
-                    <img src="{{ $announcement->image_url }}" alt="Imagen actual" class="h-16 w-auto rounded-lg border border-gray-200 object-cover">
-                    <label class="flex items-center gap-1.5 text-xs text-red-600 cursor-pointer">
-                        <input type="checkbox" name="remove_image" value="1" class="rounded text-red-500">
-                        Eliminar imagen actual
-                    </label>
+                <div id="current-image-container" class="mb-4">
+                    <div class="relative inline-block">
+                        <img id="current-image" src="{{ $announcement->image_url }}" alt="Imagen actual" class="w-full max-w-md h-48 object-cover rounded-xl border-2 border-gray-200 shadow-lg">
+                        <div class="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-lg">
+                            <label class="flex items-center gap-1.5 text-xs text-red-600 cursor-pointer">
+                                <input type="checkbox" id="remove-current" name="remove_image" value="1" class="rounded text-red-500">
+                                <span class="bg-red-50 px-2 py-1 rounded font-medium">Eliminar</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 @endif
-                <input type="file" name="image" accept="image/jpg,image/jpeg,image/png,image/webp"
-                       class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer">
+
+                {{-- Vista previa de nueva imagen --}}
+                <div id="image-preview-container" class="hidden mb-4">
+                    <div class="relative inline-block">
+                        <img id="image-preview" class="w-full max-w-md h-48 object-cover rounded-xl border-2 border-gray-200 shadow-lg" alt="Vista previa">
+                        <button type="button" id="remove-image"
+                                class="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 hover:scale-110 shadow-lg">
+                            ×
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Input de archivo con área de arrastre --}}
+                <div class="relative">
+                    <input type="file" id="image-input" name="image" accept="image/jpg,image/jpeg,image/png,image/webp"
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+
+                    <div id="drop-zone" class="border-2 border-dashed border-gray-300 hover:border-primary-400 rounded-xl p-8 text-center transition-all duration-200 bg-gray-50 hover:bg-primary-50">
+                        <div class="flex flex-col items-center space-y-3">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-600">
+                                    @if($announcement->image_path)
+                                        Cambiar imagen actual
+                                    @else
+                                        Arrastra tu imagen aquí
+                                    @endif
+                                </p>
+                                <p class="text-xs text-gray-400">o <span class="text-primary-600 font-medium">haz clic para seleccionar</span></p>
+                                <p class="text-xs text-gray-400 mt-1">JPG, PNG, WEBP (máx. 2MB)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 @error('image') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
             </div>
 
@@ -84,4 +124,88 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.getElementById('image-input');
+    const dropZone = document.getElementById('drop-zone');
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImage = document.getElementById('image-preview');
+    const removeButton = document.getElementById('remove-image');
+    const currentImageContainer = document.getElementById('current-image-container');
+    const removeCurrentCheckbox = document.getElementById('remove-current');
+
+    // Función para mostrar vista previa
+    function showPreview(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+                dropZone.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Función para limpiar vista previa
+    function clearPreview() {
+        previewImage.src = '';
+        previewContainer.classList.add('hidden');
+        dropZone.style.display = 'block';
+        imageInput.value = '';
+    }
+
+    // Manejar selección de archivo
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            showPreview(file);
+        }
+    });
+
+    // Manejar arrastrar y soltar
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('border-primary-400', 'bg-primary-100');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-primary-400', 'bg-primary-100');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-primary-400', 'bg-primary-100');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            imageInput.files = files;
+            showPreview(files[0]);
+        }
+    });
+
+    // Botón para eliminar nueva imagen
+    if (removeButton) {
+        removeButton.addEventListener('click', function() {
+            clearPreview();
+        });
+    }
+
+    // Manejar eliminación de imagen actual
+    if (removeCurrentCheckbox && currentImageContainer) {
+        removeCurrentCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                currentImageContainer.style.opacity = '0.5';
+                currentImageContainer.style.filter = 'grayscale(100%)';
+            } else {
+                currentImageContainer.style.opacity = '1';
+                currentImageContainer.style.filter = 'none';
+            }
+        });
+    }
+});
+</script>
+
 @endsection

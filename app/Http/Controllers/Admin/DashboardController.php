@@ -28,6 +28,13 @@ class DashboardController extends Controller
             ];
         });
 
-        return view('admin.dashboard', compact('stats', 'activeSemester'));
+        // Obtener anuncios para el modal emergente
+        $latestAnnouncements = Announcement::published()
+            ->forRole('admin')
+            ->latest('published_at')
+            ->take(3)
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'activeSemester', 'latestAnnouncements'));
     }
 }
