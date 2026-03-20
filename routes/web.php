@@ -58,6 +58,10 @@ Route::middleware(['auth', 'role:admin'])
     Route::patch('users/{user}/toggle-status', [Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
     Route::resource('courses', Admin\CourseController::class);
+    Route::get('courses/{course}/materials/export-csv', [Admin\CourseController::class, 'exportMaterialsCsv'])
+        ->name('courses.materials.csv');
+    Route::get('courses/{course}/materials/print', [Admin\CourseController::class, 'printMaterials'])
+        ->name('courses.materials.print');
 
     Route::resource('programs', Admin\ProgramController::class);
 

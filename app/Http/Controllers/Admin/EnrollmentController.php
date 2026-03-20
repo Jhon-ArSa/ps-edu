@@ -11,7 +11,7 @@ class EnrollmentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Enrollment::with(['student', 'course.teacher'])
+        $query = Enrollment::with(['student.alumnoProfile', 'course.teacher'])
             ->latest('enrolled_at');
 
         if ($request->filled('course_id')) {

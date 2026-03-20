@@ -97,7 +97,8 @@
                         <tr class="border-b border-gray-100 bg-gray-50">
                             <th class="text-left text-xs font-bold text-gray-500 uppercase tracking-wider px-5 py-3.5">Alumno</th>
                             <th class="text-left text-xs font-bold text-gray-500 uppercase tracking-wider px-4 py-3.5">Curso</th>
-                            <th class="text-left text-xs font-bold text-gray-500 uppercase tracking-wider px-4 py-3.5 hidden md:table-cell">Docente</th>
+                            <th class="text-left text-xs font-bold text-gray-500 uppercase tracking-wider px-4 py-3.5 hidden lg:table-cell">Docente</th>
+                            <th class="text-left text-xs font-bold text-gray-500 uppercase tracking-wider px-4 py-3.5 hidden md:table-cell">Año de ingreso</th>
                             <th class="text-left text-xs font-bold text-gray-500 uppercase tracking-wider px-4 py-3.5 hidden lg:table-cell">Fecha Matrícula</th>
                             <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wider px-4 py-3.5">Estado</th>
                             <th class="text-right text-xs font-bold text-gray-500 uppercase tracking-wider px-5 py-3.5">Acciones</th>
@@ -140,10 +141,22 @@
                             </td>
 
                             {{-- Teacher --}}
-                            <td class="px-4 py-3.5 hidden md:table-cell">
+                            <td class="px-4 py-3.5 hidden lg:table-cell">
                                 <p class="text-sm text-gray-600 truncate max-w-36">
                                     {{ $enrollment->course?->teacher?->name ?? '—' }}
                                 </p>
+                            </td>
+
+                            {{-- Año de ingreso --}}
+                            <td class="px-4 py-3.5 hidden md:table-cell">
+                                @if($enrollment->student?->alumnoProfile?->promotion_year)
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200">
+                                        <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.7"/><path d="M16 2v4M8 2v4M3 10h18" stroke-width="1.7" stroke-linecap="round"/></svg>
+                                        <span class="text-sm font-bold text-indigo-700">{{ $enrollment->student->alumnoProfile->promotion_year }}</span>
+                                    </span>
+                                @else
+                                    <span class="text-xs text-gray-300">—</span>
+                                @endif
                             </td>
 
                             {{-- Enrolled at --}}
