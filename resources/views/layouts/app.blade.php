@@ -24,7 +24,7 @@
 
 {{-- ── SIDEBAR ─────────────────────────────────────────────────────────────── --}}
 <aside
-    class="fixed inset-y-0 left-0 z-50 sidebar-container flex flex-col md:translate-x-0 overflow-hidden"
+    class="fixed inset-y-0 left-0 z-50 sidebar-container flex flex-col md:translate-x-0 overflow-hidden no-print"
     :class="[
         sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0',
         sidebarCollapsed ? 'md:w-[72px]' : 'md:w-[270px]',
@@ -44,7 +44,7 @@
             </div>
             {{-- Institution text --}}
             <div class="overflow-hidden flex-1 whitespace-nowrap sidebar-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
-                <p class="text-gray-900 font-extrabold text-[13.5px] leading-tight truncate tracking-tight">
+                <p class="text-white font-extrabold text-[13.5px] leading-tight truncate tracking-tight">
                     {{ \App\Models\Setting::get('institution_name', config('app.name')) }}
                 </p>
                 <p class="text-primary-400 text-[10.5px] font-semibold truncate mt-0.5 tracking-wide uppercase">
@@ -52,7 +52,7 @@
                 </p>
             </div>
         </div>
-        <div class="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-gray-200/80 via-gray-200/40 to-transparent"></div>
+        <div class="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent"></div>
     </div>
 
     {{-- Navigation --}}
@@ -68,7 +68,7 @@
             </div>
             {{-- Collapsed: show a thin divider --}}
             <div class="sidebar-divider-hideable" :class="sidebarCollapsed && 'sidebar-show'">
-                <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
             </div>
             <x-sidebar-link route="admin.users.index" icon="users">Usuarios</x-sidebar-link>
             <x-sidebar-link route="admin.programs.index" icon="graduation">Programas</x-sidebar-link>
@@ -83,7 +83,7 @@
                 <div class="sidebar-section-line"></div>
             </div>
             <div class="sidebar-divider-hideable" :class="sidebarCollapsed && 'sidebar-show'">
-                <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
             </div>
             <x-sidebar-link route="notifications.index" icon="notification">Notificaciones</x-sidebar-link>
             <x-sidebar-link route="admin.settings" icon="cog">Configuración</x-sidebar-link>
@@ -96,7 +96,7 @@
                 <div class="sidebar-section-line"></div>
             </div>
             <div class="sidebar-divider-hideable" :class="sidebarCollapsed && 'sidebar-show'">
-                <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
             </div>
             <x-sidebar-link route="docente.courses.index" icon="book">Mis Cursos</x-sidebar-link>
             <x-sidebar-link route="docente.intranet" icon="newspaper">Intranet</x-sidebar-link>
@@ -106,7 +106,7 @@
                 <div class="sidebar-section-line"></div>
             </div>
             <div class="sidebar-divider-hideable" :class="sidebarCollapsed && 'sidebar-show'">
-                <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
             </div>
             <x-sidebar-link route="docente.escalafon.show" icon="id-card">Escalafón</x-sidebar-link>
             <x-sidebar-link route="notifications.index" icon="notification">Notificaciones</x-sidebar-link>
@@ -421,8 +421,11 @@
         </div>
     </header>
 
+    {{-- Content + Right Panel --}}
+    <div class="flex flex-1 min-h-0">
+
     {{-- Page Content --}}
-    <main class="flex-1 p-4 sm:p-6 lg:p-8">
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 overflow-x-hidden">
 
         {{-- Flash messages --}}
         @if(session('success'))
@@ -492,7 +495,82 @@
         @yield('content')
     </main>
 
-    <footer class="py-4 px-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white/50">
+    {{-- ── RIGHT PANEL ──────────────────────────────────────────────────────── --}}
+    <aside class="right-panel hidden xl:flex flex-col no-print p-4 gap-4">
+
+        {{-- Tarjeta de perfil --}}
+        <div class="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-2xl p-5 border border-gray-100/80 text-center">
+            <div class="w-16 h-16 rounded-full mx-auto mb-3 overflow-hidden ring-4 ring-primary-100/60">
+                @if(auth()->user()->avatar)
+                    <img src="{{ auth()->user()->avatar_url }}" class="w-full h-full object-cover">
+                @else
+                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xl font-bold">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                @endif
+            </div>
+            <p class="font-bold text-gray-800 text-sm leading-tight">{{ auth()->user()->name }}</p>
+            @php $roleLabel = match(auth()->user()->role) { 'admin' => 'Administrador', 'docente' => 'Docente', default => 'Estudiante' }; @endphp
+            <p class="text-xs text-primary-500 font-semibold mt-0.5">{{ $roleLabel }}</p>
+            <a href="{{ route('profile.edit') }}" class="mt-3 inline-flex items-center gap-1 text-xs text-gray-400 hover:text-primary-600 transition-colors font-medium">
+                Editar perfil
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+
+        {{-- Notificaciones recientes --}}
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Notificaciones</h4>
+                @if($unreadNotifCount > 0)
+                <span class="text-[10px] font-bold text-white bg-red-500 rounded-full px-1.5 py-0.5 leading-none">{{ $unreadNotifCount }}</span>
+                @endif
+            </div>
+            @if($recentNotifications->count() > 0)
+            <div class="space-y-2">
+                @foreach($recentNotifications->take(3) as $notif)
+                <a href="#"
+                   @click.prevent="axios.patch('{{ route('notifications.read', $notif->id) }}').then(() => { window.location.href = '{{ addslashes($notif->data['url'] ?? url('/')) }}' })"
+                   class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-colors {{ is_null($notif->read_at) ? 'bg-primary-50 border-primary-100 hover:border-primary-200' : 'bg-gray-50 border-gray-100 hover:border-gray-200' }}">
+                    <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 {{ is_null($notif->read_at) ? 'bg-primary-100' : 'bg-gray-100' }}">
+                        <svg class="w-3.5 h-3.5 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8a6 6 0 10-12 0c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.197 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.756-1.088-1.936C18.78 13.206 18 11.09 18 8z"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] font-semibold text-gray-700 leading-tight line-clamp-2">{{ $notif->data['title'] ?? 'Notificación' }}</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">{{ $notif->created_at->diffForHumans() }}</p>
+                    </div>
+                    @if(is_null($notif->read_at))
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0 mt-1"></span>
+                    @endif
+                </a>
+                @endforeach
+            </div>
+            <a href="{{ route('notifications.index') }}" class="block text-center text-[11px] text-primary-600 font-semibold mt-2.5 hover:text-primary-800 transition-colors">
+                Ver todas las notificaciones →
+            </a>
+            @else
+            <div class="text-center py-5 bg-gray-50 rounded-xl border border-gray-100">
+                <div class="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8a6 6 0 10-12 0c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.197 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.756-1.088-1.936C18.78 13.206 18 11.09 18 8z"/>
+                    </svg>
+                </div>
+                <p class="text-xs font-semibold text-gray-500">Todo al día</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">Sin notificaciones</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- Slot personalizable por vista --}}
+        @yield('right-panel')
+
+    </aside>
+
+    </div>{{-- /content-flex-wrapper --}}
+
+    <footer class="py-4 px-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white/50 no-print">
         © {{ date('Y') }} {{ \App\Models\Setting::get('institution_name', config('app.name')) }} — Sistema de Gestión Académica
     </footer>
 </div>

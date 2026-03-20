@@ -9,25 +9,42 @@
 @section('content')
 <div class="space-y-6">
 
-    {{-- Welcome banner --}}
-    <div class="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-2xl px-7 py-6 text-white shadow-xl shadow-primary-500/10 overflow-hidden animate-fade-in-up">
-        {{-- Decorative --}}
-        <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
-        <div class="absolute bottom-0 right-0 w-56 h-56 bg-primary-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    {{-- Welcome banner EduBook-style --}}
+    <div class="relative rounded-2xl overflow-hidden text-white shadow-2xl animate-fade-in-up"
+         style="background: linear-gradient(135deg, #0c1a3a 0%, #172554 45%, #1e3a8a 100%);">
+        {{-- Geometric shapes decoration --}}
+        <div class="absolute -top-8 -right-8 w-36 h-36 rounded-full" style="background: rgba(96,165,250,0.18);"></div>
+        <div class="absolute top-5 right-14 w-11 h-11 rounded-xl rotate-12" style="background: linear-gradient(135deg, #f59e0b, #f97316); opacity: 0.75;"></div>
+        <div class="absolute top-14 right-6 w-9 h-9" style="background: #ec4899; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); opacity: 0.65;"></div>
+        <div class="absolute top-3 right-36 w-7 h-7 rounded-full" style="background: #2dd4bf; opacity: 0.55;"></div>
+        <div class="absolute bottom-5 right-16 w-8 h-8 rounded-lg rotate-45" style="background: #818cf8; opacity: 0.45;"></div>
+        <div class="absolute -bottom-10 right-4 w-44 h-44 rounded-full" style="background: rgba(147,197,253,0.08);"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full" style="background: rgba(99,102,241,0.06);"></div>
 
-        <div class="relative flex items-center justify-between">
-            <div>
-                <p class="text-primary-200 text-sm font-medium">Bienvenido de vuelta,</p>
-                <h1 class="text-2xl font-extrabold mt-1 tracking-tight">{{ auth()->user()->name }}</h1>
-                <p class="text-primary-200/70 text-sm mt-1.5">
-                    {{ now()->isoFormat('dddd D [de] MMMM [de] YYYY') }}
-                </p>
-            </div>
-            <div class="hidden sm:flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 shadow-lg">
-                <svg class="w-8 h-8 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                          d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z"/>
-                </svg>
+        <div class="relative px-8 py-7">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="text-blue-300 text-xs font-semibold uppercase tracking-widest mb-1">Panel Administrativo</p>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Bienvenido, {{ explode(' ', auth()->user()->name)[0] }}</h1>
+                    <p class="text-blue-300/70 text-sm mt-1.5">
+                        {{ now()->isoFormat('dddd D [de] MMMM [de] YYYY') }}
+                    </p>
+                    <a href="{{ route('admin.users.index') }}"
+                       class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/12 hover:bg-white/20 backdrop-blur-sm rounded-xl text-sm font-semibold text-white border border-white/20 transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1z"/></svg>
+                        Gestionar usuarios
+                    </a>
+                </div>
+                <div class="hidden sm:flex flex-col gap-2 text-right flex-shrink-0">
+                    <div class="flex items-center justify-end gap-2 text-sm text-blue-200">
+                        <span class="font-bold text-white text-lg">{{ $stats['total_students'] }}</span>
+                        <span class="text-xs text-blue-300">alumnos</span>
+                    </div>
+                    <div class="flex items-center justify-end gap-2 text-sm text-blue-200">
+                        <span class="font-bold text-white text-lg">{{ $stats['active_courses'] }}</span>
+                        <span class="text-xs text-blue-300">cursos activos</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

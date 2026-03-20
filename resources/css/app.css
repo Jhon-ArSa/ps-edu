@@ -394,18 +394,18 @@
     background: transparent;
 }
 .sidebar-scroll::-webkit-scrollbar-thumb {
-    background: #e5e7eb;
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 999px;
 }
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-    background: #d1d5db;
+    background: rgba(255, 255, 255, 0.25);
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
 .sidebar-container {
-    background: #ffffff;
-    border-right: 1px solid #eef2f6;
-    box-shadow: 1px 0 12px rgba(0, 0, 0, 0.03);
+    background: #172554;
+    border-right: none;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.28);
 }
 
 /* Logo mark */
@@ -490,13 +490,13 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #b0b8c4;
+    color: rgba(255, 255, 255, 0.28);
     white-space: nowrap;
 }
 .sidebar-section-line {
     flex: 1;
     height: 1px;
-    background: #f1f5f9;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 /* ── Sidebar links ───────────────────────────────────────────────────────── */
@@ -509,27 +509,23 @@
     border-radius: 0.625rem;
     font-size: 13px;
     font-weight: 500;
-    color: #64748b;
+    color: rgba(255, 255, 255, 0.55);
     transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
 }
 
-/* Hover — subtle lift with left accent glow */
+/* Hover */
 .sidebar-link:hover {
-    background: linear-gradient(
-        90deg,
-        rgba(59, 130, 246, 0.04),
-        rgba(241, 245, 249, 0.8)
-    );
-    color: #1e293b;
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.92);
     transform: translateX(2px);
 }
 
 /* Active state */
 .sidebar-link.sidebar-link-active,
 .sidebar-link.sidebar-link-active:hover {
-    background: linear-gradient(135deg, #eff6ff, #dbeafe40);
-    color: var(--color-primary-700);
+    background: rgba(96, 165, 250, 0.18);
+    color: #ffffff;
     font-weight: 600;
     transform: none;
 }
@@ -553,8 +549,8 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--color-primary-500);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    background: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
     animation: pulse-dot 2s ease-in-out infinite;
 }
 @keyframes pulse-dot {
@@ -585,11 +581,11 @@
     flex-shrink: 0;
     transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
     background-color: transparent;
-    color: #94a3b8;
+    color: rgba(255, 255, 255, 0.4);
 }
 .sidebar-link:hover .sidebar-link-icon {
-    background-color: rgba(59, 130, 246, 0.08);
-    color: var(--color-primary-600);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #93c5fd;
     transform: scale(1.06);
 }
 
@@ -652,32 +648,32 @@
 /* Collapsed links — center icons, no translateX hover */
 .sidebar-link-collapsed:hover {
     transform: none;
-    background: rgba(59, 130, 246, 0.06);
+    background: rgba(255, 255, 255, 0.09);
 }
 .sidebar-link-collapsed .sidebar-link-icon {
     margin: 0 auto;
 }
 
-/* Logout link — subtle red accent */
+/* Logout link — red accent on dark sidebar */
 .sidebar-link-logout {
-    color: #b91c1c;
-    background: rgba(239, 68, 68, 0.04);
-    border: 1px solid rgba(239, 68, 68, 0.12);
+    color: rgba(252, 165, 165, 0.85);
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
 }
 .sidebar-link-logout .sidebar-link-icon {
-    color: #dc2626;
+    color: #fca5a5;
 }
 .sidebar-link-logout:hover {
-    background: rgba(239, 68, 68, 0.08);
-    border-color: rgba(239, 68, 68, 0.2);
-    color: #991b1b;
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #fecaca;
 }
 .sidebar-link-logout:hover .sidebar-link-icon {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
 }
 .sidebar-link-logout.sidebar-link-collapsed:hover {
-    background: rgba(239, 68, 68, 0.06);
+    background: rgba(239, 68, 68, 0.1);
 }
 
 .sidebar-link[title]:not([title=""]) {
@@ -706,6 +702,33 @@
 .sidebar-link[title]:not([title=""]):hover::after {
     opacity: 1;
     transform: translateY(-50%) translateX(0);
+}
+
+/* ── Right Panel ─────────────────────────────────────────────────────────── */
+.right-panel {
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+    background: #ffffff;
+    border-left: 1px solid #e5e7eb;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+.right-panel::-webkit-scrollbar {
+    width: 4px;
+}
+.right-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+.right-panel::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 999px;
+}
+.right-panel::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
 }
 
 /* ── Print ───────────────────────────────────────────────────────────────── */
