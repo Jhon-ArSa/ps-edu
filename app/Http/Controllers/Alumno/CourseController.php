@@ -10,6 +10,19 @@ use App\Models\Submission;
 
 class CourseController extends Controller
 {
+    public function index()
+    {
+        $user = auth()->user();
+
+        $enrollments = Enrollment::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->with(['course.teacher', 'course' => fn($q) => $q->withCount('weeks')])
+            ->latest()
+            ->get();
+
+        return view('alumno.courses.index', compact('enrollments'));
+    }
+
     public function show(Course $course)
     {
         $user = auth()->user();

@@ -2,13 +2,10 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class NewAnnouncementPublished extends Notification implements ShouldQueue
+class NewAnnouncementPublished extends Notification
 {
-    use Queueable;
 
     public function __construct(
         private readonly string $announcementTitle,

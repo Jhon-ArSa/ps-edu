@@ -71,8 +71,8 @@
                 @if($course->teacher)
                     &nbsp;·&nbsp; Docente: <strong>{{ $course->teacher->name }}</strong>
                 @endif
-                @if($course->semester)
-                    &nbsp;·&nbsp; Semestre: <strong>{{ $course->semester->name }}</strong>
+                @if($course->semesterPeriod)
+                    &nbsp;·&nbsp; Semestre: <strong>{{ $course->semesterPeriod->name }}</strong>
                 @endif
             </div>
         </div>
@@ -142,7 +142,7 @@
                     @foreach($items as $item)
                     @php
                         $score = $row['scores'][$item->id] ?? null;
-                        $norm  = $score !== null ? round(($score / $item->max_score) * 20, 1) : null;
+                        $norm  = $score !== null ? round((min((float) $score, (float) $item->max_score) / $item->max_score) * 20, 1) : null;
                         $sc = $norm === null ? 'score-none' : ($norm < 11 ? 'score-red' : ($norm < 14 ? 'score-amber' : 'score-green'));
                     @endphp
                     <td class="{{ $sc }}">{{ $norm !== null ? number_format($norm, 1) : '—' }}</td>

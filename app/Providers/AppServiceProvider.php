@@ -3,7 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Course;
+use App\Models\ForumTopic;
+use App\Models\Submission;
 use App\Policies\CoursePolicy;
+use App\Policies\ForumTopicPolicy;
+use App\Policies\SubmissionPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -21,11 +25,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Course::class, CoursePolicy::class);
+        Gate::policy(Submission::class, SubmissionPolicy::class);
+        Gate::policy(ForumTopic::class, ForumTopicPolicy::class);
         Paginator::useTailwind();
 
-        // Rate limiter para intentos de login: máximo 5 por minuto por email+IP
+        // Rate limiter para login: máximo 10 intentos en 5 minutos por email+IP (RNF-SEG-08)
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)
+            return Limit::perMinutes(5, 10)
                 ->by($request->input('email') . '|' . $request->ip());
         });
     }

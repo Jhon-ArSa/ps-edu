@@ -111,6 +111,11 @@ class EvaluationController extends Controller
 
         $evaluation->delete();
 
+        // Eliminar el ítem de la libreta de notas asociado a esta evaluación
+        GradeItem::where('type', GradeItem::TYPE_EVALUATION)
+            ->where('reference_id', $evaluation->id)
+            ->delete();
+
         return redirect()
             ->route('docente.courses.show', $course)
             ->with('success', 'Evaluación eliminada.');

@@ -15,17 +15,27 @@
     </div>
 
     @forelse($announcements as $ann)
-    <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        @if($ann->image_path)
+        <img src="{{ $ann->image_url }}" alt="{{ $ann->title }}" class="w-full h-48 object-cover">
+        @endif
+        <div class="p-6">
         <div class="flex items-start justify-between gap-4">
             <div class="flex-1">
-                <h2 class="text-base font-semibold text-gray-900 leading-tight">{{ $ann->title }}</h2>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h2 class="text-base font-semibold text-gray-900 leading-tight">{{ $ann->title }}</h2>
+                    @if($ann->published_at->gt(now()->subDays(3)))
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Nuevo</span>
+                    @endif
+                </div>
                 <p class="text-xs text-gray-400 mt-1">
                     Publicado {{ $ann->published_at->diffForHumans() }}
-                    @if($ann->author) · Por {{ $ann->author->name }} @endif
+                    @if($ann->author) &middot; Por {{ $ann->author->name }} @endif
                 </p>
             </div>
         </div>
         <div class="mt-4 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{ $ann->content }}</div>
+        </div>
     </div>
     @empty
     <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">

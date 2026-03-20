@@ -6,7 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Announcement extends Model
 {
-    protected $fillable = ['title', 'content', 'author_id', 'target_role', 'published_at'];
+    protected $fillable = ['title', 'content', 'author_id', 'target_role', 'published_at', 'image_path'];
+
+    // target_role: 'all' | 'docente' | 'alumno' | 'admin'
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+    }
 
     protected function casts(): array
     {

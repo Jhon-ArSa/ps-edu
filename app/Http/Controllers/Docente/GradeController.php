@@ -7,9 +7,11 @@ use App\Models\Course;
 use App\Models\Grade;
 use App\Models\GradeItem;
 use App\Models\User;
+use App\Notifications\GradeRecorded;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -147,6 +149,15 @@ class GradeController extends Controller
             ]
         );
 
+        // Notificar al alumno
+        $user->notify(new GradeRecorded(
+            itemName:   $gradeItem->name,
+            courseId:   $course->id,
+            courseName: $course->name,
+            score:      (float) $data['score'],
+            maxScore:   (float) $gradeItem->max_score,
+        ));
+
         // Calcular el promedio actualizado del alumno en este curso
         $average = $this->calcAverage($course, $user->id);
 
@@ -187,8 +198,8 @@ class GradeController extends Controller
             $grade = $grades->get($item->id);
             if (! $grade || $grade->score === null) continue;
 
-            // Normalizar a escala 0-20
-            $normalized = ($grade->score / $item->max_score) * 20.0;
+            // Normalizar a escala 0-20 (cap por si el máximo se redujo tras calificar)
+            $normalized = (min((float) $grade->score, (float) $item->max_score) / $item->max_score) * 20.0;
 
             if ($useWeighted && $item->weight > 0) {
                 $weightedSum += $normalized * $item->weight;
@@ -208,9 +219,75 @@ class GradeController extends Controller
 
     private function scoreColor(float $score, float $maxScore): string
     {
-        $normalized = ($score / $maxScore) * 20.0;
+        $normalized = (min($score, $maxScore) / $maxScore) * 20.0;
         if ($normalized < 11) return 'red';
         if ($normalized < 14) return 'amber';
         return 'green';
+    }
+
+    // ── Exportar libreta a CSV ───────────────────────────────────────────────
+
+    /**
+     * Descarga la libreta de notas del curso en formato CSV (RF-CAL-06).
+     */
+    public function exportCsv(Course $course): Response
+    {
+        $this->authorize('manage', $course);
+
+        $students = $course->students()
+            ->with('alumnoProfile')
+            ->orderBy('users.name')
+            ->get();
+
+        $items = $course->gradeItems()->get();
+
+        $gradesRaw = Grade::whereIn('grade_item_id', $items->pluck('id'))
+            ->whereIn('user_id', $students->pluck('id'))
+            ->get();
+
+        $gradesMap = [];
+        foreach ($gradesRaw as $grade) {
+            $gradesMap[$grade->grade_item_id][$grade->user_id] = $grade;
+        }
+
+        // Cabecera
+        $headers = ['Alumno', 'Código'];
+        foreach ($items as $item) {
+            $headers[] = $item->name . ' (' . $item->max_score . ')';
+        }
+        $headers[] = 'Promedio';
+
+        $rows = [$headers];
+
+        foreach ($students as $student) {
+            $row = [
+                $student->name,
+                $student->alumnoProfile->code ?? '—',
+            ];
+
+            foreach ($items as $item) {
+                $grade = $gradesMap[$item->id][$student->id] ?? null;
+                $row[] = $grade ? number_format($grade->score, 1) : '';
+            }
+
+            $average = $this->calcAverage($course, $student->id);
+            $row[]   = $average !== null ? number_format($average, 1) : '';
+
+            $rows[] = $row;
+        }
+
+        $csv = "\xEF\xBB\xBF"; // BOM UTF-8
+        foreach ($rows as $row) {
+            $csv .= implode(',', array_map(function ($cell) {
+                return '"' . str_replace('"', '""', (string) $cell) . '"';
+            }, $row)) . "\r\n";
+        }
+
+        $filename = 'notas_' . str($course->code)->slug() . '_' . now()->format('Ymd') . '.csv';
+
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }

@@ -3,9 +3,13 @@
 @section('title', 'Reporte — ' . $course->name)
 
 @section('breadcrumb')
+    @if(isset($routePrefix) && $routePrefix === 'admin.reports.course')
+    <a href="{{ route('admin.reports.index') }}" class="text-gray-400 hover:text-gray-600 text-sm transition-colors">Reportes</a>
+    @else
     <a href="{{ route('docente.courses.show', $course) }}" class="text-gray-400 hover:text-gray-600 text-sm transition-colors">
         {{ $course->name }}
     </a>
+    @endif
     <svg class="w-3.5 h-3.5 text-gray-300 mx-1.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
     </svg>
@@ -23,20 +27,20 @@
                 <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded-md">{{ $course->code }}</span>
                 <span class="mx-1.5 text-gray-300">·</span>
                 {{ $course->name }}
-                @if($course->semester)
-                    <span class="mx-1.5 text-gray-300">·</span>{{ $course->semester->name }}
+                @if($course->semesterPeriod)
+                    <span class="mx-1.5 text-gray-300">·</span>{{ $course->semesterPeriod->name }}
                 @endif
             </p>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-            <a href="{{ route('docente.reports.csv', $course) }}"
+            <a href="{{ route($routePrefix . '.csv', $course) }}"
                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                 <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
                 </svg>
                 Exportar CSV
             </a>
-            <a href="{{ route('docente.reports.print', $course) }}" target="_blank"
+            <a href="{{ route($routePrefix . '.print', $course) }}" target="_blank"
                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                 <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"/>
@@ -47,77 +51,94 @@
     </div>
 
     {{-- Stats cards del curso --}}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
 
-        <div class="stat-card">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-medium text-gray-500">Total Alumnos</span>
-                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/>
-                    </svg>
+        <div class="stat-card stat-card-blue group animate-fade-in-up delay-1">
+            <div class="p-5 pt-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total Alumnos</p>
+                        <p class="text-3xl font-extrabold text-gray-900 mt-2 tracking-tight">{{ $courseStats['total'] }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/25 group-hover:shadow-blue-500/40 group-hover:scale-110 transition-all duration-300">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/>
+                        </svg>
+                    </div>
                 </div>
             </div>
-            <p class="text-3xl font-extrabold text-gray-900 tabular-nums">{{ $courseStats['total'] }}</p>
         </div>
 
-        <div class="stat-card">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-medium text-gray-500">Calificados</span>
-                <div class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/>
-                    </svg>
+        <div class="stat-card stat-card-violet group animate-fade-in-up delay-2">
+            <div class="p-5 pt-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Calificados</p>
+                        <p class="text-3xl font-extrabold text-gray-900 mt-2 tracking-tight">{{ $courseStats['scored'] }}</p>
+                        <p class="text-xs text-gray-400 mt-1">de {{ $courseStats['total'] }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 group-hover:scale-110 transition-all duration-300">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/>
+                        </svg>
+                    </div>
                 </div>
             </div>
-            <p class="text-3xl font-extrabold text-gray-900 tabular-nums">{{ $courseStats['scored'] }}</p>
-            <p class="text-xs text-gray-400 mt-1">de {{ $courseStats['total'] }}</p>
         </div>
 
-        <div class="stat-card">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-medium text-gray-500">Aprobados</span>
-                <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+        <div class="stat-card stat-card-emerald group animate-fade-in-up delay-3">
+            <div class="p-5 pt-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Aprobados</p>
+                        <p class="text-3xl font-extrabold text-emerald-600 mt-2 tracking-tight">{{ $courseStats['approved'] }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 group-hover:scale-110 transition-all duration-300">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
                 </div>
             </div>
-            <p class="text-3xl font-extrabold text-emerald-600 tabular-nums">{{ $courseStats['approved'] }}</p>
         </div>
 
-        <div class="stat-card">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-medium text-gray-500">Desaprobados</span>
-                <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+        <div class="stat-card stat-card-red group animate-fade-in-up delay-4">
+            <div class="p-5 pt-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Desaprobados</p>
+                        <p class="text-3xl font-extrabold text-red-600 mt-2 tracking-tight">{{ $courseStats['failed'] }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-red-500/25 group-hover:shadow-red-500/40 group-hover:scale-110 transition-all duration-300">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
                 </div>
             </div>
-            <p class="text-3xl font-extrabold text-red-500 tabular-nums">{{ $courseStats['failed'] }}</p>
         </div>
 
-        <div class="stat-card">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-medium text-gray-500">Promedio</span>
-                @php
-                    $avg = $courseStats['average'];
-                    $iconColor = $avg === null ? 'text-gray-400' : ($avg < 11 ? 'text-red-500' : ($avg < 14 ? 'text-amber-500' : 'text-emerald-500'));
-                    $bgColor   = $avg === null ? 'bg-gray-100'  : ($avg < 11 ? 'bg-red-100'  : ($avg < 14 ? 'bg-amber-100'  : 'bg-emerald-100'));
-                @endphp
-                <div class="w-8 h-8 rounded-lg {{ $bgColor }} flex items-center justify-center">
-                    <svg class="w-4 h-4 {{ $iconColor }}" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
-                    </svg>
+        <div class="stat-card stat-card-amber group animate-fade-in-up delay-5">
+            <div class="p-5 pt-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Promedio</p>
+                        @php
+                            $avg = $courseStats['average'];
+                            $avgColor = $avg === null ? 'text-gray-300' : ($avg < 11 ? 'text-red-600' : ($avg < 14 ? 'text-amber-600' : 'text-emerald-600'));
+                        @endphp
+                        <p class="text-3xl font-extrabold {{ $avgColor }} mt-2 tracking-tight">{{ $avg !== null ? number_format($avg, 1) : '—' }}</p>
+                        @if($courseStats['approval_rate'] !== null)
+                            <p class="text-xs text-gray-400 mt-1">{{ $courseStats['approval_rate'] }}% aprobados</p>
+                        @endif
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/25 group-hover:shadow-amber-500/40 group-hover:scale-110 transition-all duration-300">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+                        </svg>
+                    </div>
                 </div>
             </div>
-            <p class="text-3xl font-extrabold tabular-nums {{ $avg === null ? 'text-gray-300' : ($avg < 11 ? 'text-red-600' : ($avg < 14 ? 'text-amber-600' : 'text-emerald-600')) }}">
-                {{ $avg !== null ? number_format($avg, 1) : '—' }}
-            </p>
-            @if($courseStats['approval_rate'] !== null)
-                <p class="text-xs text-gray-400 mt-1">{{ $courseStats['approval_rate'] }}% aprobados</p>
-            @endif
         </div>
 
     </div>
@@ -221,7 +242,7 @@
                         @foreach($items as $item)
                         @php
                             $score = $row['scores'][$item->id] ?? null;
-                            $norm  = $score !== null ? round(($score / $item->max_score) * 20, 1) : null;
+                            $norm  = $score !== null ? round((min((float) $score, (float) $item->max_score) / $item->max_score) * 20, 1) : null;
                             $cellBg = $norm === null ? ''
                                 : ($norm < 11  ? 'bg-red-50 text-red-700'
                                 : ($norm < 14  ? 'bg-amber-50 text-amber-700'

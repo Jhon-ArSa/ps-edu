@@ -4,11 +4,9 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Notification;
 
-class NewEvaluationAvailable extends Notification
+class CourseAssigned extends Notification
 {
-
     public function __construct(
-        private readonly string $evaluationTitle,
         private readonly int    $courseId,
         private readonly string $courseName,
     ) {}
@@ -21,10 +19,10 @@ class NewEvaluationAvailable extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'icon'      => 'evaluation',
-            'title'     => 'Nueva evaluación disponible',
-            'body'      => "Se habilitó la evaluación \"{$this->evaluationTitle}\" en el curso {$this->courseName}.",
-            'url'       => route('alumno.courses.show', $this->courseId),
+            'icon'  => 'course',
+            'title' => 'Nuevo curso asignado',
+            'body'  => "Fuiste asignado como docente del curso \"{$this->courseName}\".",
+            'url'   => route('docente.courses.show', $this->courseId),
         ];
     }
 }

@@ -11,6 +11,38 @@ use Illuminate\View\View;
 class GradeController extends Controller
 {
     /**
+     * Resumen de notas de todos los cursos matriculados.
+     */
+    public function index(): View
+    {
+        $user = auth()->user();
+
+        $enrollments = Enrollment::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->with('course.teacher')
+            ->latest()
+            ->get();
+
+        $courseData = $enrollments->map(function ($enrollment) use ($user) {
+            $course = $enrollment->course;
+            $items  = $course->gradeItems()->get();
+            $grades = Grade::whereIn('grade_item_id', $items->pluck('id'))
+                ->where('user_id', $user->id)
+                ->get()
+                ->keyBy('grade_item_id');
+
+            return [
+                'course'  => $course,
+                'items'   => $items->count(),
+                'graded'  => $grades->count(),
+                'average' => $this->calcAverage($items, $grades),
+            ];
+        });
+
+        return view('alumno.grades.overview', compact('courseData'));
+    }
+
+    /**
      * Muestra las calificaciones del alumno en un curso específico.
      */
     public function show(Course $course): View
@@ -52,7 +84,7 @@ class GradeController extends Controller
             $grade = $grades->get($item->id);
             if (! $grade || $grade->score === null) continue;
 
-            $normalized = ($grade->score / $item->max_score) * 20.0;
+            $normalized = (min((float) $grade->score, (float) $item->max_score) / $item->max_score) * 20.0;
 
             if ($useWeighted && $item->weight > 0) {
                 $weightedSum += $normalized * $item->weight;

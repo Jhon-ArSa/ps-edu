@@ -301,25 +301,46 @@ class ReportController extends Controller
             return ['average' => null, 'approval_rate' => null];
         }
 
-        $studentSet = $studentIds->flip(); // O(1) lookup
-        $normalized = collect();
-
-        foreach ($items as $item) {
-            $itemGrades = $gradesByItem[$item->id] ?? collect();
-            foreach ($itemGrades as $grade) {
-                if (! isset($studentSet[$grade->user_id])) continue;
-                if ($item->max_score <= 0) continue;
-                $normalized->push(($grade->score / $item->max_score) * 20.0);
+        // Construir mapa [item_id][user_id] => grade para lookups O(1)
+        $gradeMap = [];
+        foreach ($gradesByItem as $itemId => $itemGrades) {
+            foreach ($itemGrades as $g) {
+                $gradeMap[$itemId][$g->user_id] = $g;
             }
         }
 
-        if ($normalized->isEmpty()) {
+        $totalWeight     = $items->sum('weight');
+        $useWeighted     = $totalWeight > 0;
+        $studentAverages = [];
+
+        foreach ($studentIds as $studentId) {
+            $wSum = 0.0; $wW = 0.0; $sSum = 0.0; $sC = 0;
+
+            foreach ($items as $item) {
+                if ($item->max_score <= 0) continue;
+                $grade = $gradeMap[$item->id][$studentId] ?? null;
+                if (! $grade || $grade->score === null) continue;
+
+                // Cap en max_score para evitar promedios > 20 si el máximo fue reducido
+                $norm = (min((float) $grade->score, (float) $item->max_score) / $item->max_score) * 20.0;
+                if ($useWeighted && $item->weight > 0) { $wSum += $norm * $item->weight; $wW += $item->weight; }
+                $sSum += $norm; $sC++;
+            }
+
+            $avg = null;
+            if ($useWeighted && $wW > 0) $avg = $wSum / $wW;
+            elseif ($sC > 0)             $avg = $sSum / $sC;
+
+            if ($avg !== null) $studentAverages[] = $avg;
+        }
+
+        if (empty($studentAverages)) {
             return ['average' => null, 'approval_rate' => null];
         }
 
-        $avg          = round($normalized->avg(), 1);
-        $approvedCount = $normalized->filter(fn ($s) => $s >= 11)->count();
-        $approvalRate  = round($approvedCount / $normalized->count() * 100);
+        $avg           = round(array_sum($studentAverages) / count($studentAverages), 1);
+        $approvedCount = count(array_filter($studentAverages, fn ($a) => $a >= 11));
+        $approvalRate  = round($approvedCount / count($studentAverages) * 100);
 
         return ['average' => $avg, 'approval_rate' => $approvalRate];
     }
@@ -329,7 +350,7 @@ class ReportController extends Controller
      */
     private function csvResponse(string $filename, array $rows): Response
     {
-        $csv = '';
+        $csv = "\xEF\xBB\xBF"; // BOM para compatibilidad con Excel
         foreach ($rows as $row) {
             $csv .= implode(',', array_map(function ($cell) {
                 $cell = str_replace('"', '""', (string) $cell);

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Docente;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\Grade;
 use App\Models\Submission;
 use App\Models\Task;
+use App\Notifications\TaskGraded;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
@@ -65,6 +67,18 @@ class SubmissionController extends Controller
             'graded_at' => now(),
             'graded_by' => auth()->id(),
         ]);
+
+        // Propagar la nota a la libreta de calificaciones
+        Grade::recordFromSubmission($submission->fresh());
+
+        // Notificar al alumno
+        $submission->student->notify(new TaskGraded(
+            taskTitle:  $task->title,
+            courseId:   $course->id,
+            courseName: $course->name,
+            score:      (float) $request->score,
+            maxScore:   (float) $task->max_score,
+        ));
 
         return back()->with('success', 'Entrega de ' . $submission->student->name . ' calificada con ' . $request->score . '/' . $task->max_score . '.');
     }

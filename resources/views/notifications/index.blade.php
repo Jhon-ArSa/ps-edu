@@ -24,7 +24,7 @@
             </p>
         </div>
 
-        @if(auth()->user()->unreadNotifications()->count() > 0)
+        @if($unread > 0)
             <form action="{{ route('notifications.read-all') }}" method="POST">
                 @csrf @method('PATCH')
                 <button type="submit" class="btn-secondary btn-sm gap-1.5">
@@ -72,7 +72,12 @@
                                     <path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.435 5.093A7.001 7.001 0 0111 4.176V5.882L5.435 5.093z"/>
                                 </svg>
                                 @break
-                            @default
+                            @case('course')
+                                <svg class="w-5 h-5 {{ $isUnread ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 3L1 9l11 6 11-6-11-6z"/>
+                                    <path d="M5 12v5a7 7 0 0014 0v-5"/>
+                                </svg>
+                                @break
                                 <svg class="w-5 h-5 {{ $isUnread ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8a6 6 0 10-12 0c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.197 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.756-1.088-1.936C18.78 13.206 18 11.09 18 8z"/>
                                 </svg>

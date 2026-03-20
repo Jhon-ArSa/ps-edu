@@ -273,6 +273,16 @@
         background: rgba(249, 115, 22, 0.15);
     }
 
+    .stat-card-red::before {
+        @apply bg-gradient-to-r from-red-500 to-red-400;
+    }
+    .stat-card-red:hover {
+        @apply border-red-200;
+    }
+    .stat-card-red::after {
+        background: rgba(239, 68, 68, 0.15);
+    }
+
     /* Course card — clickable list item with left accent */
     .course-card {
         @apply bg-white rounded-2xl border border-gray-200/60 relative overflow-hidden transition-all duration-300 block;
