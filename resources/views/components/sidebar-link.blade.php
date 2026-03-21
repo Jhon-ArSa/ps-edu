@@ -57,8 +57,8 @@
                 @break
             @case('support')
                 <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 002 2zM20 16.8V12c0-3.7-2.5-6.8-6-7.7V3.5C14 2.7 13.1 2 12 2s-2 .7-2 1.5v.8C6.5 5.2 4 8.3 4 12v4.8L2 18v1h20v-1l-2-1.2z"/>
-                    <path d="M8 12a4 4 0 018 0"/>
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/>
                 </svg>
                 @break
             @case('calendar')

@@ -4,18 +4,43 @@ namespace App\Http\Controllers\Docente;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $courses = auth()->user()->coursesTaught()
+        $query = auth()->user()->coursesTaught()
+            ->with('programBelongs', 'semesterPeriod')
             ->withCount(['enrollments as active_students' => fn($q) => $q->where('status', 'active')])
             ->withCount('weeks')
-            ->latest()
-            ->paginate(12);
+            ->latest();
 
-        return view('docente.courses.index', compact('courses'));
+        // Filtro por programa
+        if ($request->filled('program_id')) {
+            $query->where('program_id', $request->program_id);
+        }
+
+        $allCourses = $query->get();
+
+        // Agrupar todos los cursos por programa para mostrar organizado
+        $coursesByProgram = $allCourses->groupBy(function ($course) {
+            return $course->programBelongs?->id ?? 0;
+        })->map(function ($programCourses, $programId) {
+            $program = $programCourses->first()->programBelongs;
+            return [
+                'program' => $program,
+                'program_name' => $program?->name ?? 'Sin programa asignado',
+                'program_code' => $program?->code ?? null,
+                'degree_type' => $program?->degree_type_label ?? null,
+                'courses' => $programCourses,
+            ];
+        })->sortBy('program_name')->values();
+
+        // Obtener lista de programas para el filtro
+        $programs = $allCourses->pluck('programBelongs')->filter()->unique('id')->sortBy('name')->values();
+
+        return view('docente.courses.index', compact('coursesByProgram', 'programs', 'allCourses'));
     }
 
     public function show(Course $course)

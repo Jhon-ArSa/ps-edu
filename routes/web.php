@@ -244,6 +244,10 @@ Route::middleware(['auth', 'role:alumno'])
             'announcements' => Announcement::published()->forRole('alumno')->latest('published_at')->paginate(10),
         ]);
     })->name('intranet');
+
+    // Soporte técnico
+    Route::get('/soporte',  [Alumno\SupportController::class, 'index'])->name('soporte');
+    Route::post('/soporte', [Alumno\SupportController::class, 'send'])->name('soporte.send');
 });
 
 // ── FORO — RESPUESTAS (todos los roles autenticados) ─────────────────────────

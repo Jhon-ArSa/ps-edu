@@ -5,8 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Enrollment;
-use App\Models\Grade;
-use App\Models\GradeItem;
+use App\Models\Program;
 use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -17,8 +16,7 @@ use Illuminate\View\View;
 class ReportController extends Controller
 {
     /**
-     * Dashboard general de reportes del semestre seleccionado.
-     * Optimizado: consultas en bulk (1 query por tabla, no 1 por curso).
+     * Dashboard de reportes con filtros multi-select por semestre, programas y cursos.
      */
     public function index(Request $request): View
     {
@@ -26,11 +24,25 @@ class ReportController extends Controller
             ->orderByRaw("FIELD(period,'II','I')")
             ->get();
 
+        $programs = Program::orderBy('name')->get();
+
         $activeSemester = Semester::getActive();
         $semesterId     = $request->input('semester_id', $activeSemester?->id);
         $semester       = $semesterId ? Semester::find($semesterId) : null;
 
-        // ── Estadísticas globales (4 queries simples) ─────────────────────
+        // Filtros multi-select (arrays)
+        $selectedProgramIds = $request->input('program_ids', []);
+        $selectedCourseIds  = $request->input('course_ids', []);
+
+        // Normalizar a arrays
+        if (!is_array($selectedProgramIds)) {
+            $selectedProgramIds = $selectedProgramIds ? explode(',', $selectedProgramIds) : [];
+        }
+        if (!is_array($selectedCourseIds)) {
+            $selectedCourseIds = $selectedCourseIds ? explode(',', $selectedCourseIds) : [];
+        }
+
+        // ── Estadísticas globales ─────────────────────────────────────────
         $globalStats = [
             'total_students'     => User::where('role', 'alumno')->where('status', true)->count(),
             'total_teachers'     => User::where('role', 'docente')->where('status', true)->count(),
@@ -40,16 +52,32 @@ class ReportController extends Controller
 
         $semesterStats = null;
         $courseReports = collect();
+        $programReports = collect();
+        $chartData = null;
+        $availableCourses = collect();
 
         if ($semester) {
-            $courses    = Course::where('semester_id', $semester->id)
-                ->with('teacher')
-                ->get();
-            $courseIds  = $courses->pluck('id')->toArray();
+            // Consulta base de cursos del semestre
+            $coursesQuery = Course::where('semester_id', $semester->id)
+                ->with('teacher', 'programBelongs');
 
-            // ── Bulk queries (1 por tabla) ────────────────────────────────
+            // Cargar todos los cursos del semestre para el selector
+            $availableCourses = (clone $coursesQuery)->orderBy('name')->get();
 
-            // Alumnos activos por curso
+            // Filtrar por programas seleccionados
+            if (!empty($selectedProgramIds)) {
+                $coursesQuery->whereIn('program_id', $selectedProgramIds);
+            }
+
+            // Filtrar por cursos específicos seleccionados
+            if (!empty($selectedCourseIds)) {
+                $coursesQuery->whereIn('id', $selectedCourseIds);
+            }
+
+            $courses   = $coursesQuery->orderBy('name')->get();
+            $courseIds = $courses->pluck('id')->toArray();
+
+            // ── Bulk queries ────────────────────────────────────────────────
             $studentsByCourse = DB::table('enrollments')
                 ->whereIn('course_id', $courseIds)
                 ->where('status', 'active')
@@ -57,14 +85,12 @@ class ReportController extends Controller
                 ->groupBy('course_id')
                 ->pluck('cnt', 'course_id');
 
-            // Semanas por curso
             $weeksByCourse = DB::table('weeks')
                 ->whereIn('course_id', $courseIds)
                 ->selectRaw('course_id, count(*) as cnt')
                 ->groupBy('course_id')
                 ->pluck('cnt', 'course_id');
 
-            // Materiales por curso (join weeks)
             $materialsByCourse = DB::table('materials')
                 ->join('weeks', 'weeks.id', '=', 'materials.week_id')
                 ->whereIn('weeks.course_id', $courseIds)
@@ -72,7 +98,6 @@ class ReportController extends Controller
                 ->groupBy('weeks.course_id')
                 ->pluck('cnt', 'course_id');
 
-            // Tareas por curso (join weeks)
             $tasksByCourse = DB::table('tasks')
                 ->join('weeks', 'weeks.id', '=', 'tasks.week_id')
                 ->whereIn('weeks.course_id', $courseIds)
@@ -80,49 +105,39 @@ class ReportController extends Controller
                 ->groupBy('weeks.course_id')
                 ->pluck('cnt', 'course_id');
 
-            // Grade items agrupados por curso
-            $itemsByCourse = GradeItem::whereIn('course_id', $courseIds)
-                ->get()
-                ->groupBy('course_id');
-
-            // Todos los student_ids activos por curso (para grades)
-            $enrollmentsByCourse = DB::table('enrollments')
-                ->whereIn('course_id', $courseIds)
-                ->where('status', 'active')
-                ->select('course_id', 'user_id')
-                ->get()
-                ->groupBy('course_id');
-
-            // Todas las notas de todos los ítems de todos los cursos
-            $allItemIds = $itemsByCourse->flatten()->pluck('id');
-            $allGradesByItem = $allItemIds->isNotEmpty()
-                ? Grade::whereIn('grade_item_id', $allItemIds)->whereNotNull('score')->get()->groupBy('grade_item_id')
-                : collect();
-
-            // ── Construir reporte por curso (solo aritmética en PHP) ──────
+            // ── Construir reporte por curso ──────────────────────────────────
             $courseReports = $courses->map(function (Course $course) use (
-                $studentsByCourse, $weeksByCourse, $materialsByCourse,
-                $tasksByCourse, $itemsByCourse, $enrollmentsByCourse, $allGradesByItem
+                $studentsByCourse, $weeksByCourse, $materialsByCourse, $tasksByCourse
             ) {
-                $id             = $course->id;
-                $activeStudents = (int) ($studentsByCourse[$id] ?? 0);
-                $items          = $itemsByCourse[$id] ?? collect();
-                $studentIds     = ($enrollmentsByCourse[$id] ?? collect())->pluck('user_id');
-
-                // Calcular promedio usando notas ya cargadas en memoria
-                $avgData = $this->courseAverageFromMemory($items, $studentIds, $allGradesByItem);
+                $id = $course->id;
 
                 return [
                     'course'          => $course,
-                    'active_students' => $activeStudents,
+                    'program'         => $course->programBelongs,
+                    'active_students' => (int) ($studentsByCourse[$id] ?? 0),
                     'weeks'           => (int) ($weeksByCourse[$id] ?? 0),
                     'materials'       => (int) ($materialsByCourse[$id] ?? 0),
                     'tasks'           => (int) ($tasksByCourse[$id] ?? 0),
-                    'grade_items'     => $items->count(),
-                    'average'         => $avgData['average'],
-                    'approval_rate'   => $avgData['approval_rate'],
                 ];
             });
+
+            // ── Agrupar reportes por programa ────────────────────────────────
+            $programReports = $courseReports->groupBy(function ($report) {
+                return $report['program']?->id ?? 0;
+            })->map(function ($programCourses, $progId) {
+                $program = $programCourses->first()['program'];
+
+                return [
+                    'program' => $program,
+                    'program_name' => $program?->name ?? 'Sin programa',
+                    'program_code' => $program?->code ?? null,
+                    'courses_count' => $programCourses->count(),
+                    'total_students' => $programCourses->sum('active_students'),
+                    'total_materials' => $programCourses->sum('materials'),
+                    'total_tasks' => $programCourses->sum('tasks'),
+                    'courses' => $programCourses,
+                ];
+            })->sortBy('program_name')->values();
 
             $semesterStats = [
                 'courses'     => $courses->count(),
@@ -130,28 +145,94 @@ class ReportController extends Controller
                 'enrollments' => $studentsByCourse->sum(),
                 'materials'   => $courseReports->sum('materials'),
                 'tasks'       => $courseReports->sum('tasks'),
+                'programs'    => $programReports->count(),
+            ];
+
+            // ── Datos para gráficos (sin notas) ──────────────────────────────
+            $chartData = [
+                'coursesByProgram' => $programReports->map(fn($p) => [
+                    'name' => $p['program_code'] ?? 'Sin prog.',
+                    'value' => $p['courses_count'],
+                ])->values(),
+                'studentsByProgram' => $programReports->map(fn($p) => [
+                    'name' => $p['program_code'] ?? 'Sin prog.',
+                    'value' => $p['total_students'],
+                ])->values(),
+                'materialsByProgram' => $programReports->map(fn($p) => [
+                    'name' => $p['program_code'] ?? 'Sin prog.',
+                    'value' => $p['total_materials'],
+                ])->values(),
+                'topCoursesByStudents' => $courseReports->sortByDesc('active_students')->take(5)->map(fn($c) => [
+                    'name' => \Str::limit($c['course']->name, 20),
+                    'value' => $c['active_students'],
+                ])->values(),
             ];
         }
 
+        // Programas seleccionados para mostrar en la UI
+        $selectedPrograms = !empty($selectedProgramIds)
+            ? Program::whereIn('id', $selectedProgramIds)->get()
+            : collect();
+
+        // Cursos seleccionados para mostrar en la UI
+        $selectedCourses = !empty($selectedCourseIds)
+            ? Course::whereIn('id', $selectedCourseIds)->get()
+            : collect();
+
+        // Datos simplificados de cursos para el filtro JavaScript
+        $coursesForFilter = $availableCourses->map(function ($c) {
+            return [
+                'id' => $c->id,
+                'name' => $c->name,
+                'code' => $c->code,
+                'program_id' => $c->program_id,
+                'program_code' => $c->programBelongs?->code ?? null,
+            ];
+        })->values()->toArray();
+
         return view('admin.reports.index', compact(
-            'semesters', 'semester', 'globalStats', 'semesterStats', 'courseReports'
+            'semesters', 'programs', 'semester',
+            'selectedProgramIds', 'selectedCourseIds',
+            'selectedPrograms', 'selectedCourses',
+            'availableCourses', 'coursesForFilter',
+            'globalStats', 'semesterStats', 'courseReports', 'programReports', 'chartData'
         ));
     }
 
     /**
-     * Vista limpia para imprimir / exportar a PDF.
-     * Misma lógica bulk que index().
+     * Vista para imprimir / exportar a PDF (respeta filtros).
      */
     public function print(Request $request): View
     {
-        $semesters      = Semester::orderByDesc('year')->orderByRaw("FIELD(period,'II','I')")->get();
         $activeSemester = Semester::getActive();
         $semesterId     = $request->input('semester_id', $activeSemester?->id);
         $semester       = $semesterId ? Semester::find($semesterId) : null;
+
+        $selectedProgramIds = $request->input('program_ids', []);
+        $selectedCourseIds  = $request->input('course_ids', []);
+
+        if (!is_array($selectedProgramIds)) {
+            $selectedProgramIds = $selectedProgramIds ? explode(',', $selectedProgramIds) : [];
+        }
+        if (!is_array($selectedCourseIds)) {
+            $selectedCourseIds = $selectedCourseIds ? explode(',', $selectedCourseIds) : [];
+        }
+
         $courseReports  = collect();
+        $programReports = collect();
 
         if ($semester) {
-            $courses   = Course::where('semester_id', $semester->id)->with('teacher')->get();
+            $coursesQuery = Course::where('semester_id', $semester->id)
+                ->with('teacher', 'programBelongs');
+
+            if (!empty($selectedProgramIds)) {
+                $coursesQuery->whereIn('program_id', $selectedProgramIds);
+            }
+            if (!empty($selectedCourseIds)) {
+                $coursesQuery->whereIn('id', $selectedCourseIds);
+            }
+
+            $courses   = $coursesQuery->orderBy('name')->get();
             $courseIds = $courses->pluck('id')->toArray();
 
             $studentsByCourse = DB::table('enrollments')
@@ -176,65 +257,86 @@ class ReportController extends Controller
                 ->selectRaw('weeks.course_id, count(*) as cnt')->groupBy('weeks.course_id')
                 ->pluck('cnt', 'course_id');
 
-            $itemsByCourse = GradeItem::whereIn('course_id', $courseIds)->get()->groupBy('course_id');
-
-            $enrollmentsByCourse = DB::table('enrollments')
-                ->whereIn('course_id', $courseIds)->where('status', 'active')
-                ->select('course_id', 'user_id')->get()->groupBy('course_id');
-
-            $allItemIds = $itemsByCourse->flatten()->pluck('id');
-            $allGradesByItem = $allItemIds->isNotEmpty()
-                ? Grade::whereIn('grade_item_id', $allItemIds)->whereNotNull('score')->get()->groupBy('grade_item_id')
-                : collect();
-
             $courseReports = $courses->map(function (Course $course) use (
-                $studentsByCourse, $weeksByCourse, $materialsByCourse, $tasksByCourse,
-                $itemsByCourse, $enrollmentsByCourse, $allGradesByItem
+                $studentsByCourse, $weeksByCourse, $materialsByCourse, $tasksByCourse
             ) {
-                $id         = $course->id;
-                $items      = $itemsByCourse[$id] ?? collect();
-                $studentIds = ($enrollmentsByCourse[$id] ?? collect())->pluck('user_id');
-                $avgData    = $this->courseAverageFromMemory($items, $studentIds, $allGradesByItem);
-
+                $id = $course->id;
                 return [
                     'course'          => $course,
+                    'program'         => $course->programBelongs,
                     'active_students' => (int) ($studentsByCourse[$id] ?? 0),
                     'weeks'           => (int) ($weeksByCourse[$id] ?? 0),
                     'materials'       => (int) ($materialsByCourse[$id] ?? 0),
                     'tasks'           => (int) ($tasksByCourse[$id] ?? 0),
-                    'grade_items'     => $items->count(),
-                    'average'         => $avgData['average'],
-                    'approval_rate'   => $avgData['approval_rate'],
                 ];
             });
+
+            $programReports = $courseReports->groupBy(function ($report) {
+                return $report['program']?->id ?? 0;
+            })->map(function ($programCourses, $progId) {
+                $program = $programCourses->first()['program'];
+                return [
+                    'program' => $program,
+                    'program_name' => $program?->name ?? 'Sin programa',
+                    'program_code' => $program?->code ?? null,
+                    'courses' => $programCourses,
+                ];
+            })->sortBy('program_name')->values();
         }
 
-        return view('admin.reports.print', compact('semester', 'courseReports'));
+        $selectedPrograms = !empty($selectedProgramIds)
+            ? Program::whereIn('id', $selectedProgramIds)->get()
+            : collect();
+
+        return view('admin.reports.print', compact(
+            'semester', 'courseReports', 'programReports', 'selectedPrograms'
+        ));
     }
 
     /**
-     * Exporta el reporte del semestre como CSV.
+     * Exporta el reporte como CSV (respeta filtros).
      */
     public function exportCsv(Request $request): Response
     {
         $activeSemester = Semester::getActive();
         $semesterId     = $request->input('semester_id', $activeSemester?->id);
         $semester       = $semesterId ? Semester::find($semesterId) : null;
-        $filename       = 'reporte_' . ($semester ? str($semester->name)->slug() : 'general') . '_' . now()->format('Ymd') . '.csv';
+
+        $selectedProgramIds = $request->input('program_ids', []);
+        $selectedCourseIds  = $request->input('course_ids', []);
+
+        if (!is_array($selectedProgramIds)) {
+            $selectedProgramIds = $selectedProgramIds ? explode(',', $selectedProgramIds) : [];
+        }
+        if (!is_array($selectedCourseIds)) {
+            $selectedCourseIds = $selectedCourseIds ? explode(',', $selectedCourseIds) : [];
+        }
+
+        $filename = 'reporte_' . ($semester ? str($semester->name)->slug() : 'general') . '_' . now()->format('Ymd') . '.csv';
 
         $rows   = [];
-        $rows[] = ['Curso', 'Código', 'Docente', 'Alumnos', 'Semanas', 'Materiales', 'Tareas', 'Ítems Notas', 'Promedio', 'Aprobados %'];
+        $rows[] = ['Programa', 'Curso', 'Código', 'Docente', 'Alumnos', 'Semanas', 'Materiales', 'Tareas'];
 
         if ($semester) {
-            $courses   = Course::where('semester_id', $semester->id)->with('teacher')->get();
+            $coursesQuery = Course::where('semester_id', $semester->id)
+                ->with('teacher', 'programBelongs');
+
+            if (!empty($selectedProgramIds)) {
+                $coursesQuery->whereIn('program_id', $selectedProgramIds);
+            }
+            if (!empty($selectedCourseIds)) {
+                $coursesQuery->whereIn('id', $selectedCourseIds);
+            }
+
+            $courses   = $coursesQuery->orderBy('name')->get();
             $courseIds = $courses->pluck('id')->toArray();
 
-            $studentsByCourse  = DB::table('enrollments')
+            $studentsByCourse = DB::table('enrollments')
                 ->whereIn('course_id', $courseIds)->where('status', 'active')
                 ->selectRaw('course_id, count(*) as cnt')->groupBy('course_id')
                 ->pluck('cnt', 'course_id');
 
-            $weeksByCourse     = DB::table('weeks')
+            $weeksByCourse = DB::table('weeks')
                 ->whereIn('course_id', $courseIds)
                 ->selectRaw('course_id, count(*) as cnt')->groupBy('course_id')
                 ->pluck('cnt', 'course_id');
@@ -245,29 +347,16 @@ class ReportController extends Controller
                 ->selectRaw('weeks.course_id, count(*) as cnt')->groupBy('weeks.course_id')
                 ->pluck('cnt', 'course_id');
 
-            $tasksByCourse     = DB::table('tasks')
+            $tasksByCourse = DB::table('tasks')
                 ->join('weeks', 'weeks.id', '=', 'tasks.week_id')
                 ->whereIn('weeks.course_id', $courseIds)
                 ->selectRaw('weeks.course_id, count(*) as cnt')->groupBy('weeks.course_id')
                 ->pluck('cnt', 'course_id');
 
-            $itemsByCourse     = GradeItem::whereIn('course_id', $courseIds)->get()->groupBy('course_id');
-            $enrollmentsByCourse = DB::table('enrollments')
-                ->whereIn('course_id', $courseIds)->where('status', 'active')
-                ->select('course_id', 'user_id')->get()->groupBy('course_id');
-
-            $allItemIds = $itemsByCourse->flatten()->pluck('id');
-            $allGradesByItem = $allItemIds->isNotEmpty()
-                ? Grade::whereIn('grade_item_id', $allItemIds)->whereNotNull('score')->get()->groupBy('grade_item_id')
-                : collect();
-
             foreach ($courses as $course) {
-                $id         = $course->id;
-                $items      = $itemsByCourse[$id] ?? collect();
-                $studentIds = ($enrollmentsByCourse[$id] ?? collect())->pluck('user_id');
-                $avg        = $this->courseAverageFromMemory($items, $studentIds, $allGradesByItem);
-
+                $id = $course->id;
                 $rows[] = [
+                    $course->programBelongs?->name ?? 'Sin programa',
                     $course->name,
                     $course->code,
                     $course->teacher?->name ?? '—',
@@ -275,74 +364,11 @@ class ReportController extends Controller
                     (int) ($weeksByCourse[$id] ?? 0),
                     (int) ($materialsByCourse[$id] ?? 0),
                     (int) ($tasksByCourse[$id] ?? 0),
-                    $items->count(),
-                    $avg['average'] !== null ? number_format($avg['average'], 1) : '—',
-                    $avg['approval_rate'] !== null ? $avg['approval_rate'] . '%' : '—',
                 ];
             }
         }
 
         return $this->csvResponse($filename, $rows);
-    }
-
-    // ── Helpers privados ─────────────────────────────────────────────────────
-
-    /**
-     * Calcula promedio y tasa de aprobados usando datos ya cargados en memoria.
-     * No ejecuta ninguna query adicional.
-     *
-     * @param  \Illuminate\Support\Collection  $items          GradeItems del curso
-     * @param  \Illuminate\Support\Collection  $studentIds     IDs de alumnos activos
-     * @param  \Illuminate\Support\Collection  $gradesByItem   Grade::groupBy('grade_item_id') precargado
-     */
-    private function courseAverageFromMemory($items, $studentIds, $gradesByItem): array
-    {
-        if ($items->isEmpty() || $studentIds->isEmpty()) {
-            return ['average' => null, 'approval_rate' => null];
-        }
-
-        // Construir mapa [item_id][user_id] => grade para lookups O(1)
-        $gradeMap = [];
-        foreach ($gradesByItem as $itemId => $itemGrades) {
-            foreach ($itemGrades as $g) {
-                $gradeMap[$itemId][$g->user_id] = $g;
-            }
-        }
-
-        $totalWeight     = $items->sum('weight');
-        $useWeighted     = $totalWeight > 0;
-        $studentAverages = [];
-
-        foreach ($studentIds as $studentId) {
-            $wSum = 0.0; $wW = 0.0; $sSum = 0.0; $sC = 0;
-
-            foreach ($items as $item) {
-                if ($item->max_score <= 0) continue;
-                $grade = $gradeMap[$item->id][$studentId] ?? null;
-                if (! $grade || $grade->score === null) continue;
-
-                // Cap en max_score para evitar promedios > 20 si el máximo fue reducido
-                $norm = (min((float) $grade->score, (float) $item->max_score) / $item->max_score) * 20.0;
-                if ($useWeighted && $item->weight > 0) { $wSum += $norm * $item->weight; $wW += $item->weight; }
-                $sSum += $norm; $sC++;
-            }
-
-            $avg = null;
-            if ($useWeighted && $wW > 0) $avg = $wSum / $wW;
-            elseif ($sC > 0)             $avg = $sSum / $sC;
-
-            if ($avg !== null) $studentAverages[] = $avg;
-        }
-
-        if (empty($studentAverages)) {
-            return ['average' => null, 'approval_rate' => null];
-        }
-
-        $avg           = round(array_sum($studentAverages) / count($studentAverages), 1);
-        $approvedCount = count(array_filter($studentAverages, fn ($a) => $a >= 11));
-        $approvalRate  = round($approvedCount / count($studentAverages) * 100);
-
-        return ['average' => $avg, 'approval_rate' => $approvalRate];
     }
 
     /**

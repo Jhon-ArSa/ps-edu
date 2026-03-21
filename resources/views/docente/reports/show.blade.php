@@ -184,6 +184,37 @@
     </div>
     @endif
 
+    {{-- Gráficos de análisis --}}
+    @if($studentRows->count() > 0 && $courseStats['scored'] > 0)
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {{-- Gráfico: Distribución de Notas --}}
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="text-sm font-bold text-gray-800 mb-4">Distribución de Notas</h3>
+            <div class="h-48">
+                <canvas id="chartGradeDistribution"></canvas>
+            </div>
+        </div>
+
+        {{-- Gráfico: Aprobados vs Desaprobados --}}
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="text-sm font-bold text-gray-800 mb-4">Aprobados vs Desaprobados</h3>
+            <div class="h-48">
+                <canvas id="chartApprovalRate"></canvas>
+            </div>
+        </div>
+
+        {{-- Gráfico: Promedio por Ítem --}}
+        @if($items->count() > 0)
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="text-sm font-bold text-gray-800 mb-4">Promedio por Evaluación</h3>
+            <div class="h-48">
+                <canvas id="chartItemAverages"></canvas>
+            </div>
+        </div>
+        @endif
+    </div>
+    @endif
+
     {{-- Tabla alumno × ítem --}}
     @if($items->isEmpty())
     <div class="card text-center py-10">
@@ -297,3 +328,140 @@
 
 </div>
 @endsection
+
+@push('scripts')
+@if($studentRows->count() > 0 && $courseStats['scored'] > 0)
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chartColors = {
+        emerald: 'rgba(16, 185, 129, 0.8)',
+        emeraldLight: 'rgba(16, 185, 129, 0.2)',
+        amber: 'rgba(245, 158, 11, 0.8)',
+        amberLight: 'rgba(245, 158, 11, 0.2)',
+        red: 'rgba(239, 68, 68, 0.8)',
+        redLight: 'rgba(239, 68, 68, 0.2)',
+        blue: 'rgba(59, 130, 246, 0.8)',
+        blueLight: 'rgba(59, 130, 246, 0.2)',
+        gray: 'rgba(156, 163, 175, 0.8)',
+    };
+
+    // Datos de distribución de notas
+    @php
+        $distribution = [
+            '0-5' => 0,
+            '5-8' => 0,
+            '8-11' => 0,
+            '11-14' => 0,
+            '14-17' => 0,
+            '17-20' => 0,
+        ];
+        foreach ($studentRows as $row) {
+            $avg = $row['average'];
+            if ($avg === null) continue;
+            if ($avg < 5) $distribution['0-5']++;
+            elseif ($avg < 8) $distribution['5-8']++;
+            elseif ($avg < 11) $distribution['8-11']++;
+            elseif ($avg < 14) $distribution['11-14']++;
+            elseif ($avg < 17) $distribution['14-17']++;
+            else $distribution['17-20']++;
+        }
+    @endphp
+
+    // Gráfico: Distribución de Notas
+    new Chart(document.getElementById('chartGradeDistribution'), {
+        type: 'bar',
+        data: {
+            labels: ['0-5', '5-8', '8-11', '11-14', '14-17', '17-20'],
+            datasets: [{
+                label: 'Alumnos',
+                data: [{{ $distribution['0-5'] }}, {{ $distribution['5-8'] }}, {{ $distribution['8-11'] }}, {{ $distribution['11-14'] }}, {{ $distribution['14-17'] }}, {{ $distribution['17-20'] }}],
+                backgroundColor: [
+                    chartColors.red,
+                    chartColors.red,
+                    chartColors.amber,
+                    chartColors.emerald,
+                    chartColors.emerald,
+                    chartColors.emerald,
+                ],
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Gráfico: Aprobados vs Desaprobados
+    new Chart(document.getElementById('chartApprovalRate'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Aprobados', 'Desaprobados', 'Sin nota'],
+            datasets: [{
+                data: [{{ $courseStats['approved'] }}, {{ $courseStats['failed'] }}, {{ $courseStats['total'] - $courseStats['scored'] }}],
+                backgroundColor: [chartColors.emerald, chartColors.red, chartColors.gray],
+                borderWidth: 2,
+                borderColor: '#fff',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } }
+            }
+        }
+    });
+
+    @if($items->count() > 0)
+    // Calcular promedio por ítem
+    @php
+        $itemAverages = [];
+        foreach ($items as $item) {
+            $scores = [];
+            foreach ($studentRows as $row) {
+                $score = $row['scores'][$item->id] ?? null;
+                if ($score !== null) {
+                    $norm = (min((float) $score, (float) $item->max_score) / $item->max_score) * 20.0;
+                    $scores[] = $norm;
+                }
+            }
+            $itemAverages[] = [
+                'name' => \Str::limit($item->name, 12),
+                'avg' => count($scores) > 0 ? round(array_sum($scores) / count($scores), 1) : 0,
+            ];
+        }
+    @endphp
+
+    // Gráfico: Promedio por Ítem
+    new Chart(document.getElementById('chartItemAverages'), {
+        type: 'bar',
+        data: {
+            labels: @json(collect($itemAverages)->pluck('name')),
+            datasets: [{
+                label: 'Promedio',
+                data: @json(collect($itemAverages)->pluck('avg')),
+                backgroundColor: @json(collect($itemAverages)->pluck('avg')->map(fn($v) => $v >= 11 ? 'rgba(16, 185, 129, 0.8)' : ($v >= 8 ? 'rgba(245, 158, 11, 0.8)' : 'rgba(239, 68, 68, 0.8)'))),
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { beginAtZero: true, max: 20 }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+    @endif
+});
+</script>
+@endif
+@endpush
