@@ -212,7 +212,6 @@
                                     <div>
                                         <label class="block text-xs font-semibold text-gray-600 mb-1.5">Archivos <span class="text-gray-400 font-normal">(opcional)</span></label>
                                         <input type="file" name="files[]" multiple
-                                               accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png"
                                                class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
                                         <p class="text-[10px] text-gray-400 mt-1">Puedes seleccionar múltiples archivos (máx. 10MB cada uno)</p>
                                     </div>
@@ -262,9 +261,8 @@
                                     Entregar tarea
                                 </p>
                                 <div>
-                                    <label class="block text-xs text-gray-500 mb-1.5 font-medium">Archivos (PDF, DOC, ZIP, imagen — máx. 10 MB cada uno)</label>
+                                     <label class="block text-xs text-gray-500 mb-1.5 font-medium">Archivos (cualquier tipo — máx. 10 MB cada uno)</label>
                                     <input type="file" name="files[]" multiple
-                                           accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png"
                                            class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-100 file:text-violet-700 hover:file:bg-violet-200 transition">
                                     <p class="text-[10px] text-gray-400 mt-1">Puedes seleccionar múltiples archivos</p>
                                 </div>
@@ -319,7 +317,7 @@
                 $actionLabel = 'Continuar evaluación';
                 $actionClass = 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm';
             } elseif ($attempt && $attempt->status === 'graded') {
-                $evalBadge   = ['label' => 'Calificada', 'class' => 'bg-emerald-100 text-emerald-700'];
+                $evalBadge   = ['label' => 'Completada', 'class' => 'bg-emerald-100 text-emerald-700'];
                 $evalIconBg  = 'bg-gradient-to-br from-emerald-100 to-emerald-50 ring-1 ring-emerald-200';
                 $evalIconCol = 'text-emerald-600';
                 $actionUrl   = route('alumno.evaluations.result', [$course, $evaluation, $attempt]);

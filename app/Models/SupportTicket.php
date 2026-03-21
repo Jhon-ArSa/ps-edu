@@ -8,10 +8,12 @@ class SupportTicket extends Model
 {
     protected $fillable = [
         'user_id', 'subject', 'category', 'message', 'status',
-        'priority', 'assigned_to', 'admin_notes', 'resolved_at',
+        'priority', 'assigned_to', 'admin_notes', 'response_message',
+        'responded_by', 'responded_at', 'resolved_at',
     ];
 
     protected $casts = [
+        'responded_at' => 'datetime',
         'resolved_at' => 'datetime',
     ];
 
@@ -25,6 +27,11 @@ class SupportTicket extends Model
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function respondedBy()
+    {
+        return $this->belongsTo(User::class, 'responded_by');
     }
 
     // ── Accessors ────────────────────────────────────────────────

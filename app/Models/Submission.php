@@ -69,7 +69,7 @@ class Submission extends Model
         return match ($this->status) {
             'pending'   => 'Pendiente',
             'submitted' => 'Entregada',
-            'graded'    => 'Calificada',
+            'graded'    => 'Revisada',
             default     => $this->status,
         };
     }
@@ -78,17 +78,8 @@ class Submission extends Model
     {
         return match ($this->status) {
             'submitted' => ['label' => 'Entregada', 'class' => 'bg-blue-100 text-blue-700'],
-            'graded'    => ['label' => 'Calificada', 'class' => 'bg-emerald-100 text-emerald-700'],
+            'graded'    => ['label' => 'Revisada', 'class' => 'bg-emerald-100 text-emerald-700'],
             default     => ['label' => 'Pendiente', 'class' => 'bg-gray-100 text-gray-500'],
         };
-    }
-
-    public function getScoreColorAttribute(): string
-    {
-        if ($this->score === null || $this->task->max_score == 0) return 'text-gray-600';
-        $pct = ($this->score / $this->task->max_score) * 100;
-        if ($pct >= 70) return 'text-emerald-600';
-        if ($pct >= 50) return 'text-amber-600';
-        return 'text-red-600';
     }
 }

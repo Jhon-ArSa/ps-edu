@@ -110,6 +110,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/{ticket}',                [Admin\SupportController::class, 'show'])->name('show');
         Route::patch('/{ticket}',              [Admin\SupportController::class, 'update'])->name('update');
         Route::patch('/{ticket}/estado',       [Admin\SupportController::class, 'updateStatus'])->name('update-status');
+        Route::patch('/{ticket}/responder',    [Admin\SupportController::class, 'respond'])->name('respond');
         Route::patch('/{ticket}/asignar',      [Admin\SupportController::class, 'assign'])->name('assign');
         Route::delete('/{ticket}',             [Admin\SupportController::class, 'destroy'])->name('destroy');
         Route::get('/exportar/csv',            [Admin\SupportController::class, 'exportCsv'])->name('export');
@@ -147,7 +148,7 @@ Route::middleware(['auth', 'role:docente'])
 
         // Entregas de tareas (Juan)
         Route::get('/{course}/tareas/{task}/entregas',                                [Docente\SubmissionController::class, 'index'])->name('submissions.index');
-        Route::patch('/{course}/tareas/{task}/entregas/{submission}/calificar',       [Docente\SubmissionController::class, 'grade'])->name('submissions.grade');
+        Route::patch('/{course}/tareas/{task}/entregas/{submission}/revisar',         [Docente\SubmissionController::class, 'grade'])->name('submissions.grade');
 
         // Alumnos
         Route::get('/{course}/estudiantes/buscar',       [Docente\StudentController::class, 'search'])->name('students.search');
@@ -166,7 +167,7 @@ Route::middleware(['auth', 'role:docente'])
         Route::post('/{course}/evaluaciones/{evaluation}/preguntas',                      [Docente\EvaluationController::class, 'addQuestion'])->name('questions.store');
         Route::delete('/{course}/evaluaciones/{evaluation}/preguntas/{question}',         [Docente\EvaluationController::class, 'removeQuestion'])->name('questions.destroy');
         Route::get('/{course}/evaluaciones/{evaluation}/intentos',                        [Docente\EvaluationAttemptController::class, 'index'])->name('attempts.index');
-        Route::patch('/{course}/evaluaciones/{evaluation}/intentos/{attempt}/calificar',  [Docente\EvaluationAttemptController::class, 'gradeShort'])->name('attempts.grade');
+        Route::patch('/{course}/evaluaciones/{evaluation}/intentos/{attempt}/revisar',    [Docente\EvaluationAttemptController::class, 'gradeShort'])->name('attempts.grade');
     });
 
     // ── Reportes del curso (Zair) ─────────────────────────────────────────
@@ -176,15 +177,6 @@ Route::middleware(['auth', 'role:docente'])
         Route::get('/exportar', [Docente\ReportController::class, 'exportCsv'])->name('csv');
     });
 
-    // ── Calificaciones (Zair) ──────────────────────────────────────────────
-    Route::prefix('cursos/{course}/notas')->name('grades.')->group(function () {
-        Route::get('/',                                         [Docente\GradeController::class, 'index'])->name('index');
-        Route::get('/exportar',                                 [Docente\GradeController::class, 'exportCsv'])->name('csv');
-        Route::post('/items',                                   [Docente\GradeController::class, 'storeItem'])->name('items.store');
-        Route::patch('/items/{gradeItem}',                      [Docente\GradeController::class, 'updateItem'])->name('items.update');
-        Route::delete('/items/{gradeItem}',                     [Docente\GradeController::class, 'destroyItem'])->name('items.destroy');
-        Route::patch('/{gradeItem}/alumnos/{user}',             [Docente\GradeController::class, 'updateGrade'])->name('update');
-    });
 
     // ── Foro del curso ────────────────────────────────────────────────────────
     Route::prefix('cursos/{course}/foro')->name('forum.')->group(function () {
@@ -207,7 +199,7 @@ Route::middleware(['auth', 'role:docente'])
     Route::put('/escalafon',        [Docente\EscalafonController::class, 'update'])->name('escalafon.update');
 
     // Soporte
-    Route::get('/soporte',  fn() => view('docente.soporte'))->name('soporte');
+    Route::get('/soporte',  [Docente\SupportController::class, 'index'])->name('soporte');
     Route::post('/soporte', [Docente\SupportController::class, 'send'])->name('soporte.send');
 });
 
@@ -228,9 +220,6 @@ Route::middleware(['auth', 'role:alumno'])
 
     Route::get('/mis-cursos',             [Alumno\CourseController::class, 'index'])->name('courses.index');
     Route::get('/mis-cursos/{course}',    [Alumno\CourseController::class, 'show'])->name('courses.show');
-    Route::get('/mis-notas',              [Alumno\GradeController::class, 'index'])->name('grades.index');
-    Route::get('/mis-cursos/{course}/notas', [Alumno\GradeController::class, 'show'])->name('grades.show');
-
     // Entregas de tareas (Juan)
     Route::post('/mis-cursos/{course}/tareas/{task}/entregar',                       [Alumno\SubmissionController::class, 'store'])->name('submissions.store');
     Route::post('/mis-cursos/{course}/tareas/{task}/entregas/{submission}',           [Alumno\SubmissionController::class, 'update'])->name('submissions.update');

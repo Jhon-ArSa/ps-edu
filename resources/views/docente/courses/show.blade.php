@@ -50,11 +50,6 @@
 
             {{-- Quick actions --}}
             <div class="flex items-center gap-2 mt-5 pt-4 border-t border-white/10">
-                <a href="{{ route('docente.grades.index', $course) }}"
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg backdrop-blur-sm border border-white/10 transition-all">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                    Calificaciones
-                </a>
                 <a href="{{ route('docente.reports.show', $course) }}"
                    class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg backdrop-blur-sm border border-white/10 transition-all">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
@@ -114,16 +109,16 @@
         </div>
         <div class="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow col-span-2 md:col-span-1">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl {{ $stats['pendingGrading'] > 0 ? 'bg-amber-50' : 'bg-emerald-50' }} flex items-center justify-center shrink-0">
-                    @if($stats['pendingGrading'] > 0)
+                <div class="w-10 h-10 rounded-xl {{ $stats['pendingReview'] > 0 ? 'bg-amber-50' : 'bg-emerald-50' }} flex items-center justify-center shrink-0">
+                    @if($stats['pendingReview'] > 0)
                     <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     @else
                     <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     @endif
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['pendingGrading'] }}</p>
-                    <p class="text-[11px] {{ $stats['pendingGrading'] > 0 ? 'text-amber-500 font-semibold' : 'text-gray-400' }} font-medium">Por calificar</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['pendingReview'] }}</p>
+                    <p class="text-[11px] {{ $stats['pendingReview'] > 0 ? 'text-amber-500 font-semibold' : 'text-gray-400' }} font-medium">Por revisar</p>
                 </div>
             </div>
         </div>
@@ -211,7 +206,7 @@
             $weekMats  = $week->materials->count();
             $weekTasks = $week->tasks->count();
             $weekSubs  = $week->tasks->sum('submissions_count');
-            $weekGrd   = $week->tasks->sum('graded_count');
+            $weekRvw   = $week->tasks->sum('reviewed_count');
             $weekEvals = $week->evaluations->count();
         @endphp
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
@@ -243,9 +238,9 @@
                             @if($weekSubs > 0)
                             <span class="text-gray-200">·</span>
                             <span class="inline-flex items-center gap-1 text-xs">
-                                <svg class="w-3 h-3 {{ $weekGrd < $weekSubs ? 'text-amber-400' : 'text-emerald-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span class="font-medium {{ $weekGrd < $weekSubs ? 'text-amber-600' : 'text-emerald-600' }}">{{ $weekGrd }}/{{ $weekSubs }}</span>
-                                <span class="text-gray-400">calificadas</span>
+                                <svg class="w-3 h-3 {{ $weekRvw < $weekSubs ? 'text-amber-400' : 'text-emerald-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span class="font-medium {{ $weekRvw < $weekSubs ? 'text-amber-600' : 'text-emerald-600' }}">{{ $weekRvw }}/{{ $weekSubs }}</span>
+                                <span class="text-gray-400">revisadas</span>
                             </span>
                             @endif
                         </div>
@@ -451,11 +446,11 @@
                              x-data="{ showDetails: false, editTask: false }">
                             <div class="flex items-start gap-3">
                                 <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5
-                                    @if($task->submissions_count > 0 && $task->graded_count === $task->submissions_count) bg-emerald-100
+                                    @if($task->submissions_count > 0 && $task->reviewed_count === $task->submissions_count) bg-emerald-100
                                     @elseif($task->submissions_count > 0) bg-amber-100
                                     @else bg-violet-100
                                     @endif">
-                                    @if($task->submissions_count > 0 && $task->graded_count === $task->submissions_count)
+                                    @if($task->submissions_count > 0 && $task->reviewed_count === $task->submissions_count)
                                     <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     @elseif($task->submissions_count > 0)
                                     <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -480,7 +475,7 @@
                                     @if($task->description)
                                     <p class="text-xs text-gray-500 mt-1">{{ $task->description }}</p>
                                     @endif
-                                    @if($task->instructions || $task->file_path)
+                                    @if($task->instructions || $task->taskFiles->isNotEmpty() || $task->file_path)
                                     <button @click="showDetails = !showDetails" class="mt-2 text-xs text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1">
                                         <svg class="w-3 h-3 transition-transform" :class="showDetails ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                         <span x-text="showDetails ? 'Ocultar detalles' : 'Ver instrucciones'"></span>
@@ -489,7 +484,17 @@
                                         @if($task->instructions)
                                         <div class="p-3 bg-violet-50 rounded-lg text-xs text-gray-700 whitespace-pre-line">{{ $task->instructions }}</div>
                                         @endif
-                                        @if($task->file_path)
+                                        @if($task->taskFiles->isNotEmpty())
+                                        <div class="space-y-1.5">
+                                            <p class="text-xs font-semibold text-violet-700">Archivos de la tarea:</p>
+                                            @foreach($task->taskFiles->sortBy('order') as $taskFile)
+                                            <a href="{{ Storage::url($taskFile->file_path) }}" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-violet-600 hover:underline font-medium">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                                {{ $taskFile->original_filename }}
+                                            </a>
+                                            @endforeach
+                                        </div>
+                                        @elseif($task->file_path)
                                         <a href="{{ Storage::url($task->file_path) }}" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-violet-600 hover:underline font-medium">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                             Descargar guía/anexo
@@ -503,8 +508,8 @@
                                         <div class="flex items-center gap-1.5 text-xs">
                                             <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                             <span class="font-medium text-gray-600">{{ $task->submissions_count }} / {{ $course->students->count() }} entregas</span>
-                                            @if($task->graded_count > 0)
-                                            <span class="text-emerald-600 font-medium">({{ $task->graded_count }} calificadas)</span>
+                                            @if($task->reviewed_count > 0)
+                                            <span class="text-emerald-600 font-medium">({{ $task->reviewed_count }} revisadas)</span>
                                             @endif
                                         </div>
                                         <a href="{{ route('docente.courses.submissions.index', [$course, $task]) }}" class="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-semibold">
@@ -528,6 +533,13 @@
                                         </div>
                                         <div class="col-span-2">
                                             <textarea name="description" rows="2" placeholder="Descripción breve" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none">{{ $task->description }}</textarea>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <textarea name="instructions" rows="3" placeholder="Instrucciones detalladas" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none">{{ $task->instructions }}</textarea>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <label class="text-xs text-gray-600 font-medium block mb-1">Reemplazar archivos de la tarea (opcional)</label>
+                                            <input type="file" name="files[]" multiple class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
                                         </div>
                                     </div>
                                     <div class="flex gap-2">
@@ -582,8 +594,8 @@
                                 <div class="flex items-center gap-2">
                                     <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
                                     <div class="flex-1">
-                                        <input type="file" name="files[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.zip" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
-                                        <p class="text-xs text-gray-400 mt-0.5">Adjuntar archivos de tarea (PDF, Word, PPT, ZIP — máx. 20 MB cada uno)</p>
+                                        <input type="file" name="files[]" multiple class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
+                                        <p class="text-xs text-gray-400 mt-0.5">Adjuntar archivos de tarea (cualquier tipo — máx. 20 MB cada uno)</p>
                                     </div>
                                 </div>
                                 <div class="flex justify-end gap-2">

@@ -46,7 +46,7 @@
                 </div>
             </div>
             <div class="text-right">
-                <div class="text-2xl font-bold">#{{{ $ticket->id }}</div>
+                <div class="text-2xl font-bold">#{{ $ticket->id }}</div>
                 @if($ticket->assignedTo)
                 <div class="text-blue-200 text-sm mt-1">Asignado a {{ $ticket->assignedTo->name }}</div>
                 @else
@@ -82,6 +82,53 @@
                 <div class="whitespace-pre-wrap text-amber-800 leading-relaxed">{{ $ticket->admin_notes }}</div>
             </div>
             @endif
+
+            {{-- Respuesta enviada al usuario --}}
+            @if($ticket->response_message)
+            <div class="bg-emerald-50 rounded-xl border border-emerald-200 p-6">
+                <h3 class="text-lg font-semibold text-emerald-900 mb-3">Respuesta enviada al usuario</h3>
+                <div class="whitespace-pre-wrap text-emerald-800 leading-relaxed">{{ $ticket->response_message }}</div>
+                <p class="text-xs text-emerald-700 mt-3">
+                    @if($ticket->respondedBy)
+                        Respondido por {{ $ticket->respondedBy->name }}
+                    @endif
+                    @if($ticket->responded_at)
+                        el {{ $ticket->responded_at->format('d/m/Y H:i') }}
+                    @endif
+                </p>
+            </div>
+            @endif
+
+            {{-- Formulario de respuesta al usuario --}}
+            <div class="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Responder al usuario</h3>
+                <form method="POST" action="{{ route('admin.support.respond', $ticket) }}" class="space-y-4">
+                    @csrf
+                    @method('PATCH')
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mensaje de respuesta <span class="text-red-500">*</span></label>
+                        <textarea name="response_message" rows="5" required maxlength="3000"
+                                  placeholder="Escribe la respuesta que recibirá el usuario por correo..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none">{{ old('response_message') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Estado después de responder</label>
+                        <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Mantener estado actual ({{ $ticket->status_label }})</option>
+                            <option value="in_progress">En progreso</option>
+                            <option value="resolved">Resuelto</option>
+                            <option value="closed">Cerrado</option>
+                        </select>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors">
+                        Enviar respuesta por correo
+                    </button>
+                </form>
+            </div>
         </div>
 
         {{-- ═══════════════════════════════════════════════════════════════════════

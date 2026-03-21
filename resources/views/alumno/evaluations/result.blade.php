@@ -7,20 +7,12 @@
 
     {{-- Header --}}
     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-purple-800 text-white p-8 mb-6 shadow-xl text-center">
-        <div class="text-5xl mb-3">
-            @if($attempt->score >= $evaluation->max_score * 0.7) 🎉
-            @elseif($attempt->score >= $evaluation->max_score * 0.5) 💪
-            @else 📚
-            @endif
-        </div>
+        <div class="text-5xl mb-3">✅</div>
         <h1 class="text-2xl font-bold mb-1">{{ $evaluation->title }}</h1>
         <p class="text-white/70 text-sm mb-4">{{ $course->name }}</p>
 
         <div class="inline-flex items-baseline gap-2 bg-white rounded-2xl px-8 py-4 shadow-lg">
-            <span class="text-5xl font-black {{ $attempt->score_color_class }}">
-                {{ number_format($attempt->score, 1) }}
-            </span>
-            <span class="text-xl text-gray-400">/ {{ $evaluation->max_score }}</span>
+            <span class="text-2xl font-black text-emerald-600">Intento enviado</span>
         </div>
 
         <p class="text-white/60 text-sm mt-3">
@@ -90,9 +82,7 @@
                     <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ $question->type_badge_class }}">{{ $question->type_label }}</span>
                 </div>
                 <div class="text-right flex-shrink-0">
-                    <span class="text-sm font-bold {{ $answer?->score !== null ? ($answer->is_correct ? 'text-emerald-600' : 'text-red-600') : 'text-gray-400' }}">
-                        {{ $answer?->score !== null ? number_format($answer->score, 1) : '—' }} / {{ $question->points }}
-                    </span>
+                    <span class="text-xs font-semibold text-gray-500">Revisión registrada</span>
                 </div>
             </div>
 

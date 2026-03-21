@@ -29,8 +29,8 @@
         @foreach([
             ['label' => 'Matriculados',  'value' => $stats['total'],         'color' => 'blue'],
             ['label' => 'Entregadas',    'value' => $stats['submitted'],      'color' => 'violet'],
-            ['label' => 'Calificadas',   'value' => $stats['graded'],         'color' => 'emerald'],
-            ['label' => 'Por revisar',   'value' => $stats['pending_grade'],  'color' => 'amber'],
+            ['label' => 'Revisadas',     'value' => $stats['reviewed'],       'color' => 'emerald'],
+            ['label' => 'Por revisar',   'value' => $stats['pending_review'], 'color' => 'amber'],
         ] as $s)
         <div class="card p-4 text-center">
             <div class="text-2xl font-bold text-{{ $s['color'] }}-600">{{ $s['value'] }}</div>
@@ -38,14 +38,6 @@
         </div>
         @endforeach
     </div>
-    @if($stats['avg_score'])
-    <div class="card p-4 mb-6 flex items-center gap-3">
-        <span class="text-sm text-gray-600">Promedio de la clase:</span>
-        <span class="text-2xl font-bold {{ $stats['avg_score'] >= 14 ? 'text-emerald-600' : ($stats['avg_score'] >= 11 ? 'text-amber-600' : 'text-red-600') }}">
-            {{ number_format($stats['avg_score'], 1) }} / {{ $evaluation->max_score }}
-        </span>
-    </div>
-    @endif
 
     {{-- Intentos entregados --}}
     <div class="space-y-3">
@@ -65,9 +57,6 @@
                     @if($attempt->submitted_at)
                     <span class="text-xs text-gray-400 hidden sm:block">{{ $attempt->submitted_at->format('d/m/Y H:i') }}</span>
                     @endif
-                    @if($attempt->score !== null)
-                    <span class="text-base font-bold {{ $attempt->score_color_class }}">{{ number_format($attempt->score, 1) }}/{{ $evaluation->max_score }}</span>
-                    @endif
                     <span class="badge {{ $attempt->status_badge['class'] }} text-xs">{{ $attempt->status_badge['label'] }}</span>
                     @if($attempt->file_path)
                     <a href="{{ $attempt->file_url }}" target="_blank"
@@ -79,22 +68,22 @@
                     @endif
                     @if($attempt->status === 'submitted' && $attempt->hasUngradedShortAnswers())
                     <button @click="reviewing = !reviewing" class="btn-sm bg-amber-500 hover:bg-amber-600 text-white">
-                        Calificar
+                        Revisar
                     </button>
                     @endif
                 </div>
             </div>
 
-            {{-- Panel de calificación de respuestas cortas --}}
+            {{-- Panel de revisión de respuestas cortas --}}
             <div x-show="reviewing" x-transition class="border-t border-gray-100">
                 <form method="POST" action="{{ route('docente.evaluations.attempts.grade', [$course, $evaluation, $attempt]) }}" class="p-5 space-y-4">
                     @csrf @method('PATCH')
-                    <h4 class="font-semibold text-gray-800 text-sm">Calificar respuestas cortas</h4>
+                    <h4 class="font-semibold text-gray-800 text-sm">Revisar respuestas cortas</h4>
                     @foreach($attempt->answers as $answer)
                         @if($answer->question->type === 'short')
                         <div class="bg-gray-50 rounded-xl p-4 space-y-2">
                             <p class="text-sm font-medium text-gray-700">{{ $answer->question->text }}</p>
-                            <p class="text-xs text-gray-500">Puntaje máximo: {{ $answer->question->points }} pts</p>
+                            <p class="text-xs text-gray-500">Puntaje máximo técnico: {{ $answer->question->points }} pts</p>
                             <div class="bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-800 whitespace-pre-line">
                                 {{ $answer->text_answer ?: '(Sin respuesta)' }}
                             </div>
@@ -111,7 +100,7 @@
                         @endif
                     @endforeach
                     <div class="flex gap-2">
-                        <button type="submit" class="btn-primary">Guardar calificación</button>
+                        <button type="submit" class="btn-primary">Guardar revisión</button>
                         <button type="button" @click="reviewing = false" class="btn-secondary">Cancelar</button>
                     </div>
                 </form>

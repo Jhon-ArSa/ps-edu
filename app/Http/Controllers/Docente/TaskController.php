@@ -24,7 +24,7 @@ class TaskController extends Controller
             'description'  => 'nullable|string',
             'instructions' => 'nullable|string',
             'due_date'     => 'nullable|date',
-            'files.*'      => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,zip|max:20480',
+            'files.*'      => 'nullable|file|max:20480',
         ]);
 
         $data = $request->only(['title', 'description', 'instructions', 'due_date']);
@@ -71,7 +71,7 @@ class TaskController extends Controller
             'description'  => 'nullable|string',
             'instructions' => 'nullable|string',
             'due_date'     => 'nullable|date',
-            'files.*'      => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,zip|max:20480',
+            'files.*'      => 'nullable|file|max:20480',
         ]);
 
         $task->update($request->only(['title', 'description', 'instructions', 'due_date']));

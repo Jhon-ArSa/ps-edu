@@ -94,7 +94,7 @@
                     <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['submitted'] + $stats['graded'] }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['submitted'] + $stats['reviewed'] }}</p>
                     <p class="text-xs text-gray-400">Entregadas</p>
                 </div>
             </div>
@@ -105,7 +105,7 @@
                     <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['graded'] }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['reviewed'] }}</p>
                     <p class="text-xs text-gray-400">Revisadas</p>
                 </div>
             </div>
@@ -117,11 +117,11 @@
     <div class="bg-white rounded-xl border border-gray-200 p-4 animate-fade-in-up delay-1">
         <div class="flex items-center justify-between mb-2">
             <span class="text-xs font-semibold text-gray-600">Progreso de entregas</span>
-            <span class="text-xs font-bold text-gray-900">{{ $stats['submitted'] + $stats['graded'] }}/{{ $stats['total'] }}</span>
+            <span class="text-xs font-bold text-gray-900">{{ $stats['submitted'] + $stats['reviewed'] }}/{{ $stats['total'] }}</span>
         </div>
         <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden flex">
             @php
-                $gradedPct   = $stats['total'] > 0 ? ($stats['graded'] / $stats['total']) * 100 : 0;
+                $gradedPct   = $stats['total'] > 0 ? ($stats['reviewed'] / $stats['total']) * 100 : 0;
                 $submittedPct = $stats['total'] > 0 ? ($stats['submitted'] / $stats['total']) * 100 : 0;
             @endphp
             <div class="h-full bg-emerald-500 transition-all duration-500" style="width: {{ $gradedPct }}%"></div>
@@ -244,9 +244,6 @@
                       action="{{ route('docente.courses.submissions.grade', [$course, $task, $submission]) }}"
                       class="pt-2 space-y-3 border-t border-gray-100">
                     @csrf @method('PATCH')
-
-                    {{-- Hidden field to mark as reviewed without score --}}
-                    <input type="hidden" name="score" value="1">
 
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Retroalimentación (opcional)</label>

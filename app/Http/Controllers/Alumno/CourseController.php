@@ -65,10 +65,10 @@ class CourseController extends Controller
         $totalMaterials = $course->weeks->sum(fn($w) => $w->materials->count());
         $totalTasks     = $course->weeks->sum(fn($w) => $w->tasks->count());
         $submitted      = $submissions->count();
-        $graded         = $submissions->where('status', 'graded')->count();
+        $reviewed       = $submissions->where('status', 'graded')->count();
         $pending        = $totalTasks - $submitted;
 
-        $stats = compact('totalMaterials', 'totalTasks', 'submitted', 'graded', 'pending');
+        $stats = compact('totalMaterials', 'totalTasks', 'submitted', 'reviewed', 'pending');
 
         return view('alumno.courses.show', compact('course', 'enrollment', 'submissions', 'evalAttempts', 'stats'));
     }

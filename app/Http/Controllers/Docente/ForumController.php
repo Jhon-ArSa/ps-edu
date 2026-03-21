@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Docente;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\ForumTopic;
+use App\Notifications\ForumTopicCreated;
 use Illuminate\Http\Request;
 
 class ForumController extends Controller
@@ -50,6 +51,16 @@ class ForumController extends Controller
             'title'   => $request->title,
             'body'    => $request->body,
         ]);
+
+        $students = $course->students()->where('users.id', '!=', auth()->id())->get();
+        foreach ($students as $student) {
+            $student->notify(new ForumTopicCreated(
+                courseName: $course->name,
+                topicTitle: $topic->title,
+                authorName: auth()->user()->name,
+                url: url('/alumno/mis-cursos/' . $course->id . '/foro/' . $topic->id),
+            ));
+        }
 
         return redirect()
             ->route('docente.forum.show', [$course, $topic])

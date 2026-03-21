@@ -44,7 +44,7 @@
             </div>
             {{-- Institution text --}}
             <div class="overflow-hidden flex-1 whitespace-nowrap sidebar-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
-                <p class="text-gray-900 font-extrabold text-[13.5px] leading-tight truncate tracking-tight">
+                <p class="text-white font-extrabold text-[13.5px] leading-tight truncate tracking-tight">
                     {{ \App\Models\Setting::get('institution_name', config('app.name')) }}
                 </p>
                 <p class="text-primary-400 text-[10.5px] font-semibold truncate mt-0.5 tracking-wide uppercase">
@@ -91,6 +91,7 @@
                 <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
             </div>
             <x-sidebar-link route="notifications.index" icon="notification" :badge="$unreadNotifCount">Notificaciones</x-sidebar-link>
+            <x-sidebar-link route="admin.support.index" icon="support">Soporte</x-sidebar-link>
             <x-sidebar-link route="admin.settings" icon="cog">Configuración</x-sidebar-link>
 
         @elseif($role === 'docente')
@@ -128,7 +129,6 @@
                 <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
             </div>
             <x-sidebar-link route="alumno.courses.index" icon="book">Mis Cursos</x-sidebar-link>
-            <x-sidebar-link route="alumno.grades.index" icon="grades">Mis Notas</x-sidebar-link>
             <x-sidebar-link route="alumno.intranet" icon="newspaper">Intranet</x-sidebar-link>
 
             <div class="sidebar-section-label sidebar-section-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
@@ -314,11 +314,6 @@
                                                 <path d="M9 14l2 2 4-4"/>
                                             </svg>
                                             @break
-                                        @case('grade')
-                                            <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
-                                            </svg>
-                                            @break
                                         @case('evaluation')
                                             <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
@@ -335,6 +330,18 @@
                                             <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M12 3L1 9l11 6 11-6-11-6z"/>
                                                 <path d="M5 12v5a7 7 0 0014 0v-5"/>
+                                            </svg>
+                                            @break
+                                        @case('support')
+                                            <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4-.93L2 17l1.12-3.36A6.7 6.7 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7z"/>
+                                                <path d="M10 8h.01M14 8h.01M9 12h6"/>
+                                            </svg>
+                                            @break
+                                        @case('forum')
+                                            <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                                                <path d="M8 9h8M8 13h5"/>
                                             </svg>
                                             @break
                                             <svg class="w-4 h-4 {{ is_null($notif->read_at) ? 'text-primary-600' : 'text-gray-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

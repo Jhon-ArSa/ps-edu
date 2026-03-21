@@ -54,7 +54,7 @@ class CourseController extends Controller
             'weeks.tasks' => function ($q) {
                 $q->withCount([
                     'submissions',
-                    'submissions as graded_count' => fn($s) => $s->where('status', 'graded'),
+                    'submissions as reviewed_count' => fn($s) => $s->where('status', 'graded'),
                 ]);
             },
             'students.alumnoProfile',
@@ -65,10 +65,10 @@ class CourseController extends Controller
         $totalMaterials  = $course->weeks->sum(fn($w) => $w->materials->count());
         $totalTasks      = $course->weeks->sum(fn($w) => $w->tasks->count());
         $totalSubmissions = $course->weeks->sum(fn($w) => $w->tasks->sum('submissions_count'));
-        $totalGraded     = $course->weeks->sum(fn($w) => $w->tasks->sum('graded_count'));
-        $pendingGrading  = $totalSubmissions - $totalGraded;
+        $totalReviewed   = $course->weeks->sum(fn($w) => $w->tasks->sum('reviewed_count'));
+        $pendingReview   = $totalSubmissions - $totalReviewed;
 
-        $stats = compact('totalMaterials', 'totalTasks', 'totalSubmissions', 'totalGraded', 'pendingGrading');
+        $stats = compact('totalMaterials', 'totalTasks', 'totalSubmissions', 'totalReviewed', 'pendingReview');
 
         return view('docente.courses.show', compact('course', 'weekNumbers', 'stats'));
     }

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Evaluation;
 use App\Models\EvaluationAttempt;
-use App\Models\Grade;
 use Illuminate\Http\Request;
 
 class EvaluationAttemptController extends Controller
@@ -36,9 +35,8 @@ class EvaluationAttemptController extends Controller
         $stats = [
             'total'         => $course->students()->count(),
             'submitted'     => $attempts->count(),
-            'graded'        => $attempts->where('status', 'graded')->count(),
-            'pending_grade' => $attempts->filter(fn ($a) => $a->status === 'submitted' && $a->hasUngradedShortAnswers())->count(),
-            'avg_score'     => round($attempts->where('status', 'graded')->avg('score') ?? 0, 1),
+            'reviewed'      => $attempts->where('status', 'graded')->count(),
+            'pending_review'=> $attempts->filter(fn ($a) => $a->status === 'submitted' && $a->hasUngradedShortAnswers())->count(),
         ];
 
         return view('docente.evaluations.attempts', compact(
@@ -46,7 +44,7 @@ class EvaluationAttemptController extends Controller
         ));
     }
 
-    // ── Calificar respuestas cortas ───────────────────────────────────────────
+    // ── Revisar respuestas cortas ─────────────────────────────────────────────
 
     public function gradeShort(Request $request, Course $course, Evaluation $evaluation, EvaluationAttempt $attempt)
     {
@@ -88,9 +86,6 @@ class EvaluationAttemptController extends Controller
             'status' => 'graded',
         ]);
 
-        // Registrar en libreta de notas
-        Grade::recordFromAttempt($attempt);
-
-        return back()->with('success', 'Intento de ' . $attempt->student->name . ' calificado con ' . $normalScore . '/' . $evaluation->max_score . '.');
+        return back()->with('success', 'Intento de ' . $attempt->student->name . ' revisado correctamente.');
     }
 }

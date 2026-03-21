@@ -43,11 +43,6 @@ class Course extends Model
                     ->wherePivot('status', 'active');
     }
 
-    public function gradeItems()
-    {
-        return $this->hasMany(GradeItem::class)->orderBy('order');
-    }
-
     public function forumTopics()
     {
         return $this->hasMany(ForumTopic::class);

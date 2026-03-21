@@ -37,7 +37,7 @@ class SubmissionController extends Controller
         $stats = [
             'total'     => $course->students()->count(),
             'submitted' => $submissions->where('status', 'submitted')->count(),
-            'graded'    => $submissions->where('status', 'graded')->count(),
+            'reviewed'  => $submissions->where('status', 'graded')->count(),
             'pending'   => $pendingStudents->count(),
         ];
 
@@ -58,7 +58,6 @@ class SubmissionController extends Controller
         ]);
 
         $submission->update([
-            'score'     => 1, // Simple marker for "reviewed"
             'feedback'  => $request->feedback,
             'status'    => 'graded',
             'graded_at' => now(),

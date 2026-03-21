@@ -38,7 +38,7 @@ class SubmissionController extends Controller
         }
 
         $request->validate([
-            'files.*'  => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,zip,rar,jpg,jpeg,png|max:10240',
+            'files.*'  => 'nullable|file|max:10240',
             'comments' => 'nullable|string|max:2000',
         ]);
 
@@ -88,9 +88,9 @@ class SubmissionController extends Controller
             abort(403);
         }
 
-        // No se puede editar si ya fue calificada
+        // No se puede editar si ya fue revisada
         if ($submission->isGraded()) {
-            return back()->with('error', 'No se puede editar una entrega ya calificada.');
+            return back()->with('error', 'No se puede editar una entrega ya revisada.');
         }
 
         // No se puede editar si la tarea venció
@@ -99,7 +99,7 @@ class SubmissionController extends Controller
         }
 
         $request->validate([
-            'files.*'  => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,zip,rar,jpg,jpeg,png|max:10240',
+            'files.*'  => 'nullable|file|max:10240',
             'comments' => 'nullable|string|max:2000',
         ]);
 

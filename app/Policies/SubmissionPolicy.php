@@ -8,7 +8,7 @@ use App\Models\User;
 class SubmissionPolicy
 {
     /**
-     * El alumno solo puede editar su propia entrega (si no está calificada y no venció).
+     * El alumno solo puede editar su propia entrega (si no está revisada y no venció).
      * El docente del curso puede ver cualquier entrega.
      */
     public function update(User $user, Submission $submission): bool

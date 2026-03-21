@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Alumno;
 
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
+use App\Models\User;
+use App\Notifications\SupportTicketReceived;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -53,6 +55,16 @@ class SupportController extends Controller
 
         // En producción, aquí se enviaría un correo o se crearía un ticket
         // Mail::to(config('support.admin_email'))->send(new SupportTicket(...));
+
+        $admins = User::where('role', 'admin')->where('status', true)->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new SupportTicketReceived(
+                ticketId: $ticket->id,
+                subject: $ticket->subject,
+                category: $ticket->category_label,
+                requesterName: auth()->user()->name,
+            ));
+        }
 
         return back()->with('success', '¡Mensaje enviado correctamente! Nuestro equipo de soporte se comunicará contigo a través de tu correo institucional.');
     }

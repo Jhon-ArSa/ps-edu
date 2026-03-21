@@ -8,7 +8,6 @@ use App\Models\Evaluation;
 use App\Models\EvaluationAttempt;
 use App\Models\EvaluationQuestion;
 use App\Models\EvaluationOption;
-use App\Models\GradeItem;
 use App\Models\Week;
 use App\Notifications\NewEvaluationAvailable;
 use Illuminate\Http\Request;
@@ -46,9 +45,6 @@ class EvaluationController extends Controller
 
         $evaluation = Evaluation::create($data);
 
-        // Crear ítem en la libreta de notas
-        GradeItem::syncFromEvaluation($evaluation);
-
         return redirect()
             ->route('docente.evaluations.show', [$course, $evaluation])
             ->with('success', 'Evaluación "' . $evaluation->title . '" creada. Ahora agrega las preguntas.');
@@ -67,7 +63,7 @@ class EvaluationController extends Controller
             'questions'   => $evaluation->questions->count(),
             'total_points'=> $evaluation->questions->sum('points'),
             'submitted'   => $evaluation->attempts->whereIn('status', ['submitted', 'graded'])->count(),
-            'pending_grade'=> $evaluation->attempts->where(fn ($a) => $a->hasUngradedShortAnswers())->count(),
+            'pending_review'=> $evaluation->attempts->where(fn ($a) => $a->hasUngradedShortAnswers())->count(),
         ];
 
         return view('docente.evaluations.show', compact('course', 'evaluation', 'stats'));
@@ -95,9 +91,6 @@ class EvaluationController extends Controller
         $data['show_results'] = $request->boolean('show_results');
         $evaluation->update($data);
 
-        // Sincronizar nombre en libreta de notas
-        GradeItem::syncFromEvaluation($evaluation);
-
         return back()->with('success', 'Evaluación actualizada.');
     }
 
@@ -110,11 +103,6 @@ class EvaluationController extends Controller
         abort_unless($evaluation->status === 'draft', 403, 'Solo se puede eliminar una evaluación en borrador.');
 
         $evaluation->delete();
-
-        // Eliminar el ítem de la libreta de notas asociado a esta evaluación
-        GradeItem::where('type', GradeItem::TYPE_EVALUATION)
-            ->where('reference_id', $evaluation->id)
-            ->delete();
 
         return redirect()
             ->route('docente.courses.show', $course)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
 use App\Models\User;
+use App\Notifications\SupportTicketResponded;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -69,7 +70,7 @@ class SupportController extends Controller
      */
     public function show(SupportTicket $ticket)
     {
-        $ticket->load(['user.alumnoProfile', 'assignedTo']);
+        $ticket->load(['user.alumnoProfile', 'assignedTo', 'respondedBy']);
 
         $admins = User::where('role', 'admin')->where('status', true)->get();
 
@@ -122,6 +123,34 @@ class SupportController extends Controller
         $ticket->update($updateData);
 
         return back()->with('success', 'Estado del ticket actualizado.');
+    }
+
+    /**
+     * Envía respuesta al usuario por correo y la registra en el ticket.
+     */
+    public function respond(Request $request, SupportTicket $ticket)
+    {
+        $request->validate([
+            'response_message' => 'required|string|max:3000',
+            'status'           => 'nullable|in:in_progress,resolved,closed',
+        ]);
+
+        $ticket->update([
+            'response_message' => $request->response_message,
+            'responded_by'     => auth()->id(),
+            'responded_at'     => now(),
+            'status'           => $request->status ?? $ticket->status,
+            'resolved_at'      => ($request->status === 'resolved') ? now() : $ticket->resolved_at,
+        ]);
+
+        $ticket->user->notify(new SupportTicketResponded(
+            ticketId: $ticket->id,
+            subject: $ticket->subject,
+            response: $request->response_message,
+            adminName: auth()->user()->name,
+        ));
+
+        return back()->with('success', 'Respuesta enviada al usuario por correo y registrada en el ticket.');
     }
 
     /**

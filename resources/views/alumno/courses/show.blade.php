@@ -69,14 +69,6 @@
             <p class="mt-3 text-sm text-primary-200/80 max-w-2xl leading-relaxed">{{ $course->description }}</p>
             @endif
 
-            {{-- Quick action --}}
-            <div class="flex items-center gap-2 mt-5 pt-4 border-t border-white/10">
-                <a href="{{ route('alumno.grades.show', $course) }}"
-                   class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg backdrop-blur-sm border border-white/10 transition-all">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                    Ver mis calificaciones
-                </a>
-            </div>
         </div>
     </div>
 
@@ -158,10 +150,10 @@
         </div>
         <div class="flex items-center justify-between mt-2 text-xs text-gray-400">
             <span>{{ $pct }}% completado</span>
-            @if($stats['graded'] > 0)
+            @if($stats['reviewed'] > 0)
             <span class="flex items-center gap-1">
                 <svg class="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                {{ $stats['graded'] }} calificada{{ $stats['graded'] > 1 ? 's' : '' }}
+                {{ $stats['reviewed'] }} revisada{{ $stats['reviewed'] > 1 ? 's' : '' }}
             </span>
             @endif
         </div>
@@ -427,12 +419,12 @@
         </div>
         @endif
 
-        {{-- Submitted (awaiting grade) --}}
+        {{-- Submitted (awaiting review) --}}
         @if($submittedTasks->isNotEmpty())
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
             <div class="px-5 py-3.5 bg-blue-50/50 border-b border-blue-100/60 flex items-center gap-2">
                 <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <h3 class="text-sm font-bold text-blue-800">Entregadas — esperando calificación</h3>
+                <h3 class="text-sm font-bold text-blue-800">Entregadas — esperando revisión</h3>
                 <span class="ml-auto text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">{{ $submittedTasks->count() }}</span>
             </div>
             <div class="divide-y divide-gray-50">
@@ -452,7 +444,6 @@
                                 @if($week)
                                 <span class="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">S{{ $week->number }}</span>
                                 @endif
-                                <span class="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">{{ $task->max_score }} pts</span>
                             </div>
                             <p class="text-xs text-blue-600 mt-1">
                                 <svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -466,12 +457,12 @@
         </div>
         @endif
 
-        {{-- Graded --}}
+        {{-- Reviewed --}}
         @if($gradedTasks->isNotEmpty())
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
             <div class="px-5 py-3.5 bg-emerald-50/50 border-b border-emerald-100/60 flex items-center gap-2">
                 <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <h3 class="text-sm font-bold text-emerald-800">Calificadas</h3>
+                <h3 class="text-sm font-bold text-emerald-800">Revisadas</h3>
                 <span class="ml-auto text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">{{ $gradedTasks->count() }}</span>
             </div>
             <div class="divide-y divide-gray-50">
@@ -482,9 +473,8 @@
                 @endphp
                 <div class="px-5 py-4 hover:bg-gray-50/60 transition-colors">
                     <div class="flex items-start gap-3">
-                        <div class="px-2.5 py-1.5 bg-emerald-50 rounded-xl text-center shrink-0 mt-0.5 border border-emerald-100">
-                            <p class="text-lg font-bold {{ $submission->score_color }}">{{ $submission->score }}</p>
-                            <p class="text-[10px] text-gray-400">/{{ $task->max_score }}</p>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
@@ -498,7 +488,7 @@
                                 <span class="font-semibold">Retroalimentación:</span> {{ $submission->feedback }}
                             </p>
                             @endif
-                            <p class="text-[11px] text-gray-400 mt-1">Calificada el {{ $submission->graded_at?->format('d/m/Y H:i') }}</p>
+                            <p class="text-[11px] text-gray-400 mt-1">Revisada el {{ $submission->graded_at?->format('d/m/Y H:i') }}</p>
                         </div>
                     </div>
                 </div>

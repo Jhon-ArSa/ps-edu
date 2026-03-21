@@ -7,7 +7,6 @@ use App\Models\AttemptAnswer;
 use App\Models\Course;
 use App\Models\Evaluation;
 use App\Models\EvaluationAttempt;
-use App\Models\Grade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -165,11 +164,6 @@ class EvaluationController extends Controller
         $attempt->load('answers.question.options');
         EvaluationAttempt::autoGrade($attempt);
         $attempt->refresh();
-
-        // Si no hay respuestas cortas, registrar en libreta de notas inmediatamente
-        if (!$attempt->hasUngradedShortAnswers()) {
-            Grade::recordFromAttempt($attempt);
-        }
 
         return redirect()
             ->route('alumno.evaluations.result', [$course, $evaluation, $attempt])

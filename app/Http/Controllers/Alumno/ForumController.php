@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Alumno;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\ForumTopic;
+use App\Notifications\ForumTopicCreated;
 use Illuminate\Http\Request;
 
 class ForumController extends Controller
@@ -50,6 +51,15 @@ class ForumController extends Controller
             'title'   => $request->title,
             'body'    => $request->body,
         ]);
+
+        if ($course->teacher && $course->teacher->id !== auth()->id()) {
+            $course->teacher->notify(new ForumTopicCreated(
+                courseName: $course->name,
+                topicTitle: $topic->title,
+                authorName: auth()->user()->name,
+                url: url('/docente/cursos/' . $course->id . '/foro/' . $topic->id),
+            ));
+        }
 
         return redirect()
             ->route('alumno.forum.show', [$course, $topic])

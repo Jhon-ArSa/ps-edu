@@ -21,7 +21,6 @@
             <div class="flex flex-wrap gap-4 text-sm text-white/80">
                 <span>⏱ {{ $evaluation->time_limit_label }}</span>
                 <span>📋 {{ $evaluation->max_attempts }} intento(s) máx.</span>
-                <span>🏆 Máx. {{ $evaluation->max_score }} pts</span>
             </div>
             @if($evaluation->opens_at || $evaluation->closes_at)
             <p class="mt-1 text-sm text-white/70">🗓 {{ $evaluation->open_window }}</p>
@@ -123,11 +122,6 @@
                 <p class="text-xs text-gray-500">{{ $attempt->submitted_at?->format('d/m/Y H:i') ?? $attempt->started_at?->format('d/m/Y H:i') }}</p>
             </div>
             <div class="flex items-center gap-3">
-                @if($attempt->score !== null)
-                <span class="text-base font-bold {{ $attempt->score_color_class }}">
-                    {{ number_format($attempt->score, 1) }}/{{ $evaluation->max_score }}
-                </span>
-                @endif
                 <span class="badge {{ $attempt->status_badge['class'] }} text-xs">{{ $attempt->status_badge['label'] }}</span>
                 @if($attempt->isSubmitted() && $evaluation->show_results)
                 <a href="{{ route('alumno.evaluations.result', [$course, $evaluation, $attempt]) }}"

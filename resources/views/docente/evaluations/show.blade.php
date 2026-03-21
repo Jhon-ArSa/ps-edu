@@ -97,7 +97,7 @@
             ['label' => 'Preguntas',         'value' => $stats['questions'],    'color' => 'blue'],
             ['label' => 'Puntaje total',      'value' => $stats['total_points'], 'color' => 'violet'],
             ['label' => 'Entregadas',         'value' => $stats['submitted'],    'color' => 'emerald'],
-            ['label' => 'Por revisar',        'value' => $stats['pending_grade'],'color' => 'amber'],
+            ['label' => 'Por revisar',        'value' => $stats['pending_review'],'color' => 'amber'],
         ] as $s)
         <div class="card p-4 text-center">
             <div class="text-2xl font-bold text-{{ $s['color'] }}-600">{{ $s['value'] }}</div>
@@ -145,7 +145,7 @@
                     @endforeach
                 </ul>
                 @else
-                <p class="text-xs text-violet-600 italic">Pregunta de respuesta abierta — calificación manual por docente.</p>
+                <p class="text-xs text-violet-600 italic">Pregunta de respuesta abierta — revisión manual por docente.</p>
                 @endunless
             </div>
         </div>
