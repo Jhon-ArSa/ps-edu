@@ -7,7 +7,9 @@
     <h2 class="text-2xl font-bold text-gray-900 mb-1 tracking-tight">Iniciar Sesión</h2>
     <p class="text-gray-400 text-sm mb-8">Ingrese sus credenciales para acceder al Campus Virtual</p>
 
-    <form method="POST" action="{{ route('login.attempt') }}" class="space-y-5">
+        <form method="POST" action="{{ route('login.attempt') }}" class="space-y-5"
+            x-data="{ submitting: false }"
+            @submit="if (submitting) { $event.preventDefault(); return; } submitting = true">
         @csrf
 
         {{-- Mensaje de sesión expirada --}}
@@ -101,8 +103,12 @@
         </div>
 
         {{-- Submit --}}
-        <button type="submit" class="btn-primary w-full justify-center py-3 text-sm shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/25">
-            Ingresar al Campus Virtual
+        <button type="submit"
+                :disabled="submitting"
+                :class="submitting ? 'opacity-70 cursor-not-allowed' : ''"
+                class="btn-primary w-full justify-center py-3 text-sm shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/25 disabled:hover:shadow-lg">
+            <span x-show="!submitting">Ingresar al Campus Virtual</span>
+            <span x-show="submitting" x-cloak>Ingresando...</span>
         </button>
     </form>
 

@@ -1,7 +1,24 @@
 @props(['route', 'icon' => 'dot', 'badge' => 0])
 
 @php
-    $active = request()->routeIs($route) || request()->routeIs($route . '.*');
+    $activePatterns = [$route, $route . '.*'];
+    $lastSegment = \Illuminate\Support\Str::afterLast($route, '.');
+
+    // When sidebar points to index/show/edit/create, also mark the whole module as active.
+    if (in_array($lastSegment, ['index', 'show', 'edit', 'create'], true)) {
+        $modulePrefix = \Illuminate\Support\Str::beforeLast($route, '.');
+        if ($modulePrefix !== '') {
+            $activePatterns[] = $modulePrefix . '.*';
+        }
+    }
+
+    $active = false;
+    foreach ($activePatterns as $pattern) {
+        if (request()->routeIs($pattern)) {
+            $active = true;
+            break;
+        }
+    }
 @endphp
 
 <a href="{{ route($route) }}"
