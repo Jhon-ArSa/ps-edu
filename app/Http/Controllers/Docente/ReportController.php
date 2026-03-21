@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Docente;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Enrollment;
-use App\Models\Grade;
-use App\Models\GradeItem;
+use App\Models\Task;
+use App\Models\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +15,7 @@ use Illuminate\View\View;
 class ReportController extends Controller
 {
     /**
-     * Reporte detallado del curso: promedio por alumno, estado por ítem.
+     * Reporte detallado del curso: entregas por alumno, estado por tarea.
      */
     public function show(Request $request, Course $course): View
     {
@@ -26,79 +26,82 @@ class ReportController extends Controller
             ->orderBy('users.name')
             ->get();
 
-        $items = $course->gradeItems;
+        // Obtener todas las tareas del curso
+        $tasks = Task::join('weeks', 'weeks.id', '=', 'tasks.week_id')
+            ->where('weeks.course_id', $course->id)
+            ->select('tasks.*', 'weeks.number as week_number')
+            ->orderBy('weeks.number')
+            ->orderBy('tasks.created_at')
+            ->get();
 
-        // Cargar todas las notas del curso de una sola consulta
-        $grades = Grade::whereIn('grade_item_id', $items->pluck('id'))
+        // Cargar todas las entregas del curso
+        $submissions = Submission::whereIn('task_id', $tasks->pluck('id'))
             ->whereIn('user_id', $students->pluck('id'))
             ->get();
 
-        // Mapear [item_id][user_id] => Grade
-        $gradesMap = [];
-        foreach ($grades as $grade) {
-            $gradesMap[$grade->grade_item_id][$grade->user_id] = $grade;
+        // Mapear [task_id][user_id] => Submission
+        $submissionsMap = [];
+        foreach ($submissions as $submission) {
+            $submissionsMap[$submission->task_id][$submission->user_id] = $submission;
         }
 
-        // Construir la tabla: por alumno → stats
-        $totalWeight = $items->sum('weight');
-        $useWeighted = $totalWeight > 0;
+        // Construir la tabla: por alumno → stats de entregas
+        $studentRows = $students->map(function ($student) use ($tasks, $submissionsMap) {
+            $submitted = 0;
+            $reviewed = 0;
+            $submissionStatus = [];
 
-        $studentRows = $students->map(function ($student) use ($items, $gradesMap, $useWeighted) {
-            $wSum = 0; $wW = 0; $sSum = 0; $sC = 0;
-            $scoresRaw = [];
+            foreach ($tasks as $task) {
+                $submission = $submissionsMap[$task->id][$student->id] ?? null;
+                $submissionStatus[$task->id] = $submission;
 
-            foreach ($items as $item) {
-                $grade = $gradesMap[$item->id][$student->id] ?? null;
-                $score = $grade?->score;
-                $scoresRaw[$item->id] = $score;
-
-                if ($score === null) continue;
-                $norm = (min((float) $score, (float) $item->max_score) / $item->max_score) * 20.0;
-                if ($useWeighted && $item->weight > 0) { $wSum += $norm * $item->weight; $wW += $item->weight; }
-                $sSum += $norm; $sC++;
+                if ($submission) {
+                    $submitted++;
+                    if ($submission->isGraded()) {
+                        $reviewed++;
+                    }
+                }
             }
 
-            $average = null;
-            if ($useWeighted && $wW > 0)  $average = round($wSum / $wW, 1);
-            elseif ($sC > 0)               $average = round($sSum / $sC, 1);
+            $submissionPct = $tasks->count() > 0 ? round($submitted / $tasks->count() * 100) : 0;
 
             return [
-                'student'    => $student,
-                'scores'     => $scoresRaw,   // item_id → score|null
-                'average'    => $average,
-                'approved'   => $average !== null && $average >= 11,
-                'graded_pct' => $items->count() > 0 ? round($sC / $items->count() * 100) : 0,
+                'student'           => $student,
+                'submissions'       => $submissionStatus,
+                'submitted_count'   => $submitted,
+                'reviewed_count'    => $reviewed,
+                'submission_pct'    => $submissionPct,
             ];
         });
 
         // Estadísticas globales del curso
-        $scored   = $studentRows->filter(fn ($r) => $r['average'] !== null);
-        $approved = $scored->filter(fn ($r) => $r['approved']);
+        $totalTasks = $tasks->count();
+        $totalExpectedSubmissions = $students->count() * $totalTasks;
+        $totalSubmitted = $studentRows->sum('submitted_count');
+        $totalReviewed = $studentRows->sum('reviewed_count');
 
         $courseStats = [
-            'total'         => $students->count(),
-            'scored'        => $scored->count(),
-            'approved'      => $approved->count(),
-            'failed'        => $scored->count() - $approved->count(),
-            'average'       => $scored->count() > 0
-                                ? round($scored->avg(fn ($r) => $r['average']), 1)
-                                : null,
-            'approval_rate' => $scored->count() > 0
-                                ? round($approved->count() / $scored->count() * 100)
-                                : null,
+            'total_students'      => $students->count(),
+            'total_tasks'         => $totalTasks,
+            'submitted'           => $totalSubmitted,
+            'reviewed'            => $totalReviewed,
+            'pending'             => $totalExpectedSubmissions - $totalSubmitted,
+            'submission_rate'     => $totalExpectedSubmissions > 0
+                                        ? round($totalSubmitted / $totalExpectedSubmissions * 100)
+                                        : 0,
+            'review_rate'         => $totalExpectedSubmissions > 0
+                                        ? round($totalReviewed / $totalExpectedSubmissions * 100)
+                                        : 0,
         ];
 
-        // Juan — resumen de entregas por alumno (preparado, se activa cuando la tabla existe)
-        $submissionStats = $this->submissionStats($course, $students->pluck('id'));
-
-        // Jhon — resumen de intentos de evaluación por alumno
+        // Resumen adicional por task
         $attemptStats = $this->attemptStats($course, $students->pluck('id'));
 
         $routePrefix = auth()->user()->role === 'admin' ? 'admin.reports.course' : 'docente.reports';
 
         return view('docente.reports.show', compact(
-            'course', 'items', 'studentRows', 'gradesMap',
-            'courseStats', 'submissionStats', 'attemptStats', 'routePrefix'
+            'course', 'tasks', 'studentRows', 'submissionsMap',
+            'courseStats', 'attemptStats', 'routePrefix'
         ));
     }
 
@@ -109,108 +112,109 @@ class ReportController extends Controller
     {
         $this->authorize('manage', $course);
 
-        $students  = $course->students()->with('alumnoProfile')->orderBy('users.name')->get();
-        $items     = $course->gradeItems;
+        $students = $course->students()->with('alumnoProfile')->orderBy('users.name')->get();
 
-        $grades   = Grade::whereIn('grade_item_id', $items->pluck('id'))
+        // Obtener todas las tareas del curso
+        $tasks = Task::join('weeks', 'weeks.id', '=', 'tasks.week_id')
+            ->where('weeks.course_id', $course->id)
+            ->select('tasks.*', 'weeks.number as week_number')
+            ->orderBy('weeks.number')
+            ->orderBy('tasks.created_at')
+            ->get();
+
+        // Cargar entregas
+        $submissions = Submission::whereIn('task_id', $tasks->pluck('id'))
             ->whereIn('user_id', $students->pluck('id'))
             ->get();
 
-        $gradesMap = [];
-        foreach ($grades as $grade) {
-            $gradesMap[$grade->grade_item_id][$grade->user_id] = $grade;
+        $submissionsMap = [];
+        foreach ($submissions as $submission) {
+            $submissionsMap[$submission->task_id][$submission->user_id] = $submission;
         }
 
-        $totalWeight = $items->sum('weight');
-        $useWeighted = $totalWeight > 0;
-
-        $studentRows = $students->map(function ($student) use ($items, $gradesMap, $useWeighted) {
-            $wSum = 0; $wW = 0; $sSum = 0; $sC = 0;
-            $scoresRaw = [];
-            foreach ($items as $item) {
-                $grade = $gradesMap[$item->id][$student->id] ?? null;
-                $scoresRaw[$item->id] = $grade?->score;
-                if ($grade?->score === null) continue;
-                $norm = (min((float) $grade->score, (float) $item->max_score) / $item->max_score) * 20.0;
-                if ($useWeighted && $item->weight > 0) { $wSum += $norm * $item->weight; $wW += $item->weight; }
-                $sSum += $norm; $sC++;
+        $studentRows = $students->map(function ($student) use ($tasks, $submissionsMap) {
+            $submissionStatus = [];
+            foreach ($tasks as $task) {
+                $submissionStatus[$task->id] = $submissionsMap[$task->id][$student->id] ?? null;
             }
-            $average = null;
-            if ($useWeighted && $wW > 0) $average = round($wSum / $wW, 1);
-            elseif ($sC > 0)             $average = round($sSum / $sC, 1);
-
-            return ['student' => $student, 'scores' => $scoresRaw, 'average' => $average];
+            return ['student' => $student, 'submissions' => $submissionStatus];
         });
 
-        return view('docente.reports.print', compact('course', 'items', 'studentRows'));
+        return view('docente.reports.print', compact('course', 'tasks', 'studentRows'));
     }
 
     /**
-     * Descarga la libreta del curso como CSV.
+     * Descarga el reporte del curso como CSV.
      */
     public function exportCsv(Course $course): Response
     {
         $this->authorize('manage', $course);
 
-        $students  = $course->students()->with('alumnoProfile')->orderBy('users.name')->get();
-        $items     = $course->gradeItems;
+        $students = $course->students()->with('alumnoProfile')->orderBy('users.name')->get();
 
-        $grades   = Grade::whereIn('grade_item_id', $items->pluck('id'))
+        // Obtener todas las tareas del curso
+        $tasks = Task::join('weeks', 'weeks.id', '=', 'tasks.week_id')
+            ->where('weeks.course_id', $course->id)
+            ->select('tasks.*', 'weeks.number as week_number')
+            ->orderBy('weeks.number')
+            ->orderBy('tasks.created_at')
+            ->get();
+
+        $submissions = Submission::whereIn('task_id', $tasks->pluck('id'))
             ->whereIn('user_id', $students->pluck('id'))
             ->get();
 
-        $gradesMap = [];
-        foreach ($grades as $grade) {
-            $gradesMap[$grade->grade_item_id][$grade->user_id] = $grade;
+        $submissionsMap = [];
+        foreach ($submissions as $submission) {
+            $submissionsMap[$submission->task_id][$submission->user_id] = $submission;
         }
-
-        $totalWeight = $items->sum('weight');
-        $useWeighted = $totalWeight > 0;
 
         // Cabecera
-        $header  = ['Alumno', 'Código'];
-        foreach ($items as $item) {
-            $header[] = $item->name . ' (/' . $item->max_score . ')';
+        $header = ['Alumno', 'Código'];
+        foreach ($tasks as $task) {
+            $header[] = 'S' . $task->week_number . ': ' . \Str::limit($task->title, 20);
         }
-        $header[] = 'Promedio';
-        $header[] = 'Estado';
+        $header[] = 'Entregas';
+        $header[] = 'Revisadas';
 
         $rows = [$header];
 
         foreach ($students as $student) {
-            $wSum = 0; $wW = 0; $sSum = 0; $sC = 0;
+            $submitted = 0;
+            $reviewed = 0;
             $row = [
                 $student->name,
                 $student->alumnoProfile?->student_code ?? '—',
             ];
-            foreach ($items as $item) {
-                $grade  = $gradesMap[$item->id][$student->id] ?? null;
-                $score  = $grade?->score;
-                $row[]  = $score !== null ? number_format($score, 1) : '';
-                if ($score !== null) {
-                    $norm = (min((float) $score, (float) $item->max_score) / $item->max_score) * 20.0;
-                    if ($useWeighted && $item->weight > 0) { $wSum += $norm * $item->weight; $wW += $item->weight; }
-                    $sSum += $norm; $sC++;
+
+            foreach ($tasks as $task) {
+                $submission = $submissionsMap[$task->id][$student->id] ?? null;
+                if ($submission) {
+                    $submitted++;
+                    if ($submission->isGraded()) {
+                        $reviewed++;
+                        $row[] = 'Revisada';
+                    } else {
+                        $row[] = 'Entregada';
+                    }
+                } else {
+                    $row[] = '';
                 }
             }
-            $avg    = null;
-            if ($useWeighted && $wW > 0) $avg = round($wSum / $wW, 1);
-            elseif ($sC > 0)             $avg = round($sSum / $sC, 1);
 
-            $row[] = $avg !== null ? number_format($avg, 1) : '';
-            $row[] = $avg === null ? '' : ($avg >= 11 ? 'Aprobado' : 'Desaprobado');
+            $row[] = $submitted . '/' . $tasks->count();
+            $row[] = $reviewed . '/' . $tasks->count();
             $rows[] = $row;
         }
 
-        $filename = 'notas_' . str($course->code)->slug() . '_' . now()->format('Ymd') . '.csv';
+        $filename = 'entregas_' . str($course->code)->slug() . '_' . now()->format('Ymd') . '.csv';
         return $this->csvResponse($filename, $rows);
     }
 
     // ── Puntos de integración Juan/Jhon ──────────────────────────────────────
 
     /**
-     * Cuenta entregas y calificadas por alumno.
-     * JUAN — intégrate aquí: suma se activa automáticamente cuando la tabla `submissions` exista.
+     * Cuenta entregas y revisadas por alumno.
      */
     private function submissionStats(Course $course, $studentIds): array
     {
@@ -220,17 +224,17 @@ class ReportController extends Controller
                 ->where('weeks.course_id', $course->id)
                 ->pluck('tasks.id');
 
-            if ($taskIds->isEmpty()) return ['available' => true, 'submitted' => 0, 'graded' => 0];
+            if ($taskIds->isEmpty()) return ['available' => true, 'submitted' => 0, 'reviewed' => 0];
 
             $submitted = DB::table('submissions')
                 ->whereIn('task_id', $taskIds)
                 ->whereIn('user_id', $studentIds)
                 ->count();
 
-            $graded = DB::table('submissions')
+            $reviewed = DB::table('submissions')
                 ->whereIn('task_id', $taskIds)
                 ->whereIn('user_id', $studentIds)
-                ->whereNotNull('score')
+                ->where('status', 'graded')
                 ->count();
 
             $total = $taskIds->count() * $studentIds->count();
@@ -238,10 +242,10 @@ class ReportController extends Controller
             return [
                 'available'      => true,
                 'submitted'      => $submitted,
-                'graded'         => $graded,
+                'reviewed'       => $reviewed,
                 'total_expected' => $total,
                 'submission_pct' => $total > 0 ? round($submitted / $total * 100) : 0,
-                'graded_pct'     => $total > 0 ? round($graded / $total * 100) : 0,
+                'review_pct'     => $total > 0 ? round($reviewed / $total * 100) : 0,
             ];
         } catch (\Throwable) {
             return ['available' => false];

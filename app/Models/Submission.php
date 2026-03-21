@@ -35,6 +35,11 @@ class Submission extends Model
         return $this->belongsTo(User::class, 'graded_by');
     }
 
+    public function submissionFiles()
+    {
+        return $this->hasMany(SubmissionFile::class);
+    }
+
     // ── State checks ─────────────────────────────────────────────
 
     public function isGraded(): bool

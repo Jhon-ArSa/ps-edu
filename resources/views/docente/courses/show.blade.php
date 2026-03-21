@@ -526,10 +526,6 @@
                                             <label class="text-xs text-gray-600 font-medium block mb-1">Fecha límite</label>
                                             <input type="datetime-local" name="due_date" value="{{ $task->due_date ? $task->due_date->format('Y-m-d\TH:i') : '' }}" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
                                         </div>
-                                        <div>
-                                            <label class="text-xs text-gray-600 font-medium block mb-1">Puntaje máximo</label>
-                                            <input type="number" name="max_score" value="{{ $task->max_score }}" min="1" max="1000" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
-                                        </div>
                                         <div class="col-span-2">
                                             <textarea name="description" rows="2" placeholder="Descripción breve" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none">{{ $task->description }}</textarea>
                                         </div>
@@ -577,23 +573,17 @@
                             <form method="POST" action="{{ route('docente.courses.tasks.store', [$course, $week]) }}" enctype="multipart/form-data" class="space-y-3">
                                 @csrf
                                 <input type="text" name="title" required placeholder="Título de la tarea *" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent bg-white">
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="text-xs text-gray-600 font-semibold block mb-1">Fecha y hora límite</label>
-                                        <input type="datetime-local" name="due_date" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
-                                    </div>
-                                    <div>
-                                        <label class="text-xs text-gray-600 font-semibold block mb-1">Puntaje máximo</label>
-                                        <input type="number" name="max_score" value="20" min="1" max="1000" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
-                                    </div>
+                                <div>
+                                    <label class="text-xs text-gray-600 font-semibold block mb-1">Fecha y hora límite</label>
+                                    <input type="datetime-local" name="due_date" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
                                 </div>
                                 <textarea name="description" rows="2" placeholder="Descripción breve de la tarea (opcional)" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none"></textarea>
                                 <textarea name="instructions" rows="3" placeholder="Instrucciones detalladas (rúbrica, pasos a seguir, formato, etc.)" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white resize-none"></textarea>
                                 <div class="flex items-center gap-2">
                                     <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
                                     <div class="flex-1">
-                                        <input type="file" name="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
-                                        <p class="text-xs text-gray-400 mt-0.5">Adjuntar guía o rúbrica (PDF, Word, PPT, ZIP — máx. 20 MB)</p>
+                                        <input type="file" name="files[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.zip" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
+                                        <p class="text-xs text-gray-400 mt-0.5">Adjuntar archivos de tarea (PDF, Word, PPT, ZIP — máx. 20 MB cada uno)</p>
                                     </div>
                                 </div>
                                 <div class="flex justify-end gap-2">

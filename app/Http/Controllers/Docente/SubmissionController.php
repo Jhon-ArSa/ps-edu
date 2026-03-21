@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Docente;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
-use App\Models\Grade;
 use App\Models\Submission;
 use App\Models\Task;
-use App\Notifications\TaskGraded;
+use App\Notifications\TaskReviewed;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
@@ -40,7 +39,6 @@ class SubmissionController extends Controller
             'submitted' => $submissions->where('status', 'submitted')->count(),
             'graded'    => $submissions->where('status', 'graded')->count(),
             'pending'   => $pendingStudents->count(),
-            'avg_score' => $submissions->where('status', 'graded')->avg('score'),
         ];
 
         return view('docente.courses.submissions', compact(
@@ -49,37 +47,31 @@ class SubmissionController extends Controller
     }
 
     /**
-     * Calificar una entrega.
+     * Marcar entrega como revisada.
      */
     public function grade(Request $request, Course $course, Task $task, Submission $submission)
     {
         $this->authorize('manage', $course);
 
         $request->validate([
-            'score'    => 'required|numeric|min:0|max:' . $task->max_score,
             'feedback' => 'nullable|string|max:2000',
         ]);
 
         $submission->update([
-            'score'     => $request->score,
+            'score'     => 1, // Simple marker for "reviewed"
             'feedback'  => $request->feedback,
             'status'    => 'graded',
             'graded_at' => now(),
             'graded_by' => auth()->id(),
         ]);
 
-        // Propagar la nota a la libreta de calificaciones
-        Grade::recordFromSubmission($submission->fresh());
-
         // Notificar al alumno
-        $submission->student->notify(new TaskGraded(
+        $submission->student->notify(new TaskReviewed(
             taskTitle:  $task->title,
             courseId:   $course->id,
             courseName: $course->name,
-            score:      (float) $request->score,
-            maxScore:   (float) $task->max_score,
         ));
 
-        return back()->with('success', 'Entrega de ' . $submission->student->name . ' calificada con ' . $request->score . '/' . $task->max_score . '.');
+        return back()->with('success', 'Entrega de ' . $submission->student->name . ' marcada como revisada.');
     }
 }

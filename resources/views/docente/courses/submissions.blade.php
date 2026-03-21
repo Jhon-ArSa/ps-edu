@@ -48,14 +48,20 @@
                     </div>
                 </div>
                 @endif
-                <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
-                    <svg class="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                {{-- Task files display --}}
+                @if($task->taskFiles->isNotEmpty())
+                @foreach($task->taskFiles->sortBy('order') as $taskFile)
+                <a href="{{ Storage::url($taskFile->file_path) }}" target="_blank"
+                   class="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10 transition-colors">
+                    <svg class="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     <div>
-                        <p class="text-[10px] text-white/50 uppercase tracking-wider">Puntaje máximo</p>
-                        <p class="text-sm font-semibold">{{ $task->max_score }} puntos</p>
+                        <p class="text-[10px] text-white/50 uppercase tracking-wider">Archivo de tarea</p>
+                        <p class="text-sm font-semibold">{{ $taskFile->original_filename }}</p>
                     </div>
-                </div>
-                @if($task->file_path)
+                </a>
+                @endforeach
+                {{-- Legacy single file support --}}
+                @elseif($task->file_path)
                 <a href="{{ Storage::url($task->file_path) }}" target="_blank"
                    class="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10 transition-colors">
                     <svg class="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -70,7 +76,7 @@
     </div>
 
     {{-- ═══ STATS CARDS ══════════════════════════════════════════════════════ --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 animate-fade-in-up delay-1">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 animate-fade-in-up delay-1">
         <div class="bg-white rounded-xl border border-gray-200 p-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
@@ -100,18 +106,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-gray-900">{{ $stats['graded'] }}</p>
-                    <p class="text-xs text-gray-400">Calificadas</p>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                </div>
-                <div>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['avg_score'] !== null ? number_format($stats['avg_score'], 1) : '—' }}</p>
-                    <p class="text-xs text-gray-400">Promedio</p>
+                    <p class="text-xs text-gray-400">Revisadas</p>
                 </div>
             </div>
         </div>
@@ -133,8 +128,8 @@
             <div class="h-full bg-violet-400 transition-all duration-500" style="width: {{ $submittedPct }}%"></div>
         </div>
         <div class="flex items-center gap-4 mt-2">
-            <span class="flex items-center gap-1.5 text-[10px] text-gray-500"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Calificadas</span>
-            <span class="flex items-center gap-1.5 text-[10px] text-gray-500"><span class="w-2 h-2 rounded-full bg-violet-400"></span> Por calificar</span>
+            <span class="flex items-center gap-1.5 text-[10px] text-gray-500"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Revisadas</span>
+            <span class="flex items-center gap-1.5 text-[10px] text-gray-500"><span class="w-2 h-2 rounded-full bg-violet-400"></span> Por revisar</span>
             <span class="flex items-center gap-1.5 text-[10px] text-gray-500"><span class="w-2 h-2 rounded-full bg-gray-200"></span> Sin entregar</span>
         </div>
     </div>
@@ -188,19 +183,28 @@
                     </p>
                 </div>
 
-                {{-- Score if graded --}}
-                @if($submission->isGraded())
-                <div class="text-center px-3 py-1.5 bg-gray-50 rounded-xl shrink-0">
-                    <p class="text-lg font-bold {{ $submission->score_color }}">{{ $submission->score }}</p>
-                    <p class="text-[10px] text-gray-400">/{{ $task->max_score }}</p>
-                </div>
-                @endif
             </div>
 
             {{-- Submission content --}}
             <div class="px-5 pb-4 space-y-3">
-                <div class="flex flex-wrap items-center gap-3">
-                    @if($submission->file_path)
+                <div class="flex flex-wrap items-start gap-3">
+                    {{-- Multiple submission files --}}
+                    @if($submission->submissionFiles->isNotEmpty())
+                    <div class="flex-1 space-y-2">
+                        <p class="text-xs font-semibold text-gray-600">Archivos entregados:</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($submission->submissionFiles->sortBy('order') as $subFile)
+                            <a href="{{ Storage::url($subFile->file_path) }}" target="_blank"
+                               class="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 transition-colors">
+                                <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                {{ $subFile->original_filename }}
+                                <span class="text-gray-400 text-[10px]">({{ $subFile->file_size_human }})</span>
+                            </a>
+                            @endforeach
+                        </div>
+                    </div>
+                    {{-- Legacy single file support --}}
+                    @elseif($submission->file_path)
                     <a href="{{ $submission->file_url }}" target="_blank"
                        class="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 transition-colors">
                         <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -225,13 +229,13 @@
                 </div>
                 @endif
 
-                {{-- Grade form --}}
+                {{-- Review form --}}
                 @if(!$submission->isGraded())
                 <div x-show="!grading" class="pt-1">
                     <button @click="grading = true"
                             class="inline-flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        Calificar entrega
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Marcar como revisada
                     </button>
                 </div>
                 @endif
@@ -241,44 +245,34 @@
                       class="pt-2 space-y-3 border-t border-gray-100">
                     @csrf @method('PATCH')
 
-                    <div class="flex items-end gap-3">
-                        <div class="w-32">
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Puntaje</label>
-                            <div class="relative">
-                                <input type="number" name="score" step="0.5" min="0" max="{{ $task->max_score }}"
-                                       value="{{ old('score', $submission->score) }}"
-                                       class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400"
-                                       required>
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">/{{ $task->max_score }}</span>
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Retroalimentación <span class="text-gray-400 font-normal">(opcional)</span></label>
-                            <textarea name="feedback" rows="2" placeholder="Comentario para el alumno…"
-                                      class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 resize-none">{{ old('feedback', $submission->feedback) }}</textarea>
-                        </div>
+                    {{-- Hidden field to mark as reviewed without score --}}
+                    <input type="hidden" name="score" value="1">
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Retroalimentación (opcional)</label>
+                        <textarea name="feedback" rows="3" placeholder="Escribe comentarios sobre la entrega..."
+                                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 resize-none">{{ old('feedback', $submission->feedback) }}</textarea>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex gap-2">
                         <button type="submit"
-                                class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Guardar calificación
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Marcar revisada
                         </button>
                         <button type="button" @click="grading = false"
-                                class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition-colors">
+                                class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-xs rounded-lg hover:bg-gray-50 transition-colors">
                             Cancelar
                         </button>
                     </div>
                 </form>
-
-                {{-- Re-grade option --}}
+                {{-- Re-review option --}}
                 @if($submission->isGraded())
                 <div class="pt-1">
                     <button @click="grading = true"
                             class="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-violet-600 font-medium transition-colors">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                        Recalificar
+                        Revisar nuevamente
                     </button>
                 </div>
                 @endif

@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Docente;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
-use App\Models\GradeItem;
 use App\Models\Task;
+use App\Models\TaskFile;
 use App\Models\Week;
 use App\Notifications\NewTaskPublished;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TaskController extends Controller
 {
@@ -23,21 +24,30 @@ class TaskController extends Controller
             'description'  => 'nullable|string',
             'instructions' => 'nullable|string',
             'due_date'     => 'nullable|date',
-            'max_score'    => 'nullable|integer|min:1|max:1000',
-            'file'         => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,zip|max:20480',
+            'files.*'      => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,zip|max:20480',
         ]);
 
-        $data = $request->only(['title', 'description', 'instructions', 'due_date', 'max_score']);
+        $data = $request->only(['title', 'description', 'instructions', 'due_date']);
         $data['week_id'] = $week->id;
-
-        if ($request->hasFile('file')) {
-            $data['file_path'] = $request->file('file')->store("tasks/{$course->id}", 'public');
-        }
 
         $task = Task::create($data);
 
-        // Registrar columna en la libreta de notas
-        GradeItem::syncFromTask($task->load('week'));
+        // Guardar múltiples archivos de tarea
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $index => $file) {
+                $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs("tasks/{$course->id}", $filename, 'public');
+
+                TaskFile::create([
+                    'task_id' => $task->id,
+                    'file_path' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'order' => $index,
+                ]);
+            }
+        }
 
         // Notificar a alumnos matriculados activos
         $students = $course->students()->get();
@@ -61,13 +71,40 @@ class TaskController extends Controller
             'description'  => 'nullable|string',
             'instructions' => 'nullable|string',
             'due_date'     => 'nullable|date',
-            'max_score'    => 'nullable|integer|min:1|max:1000',
+            'files.*'      => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,zip|max:20480',
         ]);
 
-        $task->update($request->only(['title', 'description', 'instructions', 'due_date', 'max_score']));
+        $task->update($request->only(['title', 'description', 'instructions', 'due_date']));
 
-        // Sincronizar nombre/max_score en la libreta de notas
-        GradeItem::syncFromTask($task->load('week'));
+        // Si se suben nuevos archivos, reemplazar todos los archivos existentes
+        if ($request->hasFile('files')) {
+            // Eliminar archivos anteriores
+            foreach ($task->taskFiles as $taskFile) {
+                Storage::disk('public')->delete($taskFile->file_path);
+                $taskFile->delete();
+            }
+
+            // También eliminar archivo legacy si existe
+            if ($task->file_path) {
+                Storage::disk('public')->delete($task->file_path);
+                $task->update(['file_path' => null]);
+            }
+
+            // Guardar nuevos archivos
+            foreach ($request->file('files') as $index => $file) {
+                $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs("tasks/{$course->id}", $filename, 'public');
+
+                TaskFile::create([
+                    'task_id' => $task->id,
+                    'file_path' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'order' => $index,
+                ]);
+            }
+        }
 
         return back()->with('success', 'Tarea actualizada.');
     }
@@ -76,14 +113,16 @@ class TaskController extends Controller
     {
         $this->authorize('manage', $course);
 
+        // Eliminar archivos de tarea
+        foreach ($task->taskFiles as $taskFile) {
+            Storage::disk('public')->delete($taskFile->file_path);
+            $taskFile->delete();
+        }
+
+        // También eliminar archivo legacy si existe
         if ($task->file_path) {
             Storage::disk('public')->delete($task->file_path);
         }
-
-        // Eliminar el ítem de la libreta de notas asociado a esta tarea
-        GradeItem::where('type', GradeItem::TYPE_TASK)
-            ->where('reference_id', $task->id)
-            ->delete();
 
         $task->delete();
 

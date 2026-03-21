@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Submission;
+use App\Models\SubmissionFile;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -37,12 +38,12 @@ class SubmissionController extends Controller
         }
 
         $request->validate([
-            'file'     => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,zip,rar,jpg,jpeg,png|max:10240',
+            'files.*'  => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,zip,rar,jpg,jpeg,png|max:10240',
             'comments' => 'nullable|string|max:2000',
         ]);
 
-        if (!$request->hasFile('file') && !$request->filled('comments')) {
-            return back()->with('error', 'Debe adjuntar un archivo o escribir un comentario.');
+        if (!$request->hasFile('files') && !$request->filled('comments')) {
+            return back()->with('error', 'Debe adjuntar al menos un archivo o escribir un comentario.');
         }
 
         $data = [
@@ -53,17 +54,24 @@ class SubmissionController extends Controller
             'status'       => 'submitted',
         ];
 
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $data['original_filename'] = $file->getClientOriginalName();
-            $data['file_path'] = $file->storeAs(
-                "submissions/{$task->id}",
-                Str::random(40) . '.' . $file->getClientOriginalExtension(),
-                'public'
-            );
-        }
+        $submission = Submission::create($data);
 
-        Submission::create($data);
+        // Guardar múltiples archivos
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $index => $file) {
+                $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs("submissions/{$task->id}", $filename, 'public');
+
+                SubmissionFile::create([
+                    'submission_id' => $submission->id,
+                    'file_path' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'order' => $index,
+                ]);
+            }
+        }
 
         return back()->with('success', 'Tarea "' . $task->title . '" entregada exitosamente.');
     }
@@ -91,7 +99,7 @@ class SubmissionController extends Controller
         }
 
         $request->validate([
-            'file'     => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,zip,rar,jpg,jpeg,png|max:10240',
+            'files.*'  => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,zip,rar,jpg,jpeg,png|max:10240',
             'comments' => 'nullable|string|max:2000',
         ]);
 
@@ -101,21 +109,37 @@ class SubmissionController extends Controller
             'status'       => 'submitted',
         ];
 
-        if ($request->hasFile('file')) {
-            // Eliminar archivo anterior
+        $submission->update($data);
+
+        // Si se suben nuevos archivos, reemplazar todos los archivos existentes
+        if ($request->hasFile('files')) {
+            // Eliminar archivos anteriores
+            foreach ($submission->submissionFiles as $submissionFile) {
+                Storage::disk('public')->delete($submissionFile->file_path);
+                $submissionFile->delete();
+            }
+
+            // También eliminar archivo legacy si existe
             if ($submission->file_path) {
                 Storage::disk('public')->delete($submission->file_path);
+                $submission->update(['file_path' => null, 'original_filename' => null]);
             }
-            $file = $request->file('file');
-            $data['original_filename'] = $file->getClientOriginalName();
-            $data['file_path'] = $file->storeAs(
-                "submissions/{$task->id}",
-                Str::random(40) . '.' . $file->getClientOriginalExtension(),
-                'public'
-            );
-        }
 
-        $submission->update($data);
+            // Guardar nuevos archivos
+            foreach ($request->file('files') as $index => $file) {
+                $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs("submissions/{$task->id}", $filename, 'public');
+
+                SubmissionFile::create([
+                    'submission_id' => $submission->id,
+                    'file_path' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'order' => $index,
+                ]);
+            }
+        }
 
         return back()->with('success', 'Entrega actualizada exitosamente.');
     }

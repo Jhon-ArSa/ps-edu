@@ -9,7 +9,7 @@ class Task extends Model
 {
     protected $fillable = [
         'week_id', 'title', 'description', 'instructions',
-        'due_date', 'max_score', 'file_path', 'status',
+        'due_date', 'file_path', 'status',
     ];
 
     protected $casts = [
@@ -24,6 +24,11 @@ class Task extends Model
     public function submissions()
     {
         return $this->hasMany(Submission::class);
+    }
+
+    public function taskFiles()
+    {
+        return $this->hasMany(TaskFile::class);
     }
 
     public function submissionFor(int $userId): ?Submission

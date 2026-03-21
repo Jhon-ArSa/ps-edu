@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Alumno;
 
 use App\Http\Controllers\Controller;
+use App\Models\SupportTicket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -27,8 +28,19 @@ class SupportController extends Controller
             'message'  => 'required|string|max:2000',
         ]);
 
-        // Registrar la solicitud de soporte
-        Log::channel('support')->info('Solicitud de soporte de alumno', [
+        // Crear el ticket de soporte en la base de datos
+        $ticket = SupportTicket::create([
+            'user_id'  => auth()->id(),
+            'subject'  => $request->subject,
+            'category' => $request->category,
+            'message'  => $request->message,
+            'status'   => 'open',
+            'priority' => 'medium',
+        ]);
+
+        // También registrar en logs para backup
+        Log::channel('support')->info('Ticket de soporte creado', [
+            'ticket_id' => $ticket->id,
             'user_id'   => auth()->id(),
             'user_name' => auth()->user()->name,
             'email'     => auth()->user()->email,

@@ -103,6 +103,17 @@ Route::middleware(['auth', 'role:admin'])
 
     // ── Supervisión de foros ──────────────────────────────────────────────
     Route::get('/foro', [Admin\ForumController::class, 'index'])->name('forum.index');
+
+    // ── Gestión de soporte técnico ───────────────────────────────────────
+    Route::prefix('soporte')->name('support.')->group(function () {
+        Route::get('/',                        [Admin\SupportController::class, 'index'])->name('index');
+        Route::get('/{ticket}',                [Admin\SupportController::class, 'show'])->name('show');
+        Route::patch('/{ticket}',              [Admin\SupportController::class, 'update'])->name('update');
+        Route::patch('/{ticket}/estado',       [Admin\SupportController::class, 'updateStatus'])->name('update-status');
+        Route::patch('/{ticket}/asignar',      [Admin\SupportController::class, 'assign'])->name('assign');
+        Route::delete('/{ticket}',             [Admin\SupportController::class, 'destroy'])->name('destroy');
+        Route::get('/exportar/csv',            [Admin\SupportController::class, 'exportCsv'])->name('export');
+    });
 });
 
 // ── DOCENTE ───────────────────────────────────────────────────────────────────
