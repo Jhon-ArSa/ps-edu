@@ -29,13 +29,17 @@ class TaskReviewed extends Notification implements ShouldQueue
             ->greeting("Hola, {$notifiable->name}")
             ->line("Tu entrega de la tarea \"{$this->taskTitle}\" ha sido revisada.")
             ->line("Curso: {$this->courseName}")
-            ->action('Ver tarea', url("/alumno/cursos/{$this->courseId}"))
+            ->action('Ver tarea', route('alumno.courses.show', ['course' => $this->courseId]))
             ->line('¡Gracias por tu participación!');
     }
 
     public function toArray($notifiable): array
     {
         return [
+            'icon'        => 'task',
+            'title'       => 'Tarea revisada',
+            'body'        => "Tu entrega de la tarea \"{$this->taskTitle}\" ha sido revisada en {$this->courseName}.",
+            'url'         => route('alumno.courses.show', ['course' => $this->courseId], false),
             'type'        => 'task_reviewed',
             'task_title'  => $this->taskTitle,
             'course_id'   => $this->courseId,

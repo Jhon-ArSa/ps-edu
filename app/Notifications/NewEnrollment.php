@@ -22,7 +22,7 @@ class NewEnrollment extends Notification
             'icon'  => 'course',
             'title' => 'Matriculado en nuevo curso',
             'body'  => "Fuiste matriculado en el curso \"{$this->courseName}\".",
-            'url'   => route('alumno.courses.show', $this->courseId),
+            'url'   => route('alumno.courses.show', $this->courseId, false),
         ];
     }
 }

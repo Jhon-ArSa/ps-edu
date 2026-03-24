@@ -22,7 +22,7 @@ class CourseAssigned extends Notification
             'icon'  => 'course',
             'title' => 'Nuevo curso asignado',
             'body'  => "Fuiste asignado como docente del curso \"{$this->courseName}\".",
-            'url'   => route('docente.courses.show', $this->courseId),
+            'url'   => route('docente.courses.show', $this->courseId, false),
         ];
     }
 }

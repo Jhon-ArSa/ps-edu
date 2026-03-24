@@ -33,18 +33,24 @@ class SupportTicketResponded extends Notification
             ->line('Respuesta:')
             ->line($this->response)
             ->line('Atendido por: ' . $this->adminName)
-            ->action('Ir al sistema', url('/'));
+                ->action('Ir al sistema', route($notifiable->role . '.dashboard'));
     }
 
     public function toArray($notifiable): array
     {
+        $supportRoute = match ($notifiable->role) {
+            'docente' => 'docente.soporte',
+            'alumno'  => 'alumno.soporte',
+            default   => 'admin.support.index',
+        };
+
         return [
             'type'      => 'support_ticket_responded',
             'icon'      => 'support',
             'title'     => 'Respuesta de soporte disponible',
             'body'      => 'Tu ticket #' . $this->ticketId . ' recibió respuesta: ' . $this->subject,
             'ticket_id' => $this->ticketId,
-            'url'       => url('/' . $notifiable->role . '/soporte'),
+            'url'       => route($supportRoute, [], false),
         ];
     }
 }

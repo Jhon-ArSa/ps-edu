@@ -58,7 +58,7 @@ class ForumController extends Controller
                 courseName: $course->name,
                 topicTitle: $topic->title,
                 authorName: auth()->user()->name,
-                url: url('/alumno/mis-cursos/' . $course->id . '/foro/' . $topic->id),
+                url: route('alumno.forum.show', ['course' => $course, 'topic' => $topic], false),
             ));
         }
 

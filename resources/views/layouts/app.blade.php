@@ -296,10 +296,31 @@
                     {{-- Lista de notificaciones recientes --}}
                     <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
                         @forelse($recentNotifications as $notif)
-                            <a href="{{ $notif->data['url'] ?? url('/') }}"
+                            @php
+                                $notifIcon = $notif->data['icon'] ?? null;
+
+                                if ($notifIcon === 'announcement') {
+                                    $notifUrl = match (auth()->user()->role) {
+                                        'admin' => route('admin.intranet', [], false),
+                                        'docente' => route('docente.intranet', [], false),
+                                        default => route('alumno.intranet', [], false),
+                                    };
+                                } else {
+                                    $rawNotifUrl = $notif->data['url'] ?? '/';
+                                    $notifParts = parse_url($rawNotifUrl);
+                                    if ($notifParts !== false && isset($notifParts['host']) && $notifParts['host'] !== request()->getHost()) {
+                                        $notifUrl = ($notifParts['path'] ?? '/');
+                                        $notifUrl .= isset($notifParts['query']) ? '?' . $notifParts['query'] : '';
+                                        $notifUrl .= isset($notifParts['fragment']) ? '#' . $notifParts['fragment'] : '';
+                                    } else {
+                                        $notifUrl = $rawNotifUrl;
+                                    }
+                                }
+                            @endphp
+                            <a href="{{ $notifUrl ?: '/' }}"
                                @click.prevent="
                                    axios.patch('{{ route('notifications.read', $notif->id) }}')
-                                       .then(() => { window.location.href = $el.href })
+                                       .then((response) => { window.location.href = response?.data?.redirect || $el.href })
                                        .catch(() => { window.location.href = $el.href })
                                "
                                class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors {{ is_null($notif->read_at) ? 'bg-primary-50/40' : '' }}">

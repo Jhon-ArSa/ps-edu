@@ -24,7 +24,7 @@ class NewTaskPublished extends Notification
             'icon'      => 'task',
             'title'     => 'Nueva tarea publicada',
             'body'      => "Se publicó \"{$this->taskTitle}\" en el curso {$this->courseName}.",
-            'url'       => route('alumno.courses.show', $this->courseId),
+            'url'       => route('alumno.courses.show', $this->courseId, false),
         ];
     }
 }

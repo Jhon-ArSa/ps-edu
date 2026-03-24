@@ -24,7 +24,7 @@ class NewEvaluationAvailable extends Notification
             'icon'      => 'evaluation',
             'title'     => 'Nueva evaluación disponible',
             'body'      => "Se habilitó la evaluación \"{$this->evaluationTitle}\" en el curso {$this->courseName}.",
-            'url'       => route('alumno.courses.show', $this->courseId),
+            'url'       => route('alumno.courses.show', $this->courseId, false),
         ];
     }
 }

@@ -19,9 +19,9 @@ class NewAnnouncementPublished extends Notification
     public function toDatabase(object $notifiable): array
     {
         $url = match ($notifiable->role) {
-            'admin'   => route('admin.dashboard'),
-            'docente' => route('docente.intranet'),
-            default   => route('alumno.intranet'),
+            'admin'   => route('admin.intranet', [], false),
+            'docente' => route('docente.intranet', [], false),
+            default   => route('alumno.intranet', [], false),
         };
 
         return [

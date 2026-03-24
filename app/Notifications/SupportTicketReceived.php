@@ -32,7 +32,7 @@ class SupportTicketReceived extends Notification
             ->line('Solicitante: ' . $this->requesterName)
             ->line('Categoría: ' . $this->category)
             ->line('Asunto: ' . $this->subject)
-            ->action('Ver ticket', url('/admin/soporte/' . $this->ticketId));
+                ->action('Ver ticket', route('admin.support.show', ['ticket' => $this->ticketId]));
     }
 
     public function toArray($notifiable): array
@@ -43,7 +43,7 @@ class SupportTicketReceived extends Notification
             'title'     => 'Nuevo ticket de soporte',
             'body'      => $this->requesterName . ' registró el ticket #' . $this->ticketId . ': ' . $this->subject,
             'ticket_id' => $this->ticketId,
-            'url'       => url('/admin/soporte/' . $this->ticketId),
+            'url'       => route('admin.support.show', ['ticket' => $this->ticketId], false),
         ];
     }
 }

@@ -41,7 +41,18 @@
     @if($notifications->count() > 0)
         <div class="card overflow-hidden">
             @foreach($notifications as $notification)
-                @php $isUnread = is_null($notification->read_at); @endphp
+                @php
+                    $isUnread = is_null($notification->read_at);
+                    $rawNotifUrl = $notification->data['url'] ?? '/';
+                    $notifParts = parse_url($rawNotifUrl);
+                    if ($notifParts !== false && isset($notifParts['host']) && $notifParts['host'] !== request()->getHost()) {
+                        $notifUrl = ($notifParts['path'] ?? '/');
+                        $notifUrl .= isset($notifParts['query']) ? '?' . $notifParts['query'] : '';
+                        $notifUrl .= isset($notifParts['fragment']) ? '#' . $notifParts['fragment'] : '';
+                    } else {
+                        $notifUrl = $rawNotifUrl;
+                    }
+                @endphp
 
                 <div class="flex items-start gap-4 px-6 py-4 border-b border-gray-100 last:border-0 transition-colors {{ $isUnread ? 'bg-primary-50/40 hover:bg-primary-50/70' : 'hover:bg-gray-50/60' }}">
 
