@@ -104,7 +104,8 @@
             <div class="sidebar-divider-hideable" :class="sidebarCollapsed && 'sidebar-show'">
                 <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
             </div>
-            <x-sidebar-link route="docente.courses.index" icon="book">Mis Cursos</x-sidebar-link>
+            <x-sidebar-link route="docente.courses.index" icon="book"
+                            :active-routes="['docente.courses', 'docente.evaluations', 'docente.reports', 'docente.forum', 'forum.replies']">Mis Cursos</x-sidebar-link>
             <x-sidebar-link route="docente.intranet" icon="newspaper">Intranet</x-sidebar-link>
 
             <div class="sidebar-section-label sidebar-section-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
@@ -128,7 +129,8 @@
             <div class="sidebar-divider-hideable" :class="sidebarCollapsed && 'sidebar-show'">
                 <div class="mx-auto my-3 w-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
             </div>
-            <x-sidebar-link route="alumno.courses.index" icon="book">Mis Cursos</x-sidebar-link>
+            <x-sidebar-link route="alumno.courses.index" icon="book"
+                            :active-routes="['alumno.courses', 'alumno.submissions', 'alumno.evaluations', 'alumno.forum', 'forum.replies']">Mis Cursos</x-sidebar-link>
             <x-sidebar-link route="alumno.intranet" icon="newspaper">Intranet</x-sidebar-link>
 
             <div class="sidebar-section-label sidebar-section-hideable" :class="sidebarCollapsed && 'sidebar-hide'">

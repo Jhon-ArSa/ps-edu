@@ -1,16 +1,41 @@
-@props(['route', 'icon' => 'dot', 'badge' => 0])
+@props(['route', 'icon' => 'dot', 'badge' => 0, 'activeRoutes' => []])
 
 @php
-    $activePatterns = [$route, $route . '.*'];
-    $lastSegment = \Illuminate\Support\Str::afterLast($route, '.');
+    $routesForActive = $activeRoutes;
 
-    // When sidebar points to index/show/edit/create, also mark the whole module as active.
-    if (in_array($lastSegment, ['index', 'show', 'edit', 'create'], true)) {
-        $modulePrefix = \Illuminate\Support\Str::beforeLast($route, '.');
-        if ($modulePrefix !== '') {
-            $activePatterns[] = $modulePrefix . '.*';
+    if (is_string($routesForActive) && $routesForActive !== '') {
+        $routesForActive = [$routesForActive];
+    }
+
+    if (! is_array($routesForActive) || empty($routesForActive)) {
+        $routesForActive = [$route];
+    }
+
+    $activePatterns = [];
+
+    foreach ($routesForActive as $routeName) {
+        if (! is_string($routeName) || $routeName === '') {
+            continue;
+        }
+
+        $activePatterns[] = $routeName;
+
+        if (! \Illuminate\Support\Str::endsWith($routeName, '.*')) {
+            $activePatterns[] = $routeName . '.*';
+
+            $lastSegment = \Illuminate\Support\Str::afterLast($routeName, '.');
+
+            // When sidebar points to index/show/edit/create, also mark the whole module as active.
+            if (in_array($lastSegment, ['index', 'show', 'edit', 'create'], true)) {
+                $modulePrefix = \Illuminate\Support\Str::beforeLast($routeName, '.');
+                if ($modulePrefix !== '') {
+                    $activePatterns[] = $modulePrefix . '.*';
+                }
+            }
         }
     }
+
+    $activePatterns = array_values(array_unique($activePatterns));
 
     $active = false;
     foreach ($activePatterns as $pattern) {
