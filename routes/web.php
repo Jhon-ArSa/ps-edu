@@ -54,6 +54,7 @@ Route::middleware(['auth', 'role:admin'])
 
     Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
+    Route::get('users/export', [Admin\UserController::class, 'exportStudents'])->name('users.export');
     Route::resource('users', Admin\UserController::class);
     Route::patch('users/{user}/toggle-status', [Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 

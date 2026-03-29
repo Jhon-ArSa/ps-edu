@@ -9,19 +9,39 @@
 @section('content')
 <div class="space-y-4">
 
+    @php
+        $baseQuery = request()->query();
+    @endphp
+
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Gestión de Usuarios</h1>
             <p class="text-sm text-gray-500">{{ $users->total() }} usuarios registrados</p>
         </div>
-        <a href="{{ route('admin.users.create') }}"
-           class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Nuevo usuario
-        </a>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ route('admin.users.export', array_merge($baseQuery, ['format' => 'xlsx'])) }}"
+               class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-3.5 py-2 rounded-lg transition-colors">
+                Exportar XLSX
+            </a>
+            <a href="{{ route('admin.users.export', array_merge($baseQuery, ['format' => 'csv'])) }}"
+               class="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold px-3.5 py-2 rounded-lg transition-colors">
+                Exportar CSV
+            </a>
+            <a href="{{ route('admin.users.export', array_merge($baseQuery, ['format' => 'pdf'])) }}"
+               target="_blank"
+               class="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-3.5 py-2 rounded-lg transition-colors">
+                Exportar PDF
+            </a>
+
+            <a href="{{ route('admin.users.create') }}"
+               class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Nuevo usuario
+            </a>
+        </div>
     </div>
 
     {{-- Filters --}}
@@ -42,11 +62,17 @@
             <option value="docente" {{ request('role') === 'docente' ? 'selected' : '' }}>Docentes</option>
             <option value="alumno"  {{ request('role') === 'alumno'  ? 'selected' : '' }}>Alumnos</option>
         </select>
+        <select name="status"
+                class="px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent">
+            <option value="">Todos los estados</option>
+            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Activos</option>
+            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Inactivos</option>
+        </select>
         <button type="submit"
                 class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
             Filtrar
         </button>
-        @if(request()->hasAny(['search', 'role']))
+        @if(request()->hasAny(['search', 'role', 'status']))
             <a href="{{ route('admin.users.index') }}"
                class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
                 Limpiar

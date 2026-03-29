@@ -2,33 +2,61 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\StudentsExport;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\DocenteProfile;
 use App\Models\AlumnoProfile;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
+    private const USERS_PER_PAGE = 15;
+
+    public function index(Request $request): View
     {
-        $query = User::query();
+        $query = $this->baseUsersQuery();
 
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%')
-                  ->orWhere('dni', 'like', '%' . $request->search . '%');
-            });
-        }
+        $this->applyUserFilters($request, $query);
 
-        if ($request->filled('role')) {
-            $query->where('role', $request->role);
-        }
-
-        $users = $query->latest()->paginate(15)->withQueryString();
+        $users = $query->latest()->paginate(self::USERS_PER_PAGE)->withQueryString();
 
         return view('admin.users.index', compact('users'));
+    }
+
+    public function exportStudents(Request $request)
+    {
+        $validated = $request->validate([
+            'format' => ['required', 'in:xlsx,csv,pdf'],
+            'status' => ['nullable', 'in:0,1'],
+        ]);
+
+        $format    = $validated['format'];
+        $timestamp = now()->format('Ymd_His');
+
+        $query = $this->baseUsersQuery();
+        $this->applyUserFilters($request, $query);
+
+        $users = $query
+            ->latest()
+            ->get();
+
+        $export = new StudentsExport($users);
+
+        if ($format === 'pdf') {
+            return response()->view('admin.users.print', [
+                'users' => $users,
+                'generatedAt' => now(),
+            ]);
+        }
+
+        if ($format === 'csv') {
+            return $export->downloadCsv("usuarios_filtrados_{$timestamp}.csv");
+        }
+
+        return $export->downloadXlsx("usuarios_filtrados_{$timestamp}.xlsx");
     }
 
     public function create()
@@ -142,5 +170,39 @@ class UserController extends Controller
             'status'  => $user->status,
             'message' => $user->status ? 'Usuario activado' : 'Usuario desactivado',
         ]);
+    }
+
+    private function applyUserFilters(Request $request, Builder $query): void
+    {
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+
+            $query->where(function (Builder $q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('dni', 'like', "%{$search}%")
+                    ->orWhereHas('alumnoProfile', function (Builder $profileQ) use ($search) {
+                        $profileQ->where('code', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->boolean('status'));
+        }
+    }
+
+    private function baseUsersQuery(): Builder
+    {
+        return User::query()
+            ->with('alumnoProfile:id,user_id,code,promotion_year,program')
+            ->select([
+                'id', 'name', 'email', 'dni', 'phone',
+                'avatar', 'role', 'status', 'created_at',
+            ]);
     }
 }
