@@ -51,7 +51,7 @@
                 {{-- Task files display --}}
                 @if($task->taskFiles->isNotEmpty())
                 @foreach($task->taskFiles->sortBy('order') as $taskFile)
-                <a href="{{ Storage::url($taskFile->file_path) }}" target="_blank"
+                <a href="{{ asset($taskFile->file_path) }}" target="_blank"
                    class="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10 transition-colors">
                     <svg class="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     <div>
@@ -62,7 +62,7 @@
                 @endforeach
                 {{-- Legacy single file support --}}
                 @elseif($task->file_path)
-                <a href="{{ Storage::url($task->file_path) }}" target="_blank"
+                <a href="{{ asset($task->file_path) }}" target="_blank"
                    class="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10 transition-colors">
                     <svg class="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     <div>
@@ -194,7 +194,7 @@
                         <p class="text-xs font-semibold text-gray-600">Archivos entregados:</p>
                         <div class="flex flex-wrap gap-2">
                             @foreach($submission->submissionFiles->sortBy('order') as $subFile)
-                            <a href="{{ Storage::url($subFile->file_path) }}" target="_blank"
+                            <a href="{{ asset($subFile->file_path) }}" target="_blank"
                                class="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 transition-colors">
                                 <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                 {{ $subFile->original_filename }}

@@ -19,7 +19,7 @@ class Material extends Model
     public function getDownloadUrlAttribute(): ?string
     {
         return $this->type === 'file' && $this->file_path
-            ? asset('storage/' . $this->file_path)
+            ? asset($this->file_path)
             : $this->url;
     }
 

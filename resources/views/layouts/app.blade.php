@@ -13,6 +13,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Inicio') — {{ \App\Models\Setting::get('institution_acronym', config('app.name')) }}</title>
+
+    {{-- Favicon --}}
+    <link rel="icon" type="image/png" href="{{ asset('logo/logo-educacion.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('logo/logo-educacion.png') }}">
+
+    {{-- SEO / Open Graph --}}
+    <meta name="description" content="{{ \App\Models\Setting::get('institution_name', config('app.name')) }} — Plataforma de gestión académica y aula virtual">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ \App\Models\Setting::get('institution_name', config('app.name')) }}">
+    <meta property="og:description" content="Plataforma integral para la gestión académica, aula virtual y comunicación institucional">
+    <meta property="og:image" content="{{ asset('logo/logo-educacion.png') }}">
+    <meta property="og:url" content="{{ config('app.url') }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ \App\Models\Setting::get('institution_name', config('app.name')) }}">
+    <meta name="twitter:image" content="{{ asset('logo/logo-educacion.png') }}">
+
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -33,26 +49,26 @@
     ]"
 >
     {{-- Brand / Logo --}}
-    <div class="relative flex items-center" :class="sidebarCollapsed ? 'justify-center px-3 py-5' : 'px-5 py-5'">
-        <div class="flex items-center gap-3" :class="sidebarCollapsed && 'md:justify-center'">
+    <div class="relative flex items-center" :class="sidebarCollapsed ? 'justify-center px-3 py-4' : 'px-5 py-4'">
+        <div class="flex items-center gap-3 min-w-0" :class="sidebarCollapsed && 'md:justify-center'">
             {{-- Logo mark --}}
             <div class="sidebar-logo shrink-0">
-                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="currentColor"/>
-                    <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="currentColor" opacity="0.6"/>
-                </svg>
+                <img src="{{ asset('logo/logo-educacion.png') }}" alt="Logo" class="w-8 h-8 object-contain drop-shadow-sm">
             </div>
             {{-- Institution text --}}
-            <div class="overflow-hidden flex-1 whitespace-nowrap sidebar-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
-                <p class="text-white font-extrabold text-[13.5px] leading-tight truncate tracking-tight">
+            <div class="overflow-hidden min-w-0 sidebar-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
+                <p class="text-white font-extrabold text-[13px] leading-tight truncate tracking-tight">
                     {{ \App\Models\Setting::get('institution_name', config('app.name')) }}
                 </p>
-                <p class="text-primary-400 text-[10.5px] font-semibold truncate mt-0.5 tracking-wide uppercase">
-                    {{ \App\Models\Setting::get('institution_subtitle', 'Posgrado') }}
-                </p>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                    <p class="text-white/50 text-[10px] font-semibold truncate tracking-wide uppercase">
+                        {{ \App\Models\Setting::get('institution_subtitle', 'Posgrado') }}
+                    </p>
+                </div>
             </div>
         </div>
-        <div class="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-gray-200/80 via-gray-200/40 to-transparent"></div>
+        <div class="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent"></div>
     </div>
 
     {{-- Navigation --}}

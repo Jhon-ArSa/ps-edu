@@ -421,25 +421,29 @@
 
 /* Logo mark */
 .sidebar-logo {
-    width: 2.375rem;
-    height: 2.375rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(145deg, #3b82f6, #2563eb);
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.875rem;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow:
-        0 4px 12px -2px rgba(37, 99, 235, 0.35),
-        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+        0 4px 16px -4px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset;
     transition:
         transform 0.2s ease,
-        box-shadow 0.2s ease;
+        box-shadow 0.2s ease,
+        background 0.2s ease;
 }
 .sidebar-logo:hover {
-    transform: scale(1.04);
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.18);
     box-shadow:
-        0 6px 16px -2px rgba(37, 99, 235, 0.4),
+        0 6px 20px -4px rgba(0, 0, 0, 0.3),
         0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 

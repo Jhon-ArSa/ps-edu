@@ -18,7 +18,14 @@ class AnnouncementController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('admin.announcements.index', compact('announcements'));
+        $stats = [
+            'total'     => Announcement::count(),
+            'published' => Announcement::published()->count(),
+            'drafts'    => Announcement::whereNull('published_at')->orWhere('published_at', '>', now())->count(),
+            'thisWeek'  => Announcement::where('created_at', '>=', now()->startOfWeek())->count(),
+        ];
+
+        return view('admin.announcements.index', compact('announcements', 'stats'));
     }
 
     public function create()

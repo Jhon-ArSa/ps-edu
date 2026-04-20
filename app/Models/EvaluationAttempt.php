@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class EvaluationAttempt extends Model
 {
@@ -154,6 +153,6 @@ class EvaluationAttempt extends Model
 
     public function getFileUrlAttribute(): ?string
     {
-        return $this->file_path ? Storage::url($this->file_path) : null;
+        return $this->file_path ? asset($this->file_path) : null;
     }
 }

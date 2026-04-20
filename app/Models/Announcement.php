@@ -17,17 +17,17 @@ class Announcement extends Model
         }
 
         // Verificar si el archivo existe antes de retornar la URL
-        $fullPath = storage_path('app/public/' . $this->image_path);
+        $fullPath = public_path($this->image_path);
         if (!file_exists($fullPath)) {
             return null;
         }
 
-        return asset('storage/' . $this->image_path);
+        return asset($this->image_path);
     }
 
     public function hasValidImage(): bool
     {
-        return $this->image_path && file_exists(storage_path('app/public/' . $this->image_path));
+        return $this->image_path && file_exists(public_path($this->image_path));
     }
 
     protected function casts(): array

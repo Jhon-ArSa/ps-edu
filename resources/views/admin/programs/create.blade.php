@@ -186,38 +186,60 @@
                 </div>
             </div>
             <div class="px-6 py-5">
-                <div class="relative" x-data="{ open: false, search: '' }">
+                <div x-data="coordinatorSelect()" @click.away="open = false">
                     <label class="form-label">Seleccionar coordinador</label>
+
+                    {{-- Selected coordinator display --}}
+                    <div x-show="selectedName" x-cloak class="flex items-center gap-3 p-3 mb-3 bg-amber-50 border border-amber-200 rounded-xl">
+                        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center shrink-0">
+                            <span class="text-amber-700 text-xs font-bold" x-text="selectedInitials"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-gray-900 truncate" x-text="selectedName"></p>
+                            <p class="text-xs text-gray-400" x-text="selectedEmail"></p>
+                        </div>
+                        <button type="button" @click="clearSelection()" class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    {{-- Search input --}}
                     <div class="relative">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="m21 21-4.35-4.35"/></svg>
-                        <input type="text" x-model="search" @focus="open = true" @click.away="open = false"
-                               placeholder="Buscar docente por nombre..."
+                        <input type="text" x-model="search" @focus="open = true"
+                               placeholder="Buscar docente por nombre o correo..."
                                class="form-input w-full pl-10" autocomplete="off">
                     </div>
 
-                    {{-- Dropdown --}}
-                    <div x-show="open" x-cloak x-transition
-                         class="absolute z-20 w-full mt-1 bg-white rounded-xl shadow-xl border border-gray-200 max-h-60 overflow-y-auto">
+                    <input type="hidden" name="coordinator_id" :value="selectedId">
+
+                    {{-- Lista inline (no flotante) --}}
+                    <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                         class="mt-1 bg-white rounded-xl border border-gray-200 shadow-lg max-h-64 overflow-y-auto">
                         <div class="p-1.5">
-                            {{-- Option: Sin coordinador --}}
-                            <label class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="coordinator_id" value="" class="text-primary-600 focus:ring-primary-500"
-                                       {{ !old('coordinator_id') ? 'checked' : '' }}>
+                            <div @click="clearSelection(); open = false"
+                                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                                 :class="!selectedId ? 'bg-primary-50 border border-primary-100' : ''">
+                                <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"/></svg>
+                                </div>
                                 <span class="text-sm text-gray-500 italic">Sin coordinador asignado</span>
-                            </label>
+                                <svg x-show="!selectedId" class="w-4 h-4 text-primary-500 ml-auto shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            </div>
                             @foreach($coordinators as $coordinator)
-                            <label class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                                   x-show="!search || '{{ strtolower($coordinator->name) }}'.includes(search.toLowerCase()) || '{{ strtolower($coordinator->email) }}'.includes(search.toLowerCase())">
-                                <input type="radio" name="coordinator_id" value="{{ $coordinator->id }}" class="text-primary-600 focus:ring-primary-500"
-                                       {{ old('coordinator_id') == $coordinator->id ? 'checked' : '' }}>
+                            <div @click="selectCoordinator('{{ $coordinator->id }}', '{{ addslashes($coordinator->name) }}', '{{ $coordinator->email }}'); open = false; search = ''"
+                                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-amber-50 cursor-pointer transition-colors"
+                                 :class="selectedId == '{{ $coordinator->id }}' ? 'bg-amber-50 border border-amber-100' : ''"
+                                 x-show="!search || '{{ strtolower(addslashes($coordinator->name)) }}'.includes(search.toLowerCase()) || '{{ strtolower($coordinator->email) }}'.includes(search.toLowerCase())">
                                 <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100 flex items-center justify-center shrink-0">
                                     <span class="text-amber-600 text-[10px] font-bold">{{ strtoupper(substr($coordinator->name, 0, 2)) }}</span>
                                 </div>
-                                <div class="min-w-0">
+                                <div class="min-w-0 flex-1">
                                     <p class="text-sm font-medium text-gray-900 truncate">{{ $coordinator->name }}</p>
                                     <p class="text-xs text-gray-400">{{ $coordinator->email }}</p>
                                 </div>
-                            </label>
+                                <svg x-show="selectedId == '{{ $coordinator->id }}'" class="w-4 h-4 text-amber-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            </div>
                             @endforeach
                         </div>
                     </div>
@@ -260,6 +282,40 @@ function programForm() {
             const y = s / 2;
             if (y === Math.floor(y)) return Math.floor(y) + (Math.floor(y) === 1 ? ' año' : ' años');
             return y.toFixed(1) + ' años';
+        }
+    }
+}
+
+function coordinatorSelect() {
+    return {
+        open: false,
+        search: '',
+        selectedId: '{{ old('coordinator_id', '') }}',
+        selectedName: '',
+        selectedEmail: '',
+        get selectedInitials() {
+            if (!this.selectedName) return '';
+            return this.selectedName.substring(0, 2).toUpperCase();
+        },
+        init() {
+            @if(old('coordinator_id'))
+                @foreach($coordinators as $c)
+                    @if(old('coordinator_id') == $c->id)
+                        this.selectedName = '{{ addslashes($c->name) }}';
+                        this.selectedEmail = '{{ $c->email }}';
+                    @endif
+                @endforeach
+            @endif
+        },
+        selectCoordinator(id, name, email) {
+            this.selectedId = id;
+            this.selectedName = name;
+            this.selectedEmail = email;
+        },
+        clearSelection() {
+            this.selectedId = '';
+            this.selectedName = '';
+            this.selectedEmail = '';
         }
     }
 }
