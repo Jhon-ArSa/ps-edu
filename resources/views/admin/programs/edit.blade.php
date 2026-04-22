@@ -253,39 +253,6 @@
                     @error('coordinator_id') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
-                        <div class="p-1.5">
-                            <div @click="clearSelection(); open = false"
-                                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                                 :class="!selectedId ? 'bg-primary-50 border border-primary-200' : ''">
-                                <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"/></svg>
-                                </div>
-                                <span class="text-sm text-gray-500 italic">Sin coordinador asignado</span>
-                            </div>
-                            @foreach($coordinators as $coordinator)
-                            <div @click="selectCoordinator('{{ $coordinator->id }}', '{{ addslashes($coordinator->name) }}', '{{ $coordinator->email }}'); open = false; search = ''"
-                                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-amber-50 cursor-pointer transition-colors"
-                                 :class="selectedId == '{{ $coordinator->id }}' ? 'bg-amber-50 border border-amber-200' : ''"
-                                 x-show="!search || '{{ strtolower(addslashes($coordinator->name)) }}'.includes(search.toLowerCase()) || '{{ strtolower($coordinator->email) }}'.includes(search.toLowerCase())">
-                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100 flex items-center justify-center shrink-0">
-                                    <span class="text-amber-600 text-[10px] font-bold">{{ strtoupper(substr($coordinator->name, 0, 2)) }}</span>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $coordinator->name }}
-                                        @if($program->coordinator_id == $coordinator->id)
-                                            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-1">Actual</span>
-                                        @endif
-                                    </p>
-                                    <p class="text-xs text-gray-400">{{ $coordinator->email }}</p>
-                                </div>
-                                <svg x-show="selectedId == '{{ $coordinator->id }}'" class="w-4 h-4 text-amber-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @error('coordinator_id') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                </div>
-            </div>
         </div>
 
         {{-- Actions --}}
