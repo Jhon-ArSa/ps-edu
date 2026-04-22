@@ -135,6 +135,50 @@
 
         /* ── Material icons size fix ───────────────────────────── */
         .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; }
+
+        /* ── Auth inputs (dark theme) ──────────────────────────── */
+        .auth-label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: rgba(216,226,255,0.75);
+            margin-bottom: 0.375rem;
+            letter-spacing: 0.01em;
+        }
+        .auth-input {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(34,211,238,0.18);
+            border-radius: 10px;
+            padding: 0.65rem 1rem;
+            font-size: 0.875rem;
+            color: #d8e2ff;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .auth-input::placeholder {
+            color: rgba(197,198,205,0.32);
+        }
+        .auth-input:focus {
+            border-color: rgba(34,211,238,0.55);
+            background: rgba(34,211,238,0.05);
+            box-shadow: 0 0 0 3px rgba(34,211,238,0.10), 0 0 18px rgba(34,211,238,0.08);
+        }
+        .auth-input.error {
+            border-color: rgba(239,68,68,0.6);
+            background: rgba(239,68,68,0.06);
+        }
+        .auth-input:focus.error {
+            box-shadow: 0 0 0 3px rgba(239,68,68,0.12);
+        }
+        .auth-icon {
+            color: rgba(34,211,238,0.5);
+            transition: color 0.2s;
+        }
+        .auth-input:focus ~ .auth-icon,
+        .auth-input-wrap:focus-within .auth-icon {
+            color: rgba(34,211,238,0.8);
+        }
     </style>
 </head>
 
@@ -166,25 +210,6 @@
 {{-- ═══════════════════════════════════════════════════════════ --}}
 {{-- HEADER STRIP                                               --}}
 {{-- ═══════════════════════════════════════════════════════════ --}}
-<header class="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-8 py-5"
-        style="border-bottom:1px solid rgba(34,211,238,0.10);">
-    <div class="flex items-center gap-3">
-        <div style="width:32px;height:32px;border:1px solid rgba(34,211,238,0.35);display:flex;align-items:center;justify-content:center;border-radius:4px;">
-            <span class="material-symbols-outlined text-cyan" style="font-size:18px;">school</span>
-        </div>
-        <span class="font-mono-custom text-xs tracking-[0.25em] uppercase" style="color:rgba(216,226,255,0.7);">
-            {{ \App\Models\Setting::get('institution_acronym', 'UNCP') }}
-        </span>
-    </div>
-    <div class="hidden md:flex items-center gap-6 font-mono-custom" style="font-size:10px;letter-spacing:0.15em;color:rgba(197,198,205,0.6);">
-        <div class="flex items-center gap-2">
-            <span class="status-dot" style="width:6px;height:6px;border-radius:50%;display:inline-block;animation:pulse 2s ease-in-out infinite;"></span>
-            SISTEMA ACTIVO
-        </div>
-        <div class="hidden lg:block">PROTOCOLO SEGURO · TLS 1.3</div>
-        <div class="hidden lg:block">AÑO ACADÉMICO {{ date('Y') }}</div>
-    </div>
-</header>
 
 {{-- ═══════════════════════════════════════════════════════════ --}}
 {{-- LAYOUT PRINCIPAL                                           --}}
@@ -278,7 +303,7 @@
     </div>
 
     {{-- ── PANEL DERECHO – Formulario ───────────────────────── --}}
-    <div class="w-full lg:w-1/2 xl:w-2/5 flex flex-col items-center justify-center px-6 py-24 relative"
+    <div class="w-full lg:w-1/2 xl:w-2/5 flex flex-col items-center justify-center px-6 py-12 relative"
          style="background:rgba(1,12,38,0.6);backdrop-filter:blur(2px);">
 
         {{-- Línea decorativa izquierda (solo desktop) --}}
@@ -305,12 +330,8 @@
                 <span class="material-symbols-outlined cyan-glow text-cyan" style="font-size:56px;">auto_stories</span>
             </div>
 
-            {{-- Encabezado del form --}}
-            <div class="mb-8 text-center">
-                <p class="font-mono-custom mb-2 uppercase tracking-widest" style="font-size:10px;color:#22d3ee;letter-spacing:0.25em;">Portal de Acceso</p>
-                <h2 style="font-size:1.6rem;font-weight:800;color:#d8e2ff;letter-spacing:-0.01em;">Iniciar Sesión</h2>
-                <p class="mt-1 text-sm" style="color:rgba(197,198,205,0.6);">Ingresa tus credenciales institucionales</p>
-            </div>
+            {{-- Encabezado del form (cada vista lo define) --}}
+            @yield('form-header')
 
             {{-- Formulario --}}
             @yield('content')
