@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Announcement extends Model
 {
+    use HasFactory;
     protected $fillable = ['title', 'content', 'author_id', 'target_role', 'published_at', 'image_path'];
 
     // target_role: 'all' | 'docente' | 'alumno' | 'admin'
