@@ -5,6 +5,12 @@
 
     RewriteEngine On
 
+    # Detectar HTTPS detrás de proxy inverso (cPanel/hosting compartido)
+    RewriteCond %{HTTP:X-Forwarded-Proto} =https
+    RewriteRule ^ - [E=HTTPS:on]
+    RewriteCond %{HTTP:X-Forwarded-SSL} =on
+    RewriteRule ^ - [E=HTTPS:on]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
