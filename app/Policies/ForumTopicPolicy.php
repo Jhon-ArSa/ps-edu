@@ -18,11 +18,11 @@ class ForumTopicPolicy
             return true;
         }
 
-        if ($topic->user_id === $user->id) {
+        if ((int) $topic->user_id === (int) $user->id) {
             return true;
         }
 
         // Docente del curso correspondiente
-        return $topic->course->teacher_id === $user->id;
+        return (int) $topic->course->teacher_id === (int) $user->id;
     }
 }

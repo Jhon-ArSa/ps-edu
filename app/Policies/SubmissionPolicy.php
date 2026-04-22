@@ -13,21 +13,18 @@ class SubmissionPolicy
      */
     public function update(User $user, Submission $submission): bool
     {
-        return $submission->user_id === $user->id
+        return (int) $submission->user_id === (int) $user->id
             && ! $submission->isGraded()
             && ! $submission->task->isExpired();
     }
 
-    /**
-     * Solo el dueño de la entrega puede verla (alumno), o el docente del curso.
-     */
     public function view(User $user, Submission $submission): bool
     {
-        if ($submission->user_id === $user->id) {
+        if ((int) $submission->user_id === (int) $user->id) {
             return true;
         }
 
         // ¿Es el docente del curso al que pertenece la tarea?
-        return $submission->task->week->course->teacher_id === $user->id;
+        return (int) $submission->task->week->course->teacher_id === (int) $user->id;
     }
 }
