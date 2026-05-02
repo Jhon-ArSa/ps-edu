@@ -194,9 +194,24 @@
 
 </div>
 
-{{-- Modal emergente para anuncios importantes --}}
-@if($latestAnnouncements->count() > 0)
-    <x-announcement-modal :announcement="$latestAnnouncements->first()" />
-@endif
+{{-- Modales emergentes --}}
+@foreach($popupAnnouncements as $popup)
+    <x-announcement-modal :announcement="$popup" />
+@endforeach
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const ids = @json($popupAnnouncements->pluck('id'));
+    const queue = ids.filter(id => !localStorage.getItem(`announcement_${id}_shown`) && !localStorage.getItem(`announcement_${id}_read`));
+    let index = 0;
+    function showNext() {
+        if (index < queue.length) document.dispatchEvent(new CustomEvent(`show-popup-${queue[index++]}`));
+    }
+    document.addEventListener('popup-closed', () => setTimeout(showNext, 400));
+    setTimeout(showNext, 800);
+});
+</script>
+@endpush
 
 @endsection

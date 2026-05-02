@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Confiar en todos los proxies (necesario para cPanel/hosting compartido con SSL)
         $middleware->trustProxies(at: '*');
 
+        // Headers de seguridad en todas las rutas web
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeadersMiddleware::class,
+        ]);
+
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);

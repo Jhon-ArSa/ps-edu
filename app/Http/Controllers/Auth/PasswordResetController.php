@@ -40,7 +40,7 @@ class PasswordResetController extends Controller
         $request->validate([
             'token'                 => 'required',
             'email'                 => 'required|email',
-            'password'              => 'required|min:8|confirmed',
+            'password'              => ['required', 'min:8', 'confirmed', new \App\Rules\StrongPassword()],
             'password_confirmation' => 'required',
         ]);
 

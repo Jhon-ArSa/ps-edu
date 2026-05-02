@@ -15,14 +15,51 @@
             <h1 class="text-xl font-bold text-gray-900">Gestión de Usuarios</h1>
             <p class="text-sm text-gray-500">{{ $users->total() }} usuarios registrados</p>
         </div>
-        <a href="{{ route('admin.users.create') }}"
-           class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Nuevo usuario
-        </a>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('admin.users.import') }}"
+               class="inline-flex items-center gap-2 bg-white border border-gray-300 hover:border-primary-400 text-gray-700 hover:text-primary-700 text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                Importar CSV
+            </a>
+            <a href="{{ route('admin.users.create') }}"
+               class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Nuevo usuario
+            </a>
+        </div>
     </div>
+
+    {{-- Resultado de importación --}}
+    @if(session('import_summary'))
+    <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-green-800">{{ session('import_summary') }}</p>
+                @if(session('import_errors') && count(session('import_errors')))
+                <details class="mt-2">
+                    <summary class="text-xs text-green-700 cursor-pointer hover:text-green-900 font-medium">
+                        Ver {{ count(session('import_errors')) }} aviso(s)
+                    </summary>
+                    <ul class="mt-2 space-y-0.5 text-xs text-amber-700">
+                        @foreach(session('import_errors') as $err)
+                        <li class="flex items-start gap-1">
+                            <span class="text-amber-400 flex-shrink-0">•</span>{{ $err }}
+                        </li>
+                        @endforeach
+                    </ul>
+                </details>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- Filters --}}
     <form method="GET" action="{{ route('admin.users.index') }}"

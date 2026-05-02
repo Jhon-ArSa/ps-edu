@@ -24,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Configurar Carbon en español
+        \Carbon\Carbon::setLocale('es');
+        setlocale(LC_TIME, 'es_ES.UTF-8', 'es_ES', 'Spanish_Spain', 'Spanish');
+        
         Gate::policy(Course::class, CoursePolicy::class);
         Gate::policy(Submission::class, SubmissionPolicy::class);
         Gate::policy(ForumTopic::class, ForumTopicPolicy::class);
@@ -34,5 +38,8 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinutes(5, 10)
                 ->by($request->input('email') . '|' . $request->ip());
         });
+
+        // Registrar listener de eventos de seguridad
+        \Illuminate\Support\Facades\Event::subscribe(\App\Listeners\LogSecurityEvents::class);
     }
 }

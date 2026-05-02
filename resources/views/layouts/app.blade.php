@@ -122,6 +122,7 @@
             </div>
             <x-sidebar-link route="docente.courses.index" icon="book">Mis Cursos</x-sidebar-link>
             <x-sidebar-link route="docente.intranet" icon="newspaper">Intranet</x-sidebar-link>
+            <x-sidebar-link route="docente.announcements.index" icon="notification">Mis Anuncios</x-sidebar-link>
 
             <div class="sidebar-section-label sidebar-section-hideable" :class="sidebarCollapsed && 'sidebar-hide'">
                 <span class="sidebar-section-text">Personal</span>

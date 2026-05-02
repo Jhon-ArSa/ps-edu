@@ -35,103 +35,32 @@
 
         /* ── Glass card ────────────────────────────────────────── */
         .glass-panel {
-            background: rgba(255,255,255,0.04);
-            backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.10);
-            box-shadow: 0 0 60px rgba(34,211,238,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
         }
-        .glass-form {
-            background: rgba(255,255,255,0.03);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-
-        /* ── Cyan glow ─────────────────────────────────────────── */
-        .cyan-glow { filter: drop-shadow(0 0 18px rgba(34,211,238,0.55)); }
-        .text-cyan { color: #22d3ee; }
-        .border-cyan-custom { border-color: rgba(34,211,238,0.4); }
-        .bg-cyan-subtle { background: rgba(34,211,238,0.08); }
 
         /* ── Orb blur ──────────────────────────────────────────── */
-        .orb { filter: blur(90px); pointer-events: none; }
-
-        /* ── Particles ─────────────────────────────────────────── */
-        @keyframes particle-rise {
-            0%   { transform: translateY(100vh) translateX(0);    opacity: 0; }
-            15%  { opacity: 0.6; }
-            85%  { opacity: 0.3; }
-            100% { transform: translateY(-5vh)  translateX(30px); opacity: 0; }
-        }
-        .particle {
-            position: absolute;
-            background: #22d3ee;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particle-rise linear infinite;
-        }
-
-        /* ── Background zoom ───────────────────────────────────── */
-        @keyframes subtle-zoom {
-            0%   { transform: scale(1); }
-            100% { transform: scale(1.12); }
-        }
-        .bg-zoom { animation: subtle-zoom 28s ease-in-out infinite alternate; }
+        .orb { filter: blur(120px); pointer-events: none; opacity: 0.4; }
 
         /* ── Float ─────────────────────────────────────────────── */
         @keyframes float-y {
             0%,100% { transform: translateY(0); }
-            50%      { transform: translateY(-14px); }
+            50%      { transform: translateY(-8px); }
         }
-        .float-anim { animation: float-y 6s ease-in-out infinite; }
-
-        /* ── Drift orbs ────────────────────────────────────────── */
-        @keyframes drift {
-            0%   { transform: translateX(-8%) translateY(0)    scale(1);    }
-            50%  { transform: translateX(4%)  translateY(-4%)  scale(1.08); }
-            100% { transform: translateX(-8%) translateY(0)    scale(1);    }
-        }
-        .drift-anim { animation: drift 22s ease-in-out infinite; }
-
-        /* ── Shimmer button ────────────────────────────────────── */
-        @keyframes shimmer-move {
-            0%   { background-position: -200% 0; }
-            100% { background-position:  200% 0; }
-        }
-        .btn-shimmer {
-            background: linear-gradient(90deg,
-                rgba(34,211,238,0) 0%,
-                rgba(34,211,238,0.18) 50%,
-                rgba(34,211,238,0) 100%);
-            background-size: 200% 100%;
-            animation: shimmer-move 3s infinite linear;
-        }
-
-        /* ── Corner accents ────────────────────────────────────── */
-        .corner-tl::before {
-            content:''; position:absolute; top:0; left:0;
-            width:24px; height:24px;
-            border-top:1px solid rgba(34,211,238,0.5);
-            border-left:1px solid rgba(34,211,238,0.5);
-        }
-        .corner-br::after {
-            content:''; position:absolute; bottom:0; right:0;
-            width:24px; height:24px;
-            border-bottom:1px solid rgba(34,211,238,0.5);
-            border-right:1px solid rgba(34,211,238,0.5);
-        }
+        .float-anim { animation: float-y 4s ease-in-out infinite; }
 
         /* ── Status dot ────────────────────────────────────────── */
-        .status-dot { background:#22d3ee; box-shadow: 0 0 8px #22d3ee; }
-
-        /* ── Scan line hover ───────────────────────────────────── */
-        .scan-btn { position:relative; overflow:hidden; }
-        .scan-btn .scan-line {
-            position:absolute; inset:0;
-            background: linear-gradient(90deg, transparent 0%, rgba(34,211,238,0.15) 50%, transparent 100%);
-            transform: translateX(-100%);
-            transition: transform 0.9s ease;
+        .status-dot { 
+            background: #2563eb; 
+            box-shadow: 0 0 8px rgba(37,99,235,0.6);
+            animation: pulse-dot 2s ease-in-out infinite;
         }
-        .scan-btn:hover .scan-line { transform: translateX(100%); }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
 
         /* ── Material icons size fix ───────────────────────────── */
         .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; }
@@ -141,28 +70,28 @@
             display: block;
             font-size: 0.8125rem;
             font-weight: 600;
-            color: rgba(216,226,255,0.75);
+            color: rgba(226,232,240,0.9);
             margin-bottom: 0.375rem;
             letter-spacing: 0.01em;
         }
         .auth-input {
             width: 100%;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(34,211,238,0.18);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(148,163,184,0.25);
             border-radius: 10px;
-            padding: 0.65rem 1rem;
+            padding: 0.75rem 1rem;
             font-size: 0.875rem;
-            color: #d8e2ff;
+            color: #f1f5f9;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
         }
         .auth-input::placeholder {
-            color: rgba(197,198,205,0.32);
+            color: rgba(148,163,184,0.4);
         }
         .auth-input:focus {
-            border-color: rgba(34,211,238,0.55);
-            background: rgba(34,211,238,0.05);
-            box-shadow: 0 0 0 3px rgba(34,211,238,0.10), 0 0 18px rgba(34,211,238,0.08);
+            border-color: rgba(59,130,246,0.6);
+            background: rgba(59,130,246,0.08);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
         }
         .auth-input.error {
             border-color: rgba(239,68,68,0.6);
@@ -172,39 +101,40 @@
             box-shadow: 0 0 0 3px rgba(239,68,68,0.12);
         }
         .auth-icon {
-            color: rgba(34,211,238,0.5);
+            color: rgba(148,163,184,0.6);
             transition: color 0.2s;
         }
         .auth-input:focus ~ .auth-icon,
         .auth-input-wrap:focus-within .auth-icon {
-            color: rgba(34,211,238,0.8);
+            color: rgba(96,165,250,0.9);
+        }
+
+        /* ── Responsive ────────────────────────────────────────── */
+        @media (max-width: 640px) {
+            .auth-input {
+                padding: 0.625rem 0.875rem;
+                font-size: 16px; /* Evita zoom en iOS */
+            }
+            .auth-label {
+                font-size: 0.75rem;
+            }
         }
     </style>
 </head>
 
-<body class="min-h-screen flex antialiased overflow-hidden" style="background:#010f2a; color:#d8e2ff;">
+<body class="min-h-screen flex antialiased overflow-hidden" style="background:#0f172a; color:#e2e8f0;">
 
 {{-- ═══════════════════════════════════════════════════════════ --}}
-{{-- FONDO GLOBAL – orbs + partículas compartidas               --}}
+{{-- FONDO GLOBAL – orbs sutiles                                --}}
 {{-- ═══════════════════════════════════════════════════════════ --}}
 <div class="absolute inset-0 pointer-events-none overflow-hidden" style="z-index:0;">
-    {{-- Orbs --}}
-    <div class="orb drift-anim absolute" style="top:-12%;right:-8%;width:520px;height:520px;border-radius:50%;background:rgba(59,130,246,0.18);"></div>
-    <div class="orb absolute"           style="bottom:-14%;left:-10%;width:620px;height:620px;border-radius:50%;background:rgba(34,211,238,0.12);animation:drift 26s ease-in-out infinite reverse;"></div>
-    <div class="orb absolute"           style="top:40%;left:38%;width:320px;height:320px;border-radius:50%;background:rgba(99,102,241,0.10);animation:drift 18s ease-in-out infinite;"></div>
-
-    {{-- Partículas --}}
-    <div class="particle" style="width:2px;height:2px;left:8%;animation-duration:9s;animation-delay:0s;"></div>
-    <div class="particle" style="width:1px;height:1px;left:20%;animation-duration:13s;animation-delay:2s;"></div>
-    <div class="particle" style="width:2px;height:2px;left:35%;animation-duration:11s;animation-delay:4s;"></div>
-    <div class="particle" style="width:1px;height:1px;left:55%;animation-duration:16s;animation-delay:1s;"></div>
-    <div class="particle" style="width:2px;height:2px;left:72%;animation-duration:10s;animation-delay:5s;"></div>
-    <div class="particle" style="width:1px;height:1px;left:88%;animation-duration:12s;animation-delay:3s;"></div>
-    <div class="particle" style="width:2px;height:2px;left:95%;animation-duration:8s;animation-delay:7s;"></div>
-
+    {{-- Orbs sutiles --}}
+    <div class="orb absolute" style="top:-10%;right:-5%;width:480px;height:480px;border-radius:50%;background:rgba(59,130,246,0.15);"></div>
+    <div class="orb absolute" style="bottom:-12%;left:-8%;width:560px;height:560px;border-radius:50%;background:rgba(37,99,235,0.12);"></div>
+    
     {{-- Grid sutil --}}
-    <div class="absolute inset-0 opacity-[0.03]"
-         style="background-image:linear-gradient(rgba(34,211,238,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,0.5) 1px,transparent 1px);background-size:48px 48px;"></div>
+    <div class="absolute inset-0 opacity-[0.02]"
+         style="background-image:linear-gradient(rgba(148,163,184,0.3) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,0.3) 1px,transparent 1px);background-size:64px 64px;"></div>
 </div>
 
 {{-- ═══════════════════════════════════════════════════════════ --}}
@@ -219,116 +149,108 @@
     {{-- ── PANEL IZQUIERDO – Branding ──────────────────────── --}}
     <div class="hidden lg:flex lg:w-1/2 xl:w-3/5 relative flex-col items-center justify-center overflow-hidden">
 
-        {{-- Imagen de fondo con zoom --}}
+        {{-- Imagen de fondo --}}
         <img src="{{ asset('logo/posgrado-uncp.jpg') }}"
              alt="Posgrado UNCP"
-             class="bg-zoom absolute inset-0 w-full h-full object-cover"
-             style="opacity:0.35;">
+             class="absolute inset-0 w-full h-full object-cover"
+             style="opacity:0.25;">
 
         {{-- Overlays --}}
-        <div class="absolute inset-0" style="background:linear-gradient(135deg,rgba(1,15,42,0.88) 0%,rgba(1,20,55,0.82) 50%,rgba(1,12,38,0.92) 100%);"></div>
-        <div class="absolute inset-0" style="background:linear-gradient(to right, rgba(1,15,42,0.2) 0%, transparent 60%);"></div>
+        <div class="absolute inset-0" style="background:linear-gradient(135deg,rgba(15,23,42,0.92) 0%,rgba(30,41,59,0.88) 50%,rgba(15,23,42,0.95) 100%);"></div>
+        <div class="absolute inset-0" style="background:linear-gradient(to right, rgba(15,23,42,0.3) 0%, transparent 60%);"></div>
 
         {{-- Contenido branding --}}
         <div class="relative z-10 text-center px-12 max-w-xl">
 
-            {{-- Logo con glow --}}
-            <div class="mb-10">
+            {{-- Logo --}}
+            <div class="mb-8">
                 <div class="relative inline-block float-anim">
-                    <div class="absolute inset-0 rounded-full blur-3xl" style="background:rgba(34,211,238,0.18);transform:scale(1.6);"></div>
-                    <div class="absolute inset-0 rounded-full blur-xl"  style="background:rgba(255,255,255,0.12);transform:scale(1.3);"></div>
+                    <div class="absolute inset-0 rounded-full blur-2xl" style="background:rgba(59,130,246,0.15);transform:scale(1.4);"></div>
                     <img src="{{ asset('logo/logo-educacion.png') }}"
                          alt="{{ \App\Models\Setting::get('institution_name', config('app.name')) }}"
-                         class="relative mx-auto object-contain cyan-glow"
-                         style="width:140px;height:140px;transition:transform .5s;cursor:default;"
-                         onmouseover="this.style.transform='scale(1.08)'"
-                         onmouseout="this.style.transform='scale(1)'">
+                         class="relative mx-auto object-contain"
+                         style="width:120px;height:120px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3));">
                 </div>
             </div>
 
             {{-- Nombre institución --}}
-            <h1 style="font-size:2.1rem;font-weight:800;color:#fff;line-height:1.2;letter-spacing:-0.01em;text-shadow:0 4px 32px rgba(0,0,0,0.5);">
+            <h1 style="font-size:1.875rem;font-weight:700;color:#f8fafc;line-height:1.3;letter-spacing:-0.01em;">
                 {{ \App\Models\Setting::get('institution_name', 'Sistema Académico') }}
             </h1>
 
             @php $subtitle = \App\Models\Setting::get('institution_subtitle', 'Posgrado') @endphp
             @if($subtitle)
-            <p class="font-mono-custom mt-3 uppercase tracking-widest" style="font-size:11px;color:#22d3ee;letter-spacing:0.3em;">
-                ── {{ $subtitle }} ──
+            <p class="mt-2 text-sm font-medium" style="color:#94a3b8;letter-spacing:0.05em;">
+                {{ $subtitle }}
             </p>
             @endif
 
             {{-- Separador --}}
-            <div class="mt-7 mx-auto" style="height:1px;background:linear-gradient(to right,transparent,rgba(34,211,238,0.4),transparent);max-width:320px;"></div>
+            <div class="mt-6 mx-auto" style="height:1px;background:linear-gradient(to right,transparent,rgba(148,163,184,0.3),transparent);max-width:280px;"></div>
 
-            <p class="mt-5 text-sm leading-relaxed mx-auto" style="color:rgba(216,226,255,0.6);max-width:320px;">
+            <p class="mt-5 text-sm leading-relaxed mx-auto" style="color:rgba(203,213,225,0.75);max-width:340px;">
                 Plataforma integral para la gestión académica, aula virtual y comunicación institucional
             </p>
 
             {{-- Feature cards --}}
-            <div class="mt-8 grid grid-cols-3 gap-3">
+            <div class="mt-7 grid grid-cols-3 gap-3">
                 @foreach([
                     ['icon'=>'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253','label'=>'Aula Virtual'],
                     ['icon'=>'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4','label'=>'Gestión'],
                     ['icon'=>'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9','label'=>'Intranet'],
                 ] as $feat)
-                <div class="group relative corner-tl corner-br transition-all duration-300 hover:-translate-y-1 cursor-default"
-                     style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 8px;backdrop-filter:blur(12px);"
-                     onmouseover="this.style.background='rgba(34,211,238,0.07)';this.style.borderColor='rgba(34,211,238,0.25)';"
-                     onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.08)';">
-                    <div class="mx-auto mb-2 flex items-center justify-center" style="width:38px;height:38px;background:rgba(34,211,238,0.1);border-radius:10px;">
-                        <svg style="width:18px;height:18px;color:#22d3ee;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="group relative transition-all duration-300 hover:-translate-y-0.5 cursor-default"
+                     style="background:rgba(255,255,255,0.05);border:1px solid rgba(148,163,184,0.15);border-radius:10px;padding:14px 8px;backdrop-filter:blur(8px);"
+                     onmouseover="this.style.background='rgba(59,130,246,0.08)';this.style.borderColor='rgba(96,165,250,0.3)';"
+                     onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(148,163,184,0.15)';">
+                    <div class="mx-auto mb-2 flex items-center justify-center" style="width:36px;height:36px;background:rgba(59,130,246,0.12);border-radius:8px;">
+                        <svg style="width:18px;height:18px;color:#60a5fa;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $feat['icon'] }}"/>
                         </svg>
                     </div>
-                    <p class="font-mono-custom text-center" style="font-size:9px;letter-spacing:0.12em;color:rgba(197,198,205,0.75);text-transform:uppercase;">{{ $feat['label'] }}</p>
+                    <p class="text-center text-xs font-medium" style="color:rgba(203,213,225,0.85);">{{ $feat['label'] }}</p>
                 </div>
                 @endforeach
             </div>
 
             {{-- Badge año --}}
             <div class="mt-7 inline-flex items-center gap-2 mx-auto"
-                 style="background:rgba(34,211,238,0.07);border:1px solid rgba(34,211,238,0.2);border-radius:999px;padding:8px 20px;backdrop-filter:blur(8px);">
-                <span class="status-dot" style="width:7px;height:7px;border-radius:50%;display:inline-block;animation:pulse 2s ease-in-out infinite;"></span>
-                <span class="font-mono-custom" style="font-size:10px;letter-spacing:0.18em;color:rgba(216,226,255,0.75);text-transform:uppercase;">
+                 style="background:rgba(59,130,246,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:999px;padding:7px 18px;backdrop-filter:blur(8px);">
+                <span class="status-dot" style="width:6px;height:6px;border-radius:50%;display:inline-block;"></span>
+                <span class="text-xs font-medium" style="color:rgba(226,232,240,0.85);">
                     Año Académico {{ date('Y') }}
                 </span>
             </div>
         </div>
 
         {{-- Footer izquierdo --}}
-        <p class="absolute bottom-5 font-mono-custom" style="font-size:10px;color:rgba(216,226,255,0.25);letter-spacing:0.08em;z-index:10;">
+        <p class="absolute bottom-6 text-xs" style="color:rgba(148,163,184,0.5);z-index:10;">
             © {{ date('Y') }} {{ \App\Models\Setting::get('institution_acronym', '') }} — Todos los derechos reservados
         </p>
     </div>
 
     {{-- ── PANEL DERECHO – Formulario ───────────────────────── --}}
-    <div class="w-full lg:w-1/2 xl:w-2/5 flex flex-col items-center justify-center px-6 py-12 relative"
-         style="background:rgba(1,12,38,0.6);backdrop-filter:blur(2px);">
+    <div class="w-full lg:w-1/2 xl:w-2/5 flex flex-col items-center justify-center px-6 sm:px-8 py-12 relative"
+         style="background:rgba(15,23,42,0.7);backdrop-filter:blur(4px);">
 
         {{-- Línea decorativa izquierda (solo desktop) --}}
-        <div class="hidden lg:block absolute left-0 top-0 bottom-0" style="width:1px;background:linear-gradient(to bottom,transparent,rgba(34,211,238,0.3),transparent);"></div>
+        <div class="hidden lg:block absolute left-0 top-0 bottom-0" style="width:1px;background:linear-gradient(to bottom,transparent,rgba(148,163,184,0.2),transparent);"></div>
 
         {{-- Móvil: logo --}}
         <div class="lg:hidden text-center mb-8">
             <div class="inline-flex items-center justify-center mb-4"
-                 style="width:72px;height:72px;background:rgba(34,211,238,0.07);border:1px solid rgba(34,211,238,0.25);border-radius:16px;">
+                 style="width:68px;height:68px;background:rgba(59,130,246,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:14px;">
                 <img src="{{ asset('logo/logo-educacion.png') }}"
                      alt="{{ \App\Models\Setting::get('institution_name', config('app.name')) }}"
-                     style="width:52px;height:52px;object-fit:contain;">
+                     style="width:48px;height:48px;object-fit:contain;">
             </div>
-            <h2 class="text-base font-bold" style="color:#d8e2ff;">{{ \App\Models\Setting::get('institution_name', config('app.name')) }}</h2>
-            <p class="font-mono-custom mt-1 uppercase" style="font-size:9px;letter-spacing:0.2em;color:#22d3ee;">{{ \App\Models\Setting::get('institution_subtitle', '') }}</p>
+            <h2 class="text-base font-bold" style="color:#f1f5f9;">{{ \App\Models\Setting::get('institution_name', config('app.name')) }}</h2>
+            <p class="mt-1 text-xs font-medium" style="color:#94a3b8;">{{ \App\Models\Setting::get('institution_subtitle', '') }}</p>
         </div>
 
         {{-- Glass card del formulario --}}
-        <div class="w-full relative corner-tl corner-br"
-             style="max-width:400px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:40px 36px;box-shadow:0 0 60px rgba(34,211,238,0.07),inset 0 1px 0 rgba(255,255,255,0.05);">
-
-            {{-- Icono flotante top-right --}}
-            <div class="absolute float-anim" style="top:-20px;right:-18px;opacity:0.35;">
-                <span class="material-symbols-outlined cyan-glow text-cyan" style="font-size:56px;">auto_stories</span>
-            </div>
+        <div class="w-full relative"
+             style="max-width:420px;background:rgba(255,255,255,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:14px;padding:36px 32px;box-shadow:0 4px 24px rgba(0,0,0,0.12);backdrop-filter:blur(20px);">
 
             {{-- Encabezado del form (cada vista lo define) --}}
             @yield('form-header')
@@ -337,20 +259,20 @@
             @yield('content')
 
             {{-- Footer del card --}}
-            <div class="mt-8 pt-5 flex justify-center gap-6" style="border-top:1px solid rgba(255,255,255,0.05);">
-                <div class="flex items-center gap-1.5 font-mono-custom uppercase" style="font-size:9px;letter-spacing:0.12em;color:rgba(143,144,151,0.7);">
-                    <span class="material-symbols-outlined" style="font-size:14px;">shield_lock</span>
-                    Cifrado 256-bit
+            <div class="mt-7 pt-5 flex flex-wrap justify-center gap-4 sm:gap-6" style="border-top:1px solid rgba(148,163,184,0.1);">
+                <div class="flex items-center gap-1.5 text-xs" style="color:rgba(148,163,184,0.7);">
+                    <span class="material-symbols-outlined" style="font-size:16px;">shield_lock</span>
+                    <span class="font-medium">Cifrado 256-bit</span>
                 </div>
-                <div class="flex items-center gap-1.5 font-mono-custom uppercase" style="font-size:9px;letter-spacing:0.12em;color:rgba(143,144,151,0.7);">
-                    <span class="material-symbols-outlined" style="font-size:14px;">verified_user</span>
-                    Acceso Seguro
+                <div class="flex items-center gap-1.5 text-xs" style="color:rgba(148,163,184,0.7);">
+                    <span class="material-symbols-outlined" style="font-size:16px;">verified_user</span>
+                    <span class="font-medium">Acceso Seguro</span>
                 </div>
             </div>
         </div>
 
         {{-- Copyright móvil --}}
-        <p class="mt-8 lg:hidden font-mono-custom text-center" style="font-size:10px;color:rgba(216,226,255,0.25);">
+        <p class="mt-8 lg:hidden text-center text-xs" style="color:rgba(148,163,184,0.5);">
             © {{ date('Y') }} {{ \App\Models\Setting::get('institution_acronym', '') }}
         </p>
     </div>
@@ -359,33 +281,20 @@
 {{-- ═══════════════════════════════════════════════════════════ --}}
 {{-- FOOTER STRIP                                               --}}
 {{-- ═══════════════════════════════════════════════════════════ --}}
-<footer class="absolute bottom-0 left-0 right-0 z-30 flex flex-col md:flex-row items-center justify-between px-8 py-4 gap-3"
-        style="background:rgba(0,8,24,0.75);backdrop-filter:blur(16px);border-top:1px solid rgba(34,211,238,0.1);">
-    <p class="font-mono-custom" style="font-size:10px;letter-spacing:0.1em;color:rgba(100,116,139,0.7);text-transform:uppercase;">
+<footer class="absolute bottom-0 left-0 right-0 z-30 hidden md:flex flex-col md:flex-row items-center justify-between px-6 py-3.5 gap-3"
+        style="background:rgba(15,23,42,0.85);backdrop-filter:blur(12px);border-top:1px solid rgba(148,163,184,0.1);">
+    <p class="text-xs" style="color:rgba(148,163,184,0.6);">
         © {{ date('Y') }} {{ \App\Models\Setting::get('institution_name', 'Plataforma Académica') }} · Sistema Integrado de Gestión
     </p>
-    <nav class="flex gap-6">
+    <nav class="flex gap-5">
         @foreach(['Soporte','Privacidad','Términos'] as $lnk)
-        <a href="#" class="font-mono-custom uppercase transition-colors duration-200"
-           style="font-size:10px;letter-spacing:0.1em;color:rgba(100,116,139,0.6);"
-           onmouseover="this.style.color='#22d3ee'"
-           onmouseout="this.style.color='rgba(100,116,139,0.6)'">{{ $lnk }}</a>
+        <a href="#" class="text-xs transition-colors duration-200"
+           style="color:rgba(148,163,184,0.6);"
+           onmouseover="this.style.color='#60a5fa'"
+           onmouseout="this.style.color='rgba(148,163,184,0.6)'">{{ $lnk }}</a>
         @endforeach
     </nav>
 </footer>
-
-{{-- ═══════════════════════════════════════════════════════════ --}}
-{{-- BADGE SERVIDOR (solo escritorio grande)                    --}}
-{{-- ═══════════════════════════════════════════════════════════ --}}
-<div class="fixed hidden xl:block z-30"
-     style="bottom:72px;right:32px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 18px;backdrop-filter:blur(24px);box-shadow:0 0 30px rgba(34,211,238,0.06);">
-    @foreach(['PROTOCOLO' => 'TLS 1.3', 'ESTADO' => 'EN LÍNEA', 'UPTIME' => '99.9 %'] as $k => $v)
-    <div class="flex justify-between gap-8 font-mono-custom" style="font-size:10px;{{ !$loop->first ? 'margin-top:6px;' : '' }}">
-        <span style="color:rgba(197,198,205,0.5);">{{ $k }}:</span>
-        <span style="color:{{ $k==='ESTADO' ? '#22d3ee' : '#d8e2ff' }};">{{ $v }}</span>
-    </div>
-    @endforeach
-</div>
 
 </body>
 </html>

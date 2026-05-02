@@ -1,0 +1,41 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# CONFIGURACIÓN DE CRON PARA PS-EDU
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Laravel Scheduler ejecuta tareas programadas (limpieza de sesiones, backups, etc.)
+#
+# INSTALACIÓN:
+# 1. Editar crontab del usuario web: sudo crontab -u www-data -e
+# 2. Agregar la línea de abajo
+# 3. Guardar y salir
+#
+# VERIFICAR:
+# - Ver crontab actual: sudo crontab -u www-data -l
+# - Ver logs de cron: sudo tail -f /var/log/syslog | grep CRON
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Laravel Scheduler — ejecuta cada minuto
+* * * * * cd /var/www/psedu && php artisan schedule:run >> /dev/null 2>&1
+
+# ── TAREAS PROGRAMADAS EN EL SCHEDULER ────────────────────────────────────────
+#
+# Configurar en routes/console.php:
+#
+# use Illuminate\Support\Facades\Schedule;
+#
+# // Limpiar sesiones expiradas (diario a las 2 AM)
+# Schedule::command('session:gc')->daily()->at('02:00');
+#
+# // Limpiar cache de vistas (semanal, domingos a las 3 AM)
+# Schedule::command('view:clear')->weekly()->sundays()->at('03:00');
+#
+# // Backup de base de datos (diario a las 1 AM)
+# Schedule::command('backup:run')->daily()->at('01:00');
+#
+# // Enviar recordatorios de tareas próximas a vencer (diario a las 8 AM)
+# Schedule::command('tasks:send-reminders')->dailyAt('08:00');
+#
+# // Limpiar notificaciones antiguas (mensual, primer día del mes)
+# Schedule::command('notifications:prune')->monthly();
+#
+# ══════════════════════════════════════════════════════════════════════════════

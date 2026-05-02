@@ -24,6 +24,22 @@ class DashboardController extends Controller
             ->take(3)
             ->get();
 
-        return view('alumno.dashboard', compact('enrollments', 'latestAnnouncements'));
+        $userCourseIds = $enrollments->pluck('course_id');
+
+        $popupAnnouncements = Announcement::published()->popup()
+            ->where(function ($q) use ($userCourseIds) {
+                // Admin popups (no course restriction, targeting all or alumno)
+                $q->whereDoesntHave('courses')
+                  ->whereDoesntHave('programs')
+                  ->where(fn($q2) => $q2->where('target_role', 'all')->orWhere('target_role', 'alumno'));
+                // Docente popups targeting this student's courses
+                if ($userCourseIds->isNotEmpty()) {
+                    $q->orWhereHas('courses', fn($q2) => $q2->whereIn('announcement_courses.course_id', $userCourseIds));
+                }
+            })
+            ->latest('published_at')
+            ->get();
+
+        return view('alumno.dashboard', compact('enrollments', 'latestAnnouncements', 'popupAnnouncements'));
     }
 }

@@ -44,6 +44,7 @@ class AnnouncementController extends Controller
         ]);
 
         $validated['author_id'] = auth()->id();
+        $validated['is_popup']  = $request->boolean('is_popup');
         unset($validated['image']);
 
         // Publicar inmediatamente si se solicitó y no se ingresó fecha manual
@@ -93,6 +94,7 @@ class AnnouncementController extends Controller
         // Guardar estado previo para detectar transición borrador → publicado
         $wasUnpublished = ! $announcement->isPublished();
 
+        $validated['is_popup'] = $request->boolean('is_popup');
         unset($validated['image']);
 
         // Publicar inmediatamente si se solicitó y no se ingresó fecha manual
@@ -137,7 +139,13 @@ class AnnouncementController extends Controller
             ->latest('published_at')
             ->paginate(10);
 
-        return view('admin.intranet', compact('announcements'));
+        $popupAnnouncements = Announcement::published()
+            ->popup()
+            ->forRole('admin')
+            ->latest('published_at')
+            ->get();
+
+        return view('admin.intranet', compact('announcements', 'popupAnnouncements'));
     }
 
     public function destroy(Announcement $announcement)

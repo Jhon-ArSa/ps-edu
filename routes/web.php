@@ -54,6 +54,9 @@ Route::middleware(['auth', 'role:admin'])
 
     Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
+    Route::get('users/import/template', [Admin\UserController::class, 'importTemplate'])->name('users.import.template');
+    Route::get('users/import', [Admin\UserController::class, 'importForm'])->name('users.import');
+    Route::post('users/import', [Admin\UserController::class, 'importStore'])->name('users.import.store');
     Route::resource('users', Admin\UserController::class);
     Route::patch('users/{user}/toggle-status', [Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
@@ -191,9 +194,18 @@ Route::middleware(['auth', 'role:docente'])
     // Intranet
     Route::get('/intranet', function () {
         return view('docente.intranet', [
-            'announcements' => Announcement::published()->forRole('docente')->latest('published_at')->paginate(10),
+            'announcements'      => Announcement::published()->forRole('docente')->whereDoesntHave('programs')->latest('published_at')->paginate(10),
+            'popupAnnouncements' => Announcement::published()->popup()->forRole('docente')->whereDoesntHave('programs')->latest('published_at')->get(),
         ]);
     })->name('intranet');
+
+    // Mis Anuncios Emergentes
+    Route::prefix('mis-anuncios')->name('announcements.')->group(function () {
+        Route::get('/',          [Docente\AnnouncementController::class, 'index'])->name('index');
+        Route::get('/crear',     [Docente\AnnouncementController::class, 'create'])->name('create');
+        Route::post('/',         [Docente\AnnouncementController::class, 'store'])->name('store');
+        Route::delete('/{announcement}', [Docente\AnnouncementController::class, 'destroy'])->name('destroy');
+    });
     Route::get('/escalafon',        [Docente\EscalafonController::class, 'show'])->name('escalafon.show');
     Route::get('/escalafon/editar', [Docente\EscalafonController::class, 'edit'])->name('escalafon.edit');
     Route::put('/escalafon',        [Docente\EscalafonController::class, 'update'])->name('escalafon.update');
@@ -240,8 +252,29 @@ Route::middleware(['auth', 'role:alumno'])
     });
 
     Route::get('/intranet', function () {
+        // Cursos en los que el alumno tiene matrículas activas
+        $userCourseIds = \DB::table('enrollments')
+            ->where('user_id', auth()->id())
+            ->where('status', 'active')
+            ->pluck('course_id');
+
+        $popupAnnouncements = Announcement::published()->popup()
+            ->where(function ($q) use ($userCourseIds) {
+                // Popups de admin (sin restricción de curso/programa)
+                $q->whereDoesntHave('courses')
+                  ->whereDoesntHave('programs')
+                  ->where(fn($q2) => $q2->where('target_role', 'all')->orWhere('target_role', 'alumno'));
+                // Popups de docentes (restringidos a cursos del alumno)
+                if ($userCourseIds->isNotEmpty()) {
+                    $q->orWhereHas('courses', fn($q2) => $q2->whereIn('announcement_courses.course_id', $userCourseIds));
+                }
+            })
+            ->latest('published_at')
+            ->get();
+
         return view('alumno.intranet', [
-            'announcements' => Announcement::published()->forRole('alumno')->latest('published_at')->paginate(10),
+            'announcements'      => Announcement::published()->forRole('alumno')->whereDoesntHave('programs')->whereDoesntHave('courses')->latest('published_at')->paginate(10),
+            'popupAnnouncements' => $popupAnnouncements,
         ]);
     })->name('intranet');
 

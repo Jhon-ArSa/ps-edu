@@ -15,9 +15,9 @@ class DatabaseSeeder extends Seeder
     {
         // Admin principal
         User::create([
-            'name'     => 'Administrador',
-            'email'    => 'admin@facultad.edu.pe',
-            'password' => Hash::make('password'),
+            'name'     => 'Administrador Principal',
+            'email'    => 'upeducacionuncp@gmail.com',
+            'password' => Hash::make('Admin2024!'),
             'role'     => 'admin',
             'status'   => true,
         ]);

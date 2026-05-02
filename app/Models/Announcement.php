@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Announcement extends Model
 {
     use HasFactory;
-    protected $fillable = ['title', 'content', 'author_id', 'target_role', 'published_at', 'image_path'];
+
+    protected $fillable = ['title', 'content', 'author_id', 'target_role', 'published_at', 'image_path', 'is_popup'];
 
     // target_role: 'all' | 'docente' | 'alumno' | 'admin'
 
@@ -18,7 +19,6 @@ class Announcement extends Model
             return null;
         }
 
-        // Verificar si el archivo existe antes de retornar la URL
         $fullPath = public_path($this->image_path);
         if (!file_exists($fullPath)) {
             return null;
@@ -34,12 +34,22 @@ class Announcement extends Model
 
     protected function casts(): array
     {
-        return ['published_at' => 'datetime'];
+        return ['published_at' => 'datetime', 'is_popup' => 'boolean'];
     }
 
     public function author()
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    public function programs()
+    {
+        return $this->belongsToMany(Program::class, 'announcement_programs');
+    }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'announcement_courses');
     }
 
     public function isPublished(): bool
@@ -57,5 +67,10 @@ class Announcement extends Model
         return $query->where(function ($q) use ($role) {
             $q->where('target_role', 'all')->orWhere('target_role', $role);
         });
+    }
+
+    public function scopePopup($query)
+    {
+        return $query->where('is_popup', true);
     }
 }

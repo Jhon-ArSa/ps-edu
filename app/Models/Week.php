@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Week extends Model
 {
+    use HasFactory;
     protected $fillable = ['course_id', 'number', 'title', 'description'];
 
     public function course()

@@ -164,6 +164,33 @@
                            class="form-input w-full">
                     <p class="text-xs text-gray-400 mt-1">Si no se especifica, quedara como borrador.</p>
                 </div>
+
+                {{-- Popup / Emergente toggle --}}
+                <div class="flex items-center justify-between p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors"
+                     :class="isPopup ? 'border-orange-300 bg-orange-50' : ''">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+                             :class="isPopup ? 'bg-orange-100' : 'bg-gray-100'">
+                            <svg class="w-5 h-5 transition-colors" :class="isPopup ? 'text-orange-500' : 'text-gray-400'"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold" :class="isPopup ? 'text-orange-800' : 'text-gray-700'">
+                                Mostrar como anuncio emergente
+                            </p>
+                            <p class="text-xs" :class="isPopup ? 'text-orange-600' : 'text-gray-400'">
+                                Aparecerá como ventana emergente al entrar a la intranet
+                            </p>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="hidden" name="is_popup" value="0">
+                        <input type="checkbox" name="is_popup" value="1" x-model="isPopup" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -193,6 +220,7 @@
 function announcementEditForm() {
     return {
         targetRole: '{{ old('target_role', $announcement->target_role) }}',
+        isPopup: {{ old('is_popup', $announcement->is_popup) ? 'true' : 'false' }},
         imagePreview: null,
         hasCurrentImage: {{ $announcement->image_path && $announcement->hasValidImage() ? 'true' : 'false' }},
         removeCurrentImage: false,
