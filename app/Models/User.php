@@ -107,6 +107,10 @@ class User extends Authenticatable
     public function coursesTaught()   { return $this->hasMany(Course::class, 'teacher_id'); }
     public function enrollments()     { return $this->hasMany(Enrollment::class); }
     public function announcements()   { return $this->hasMany(Announcement::class, 'author_id'); }
+    public function submissions()     { return $this->hasMany(Submission::class); }
+    public function evaluationAttempts() { return $this->hasMany(EvaluationAttempt::class); }
+    public function forumTopics()     { return $this->hasMany(ForumTopic::class, 'author_id'); }
+    public function forumReplies()    { return $this->hasMany(ForumReply::class, 'author_id'); }
 
     public function getAvatarUrlAttribute(): string
     {

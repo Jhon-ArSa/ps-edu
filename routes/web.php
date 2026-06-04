@@ -59,7 +59,6 @@ Route::middleware(['auth', 'role:admin'])
     Route::post('users/import', [Admin\UserController::class, 'importStore'])->name('users.import.store');
     Route::resource('users', Admin\UserController::class);
     Route::patch('users/{user}/toggle-status', [Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
-    Route::delete('users/{user}/force-delete', [Admin\UserController::class, 'forceDelete'])->name('users.force-delete');
 
     Route::resource('courses', Admin\CourseController::class);
     Route::get('courses/{course}/materials/export-csv', [Admin\CourseController::class, 'exportMaterialsCsv'])

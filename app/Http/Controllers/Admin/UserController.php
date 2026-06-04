@@ -168,19 +168,6 @@ class UserController extends Controller
             return back()->with('error', 'No puede eliminarse a sí mismo.');
         }
 
-        // Verificar si el usuario tiene datos relacionados
-        $hasEnrollments = $user->enrollments()->exists();
-        $hasCourses = $user->coursesTaught()->exists();
-        $hasSubmissions = $user->submissions()->exists();
-        
-        if ($hasEnrollments || $hasCourses || $hasSubmissions) {
-            // Si tiene datos relacionados, solo desactivar
-            $user->update(['status' => false]);
-            return redirect()->route('admin.users.index')
-                ->with('warning', 'Usuario desactivado exitosamente. No se puede eliminar permanentemente porque tiene datos relacionados (cursos, matrículas o entregas).');
-        }
-
-        // Si no tiene datos relacionados, eliminar permanentemente
         $userName = $user->name;
         
         // Eliminar perfiles relacionados
@@ -191,41 +178,25 @@ class UserController extends Controller
         $user->delete();
         
         return redirect()->route('admin.users.index')
-            ->with('success', "Usuario \"{$userName}\" eliminado permanentemente.");
-    }
-
-    public function forceDelete($id)
-    {
-        $user = User::withTrashed()->findOrFail($id);
-        
-        if ($user->id === auth()->id()) {
-            return back()->with('error', 'No puede eliminarse a sí mismo.');
-        }
-
-        $userName = $user->name;
-        
-        // Eliminar todas las relaciones
-        $user->enrollments()->delete();
-        $user->submissions()->delete();
-        $user->evaluationAttempts()->delete();
-        $user->forumTopics()->delete();
-        $user->forumReplies()->delete();
-        $user->docenteProfile()->delete();
-        $user->alumnoProfile()->delete();
-        
-        // Eliminar permanentemente
-        $user->forceDelete();
-        
-        return redirect()->route('admin.users.index')
-            ->with('success', "Usuario \"{$userName}\" y todos sus datos eliminados permanentemente.");
+            ->with('success', "Usuario \"{$userName}\" eliminado permanentemente de la base de datos.");
     }
 
     public function toggleStatus(User $user)
     {
-        $user->update(['status' => !$user->status]);
+        if ($user->id === auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No puede cambiar su propio estado.',
+            ], 403);
+        }
+
+        $newStatus = !$user->status;
+        $user->update(['status' => $newStatus]);
+        
         return response()->json([
-            'status'  => $user->status,
-            'message' => $user->status ? 'Usuario activado' : 'Usuario desactivado',
+            'success' => true,
+            'status'  => $newStatus,
+            'message' => $newStatus ? 'Usuario activado' : 'Usuario desactivado',
         ]);
     }
 
