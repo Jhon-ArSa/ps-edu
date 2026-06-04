@@ -52,15 +52,17 @@ class ForumController extends Controller
             'body'    => $request->body,
         ]);
 
-        $students = $course->students()->where('users.id', '!=', auth()->id())->get();
-        foreach ($students as $student) {
-            $student->notify(new ForumTopicCreated(
-                courseName: $course->name,
-                topicTitle: $topic->title,
-                authorName: auth()->user()->name,
-                url: url('/alumno/mis-cursos/' . $course->id . '/foro/' . $topic->id),
-            ));
-        }
+        // Notificar a estudiantes activos (excluir al autor si está matriculado)
+        $course->students()
+            ->where('users.id', '!=', auth()->id())
+            ->each(function ($student) use ($course, $topic) {
+                $student->notify(new ForumTopicCreated(
+                    courseName: $course->name,
+                    topicTitle: $topic->title,
+                    authorName: auth()->user()->name,
+                    url: url('/alumno/mis-cursos/' . $course->id . '/foro/' . $topic->id),
+                ));
+            });
 
         return redirect()
             ->route('docente.forum.show', [$course, $topic])
@@ -74,7 +76,7 @@ class ForumController extends Controller
         $this->authorize('manage', $course);
         abort_unless($topic->course_id === $course->id, 404);
 
-        $replies = $topic->replies()->with(['author', 'topic.course'])->paginate(20);
+        $replies = $topic->replies()->with('author')->paginate(20);
 
         return view('forum.show', [
             'course'  => $course,

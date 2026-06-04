@@ -77,7 +77,7 @@ class ForumController extends Controller
             403
         );
 
-        $replies = $topic->replies()->with(['author', 'topic.course'])->paginate(20);
+        $replies = $topic->replies()->with('author')->paginate(20);
 
         return view('forum.show', [
             'course'  => $course,

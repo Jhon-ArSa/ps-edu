@@ -4,12 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ForumReply extends Model
 {
-    protected $fillable = ['topic_id', 'user_id', 'body'];
+    use SoftDeletes;
 
-    protected $casts = ['deleted_at' => 'datetime'];
+    protected $fillable = ['topic_id', 'user_id', 'body', 'likes_count', 'is_best_answer', 'edited_at'];
+
+    protected $casts = [
+        'deleted_at' => 'datetime',
+        'edited_at' => 'datetime',
+        'is_best_answer' => 'boolean',
+    ];
 
     // ── Relationships ──────────────────────────────────────────────────────────
 
@@ -21,13 +29,6 @@ class ForumReply extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
-    }
-
-    // ── Scopes ────────────────────────────────────────────────────────────────
-
-    public function scopeVisible($query)
-    {
-        return $query->whereNull('deleted_at');
     }
 
     // ── Permissions ───────────────────────────────────────────────────────────
@@ -42,18 +43,5 @@ class ForumReply extends Model
         }
 
         return false;
-    }
-
-    // ── Soft delete manual ────────────────────────────────────────────────────
-
-    public function softDelete(): void
-    {
-        $this->update(['deleted_at' => now()]);
-        $this->topic->decrement('replies_count');
-    }
-
-    public function isDeleted(): bool
-    {
-        return $this->deleted_at !== null;
     }
 }

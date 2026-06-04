@@ -184,7 +184,7 @@ Route::middleware(['auth', 'role:docente'])
     // ── Foro del curso ────────────────────────────────────────────────────────
     Route::prefix('cursos/{course}/foro')->name('forum.')->group(function () {
         Route::get('/',               [Docente\ForumController::class, 'index'])->name('index');
-        Route::post('/',              [Docente\ForumController::class, 'store'])->name('store');
+        Route::post('/',              [Docente\ForumController::class, 'store'])->name('store')->middleware('throttle:20,1');
         Route::get('/{topic}',        [Docente\ForumController::class, 'show'])->name('show');
         Route::delete('/{topic}',     [Docente\ForumController::class, 'destroy'])->name('destroy');
         Route::patch('/{topic}/fijar',  [Docente\ForumController::class, 'pin'])->name('pin');
@@ -246,7 +246,7 @@ Route::middleware(['auth', 'role:alumno'])
     // Foro del curso
     Route::prefix('mis-cursos/{course}/foro')->name('forum.')->group(function () {
         Route::get('/',          [Alumno\ForumController::class, 'index'])->name('index');
-        Route::post('/',         [Alumno\ForumController::class, 'store'])->name('store');
+        Route::post('/',         [Alumno\ForumController::class, 'store'])->name('store')->middleware('throttle:10,1');
         Route::get('/{topic}',   [Alumno\ForumController::class, 'show'])->name('show');
         Route::delete('/{topic}',[Alumno\ForumController::class, 'destroy'])->name('destroy');
     });
@@ -285,6 +285,6 @@ Route::middleware(['auth', 'role:alumno'])
 
 // ── FORO — RESPUESTAS (todos los roles autenticados) ─────────────────────────
 Route::middleware('auth')->prefix('foro')->name('forum.replies.')->group(function () {
-    Route::post('/{topic}/respuestas',   [ForumReplyController::class, 'store'])->name('store');
+    Route::post('/{topic}/respuestas', [ForumReplyController::class, 'store'])->name('store')->middleware('throttle:30,1');
     Route::delete('/{topic}/respuestas/{reply}', [ForumReplyController::class, 'destroy'])->name('destroy');
 });
