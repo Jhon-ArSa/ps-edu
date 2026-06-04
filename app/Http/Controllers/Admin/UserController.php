@@ -69,7 +69,7 @@ class UserController extends Controller
                 'degree'           => $request->input('degree'),
                 'specialty'        => $request->input('specialty'),
                 'category'         => $request->input('category'),
-                'years_of_service' => $request->input('years_of_service'),
+                'years_of_service' => $request->input('years_of_service') ?: 0,
                 'bio'              => $request->input('bio'),
             ]);
         } elseif ($user->isAlumno()) {
@@ -82,15 +82,25 @@ class UserController extends Controller
         }
 
         // Enviar email de bienvenida con credenciales
-        $user->notify(new \App\Notifications\WelcomeUserNotification(
-            $user->name,
-            $user->email,
-            $temporaryPassword,
-            $user->role
-        ));
+        try {
+            $user->notify(new \App\Notifications\WelcomeUserNotification(
+                $user->name,
+                $user->email,
+                $temporaryPassword,
+                $user->role
+            ));
+            $emailSent = true;
+        } catch (\Exception $e) {
+            \Log::error('Error al enviar email de bienvenida: ' . $e->getMessage());
+            $emailSent = false;
+        }
+
+        $message = $emailSent 
+            ? 'Usuario creado exitosamente. Se ha enviado un email con las credenciales de acceso.'
+            : 'Usuario creado exitosamente. No se pudo enviar el email (verifica la configuración de correo).';
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'Usuario creado exitosamente. Se ha enviado un email con las credenciales de acceso.');
+            ->with('success', $message);
     }
 
     public function show(User $user)
@@ -129,9 +139,17 @@ class UserController extends Controller
 
         // Update profile
         if ($user->isDocente()) {
+            $profileData = [
+                'title'            => $request->input('title'),
+                'degree'           => $request->input('degree'),
+                'specialty'        => $request->input('specialty'),
+                'category'         => $request->input('category'),
+                'years_of_service' => $request->input('years_of_service') ?: 0,
+                'bio'              => $request->input('bio'),
+            ];
             $user->docenteProfile()->updateOrCreate(
                 ['user_id' => $user->id],
-                $request->only(['title', 'degree', 'specialty', 'category', 'years_of_service', 'bio'])
+                $profileData
             );
         } elseif ($user->isAlumno()) {
             $user->alumnoProfile()->updateOrCreate(
@@ -150,9 +168,56 @@ class UserController extends Controller
             return back()->with('error', 'No puede eliminarse a sí mismo.');
         }
 
-        $user->update(['status' => false]);
+        // Verificar si el usuario tiene datos relacionados
+        $hasEnrollments = $user->enrollments()->exists();
+        $hasCourses = $user->coursesTaught()->exists();
+        $hasSubmissions = $user->submissions()->exists();
+        
+        if ($hasEnrollments || $hasCourses || $hasSubmissions) {
+            // Si tiene datos relacionados, solo desactivar
+            $user->update(['status' => false]);
+            return redirect()->route('admin.users.index')
+                ->with('warning', 'Usuario desactivado exitosamente. No se puede eliminar permanentemente porque tiene datos relacionados (cursos, matrículas o entregas).');
+        }
+
+        // Si no tiene datos relacionados, eliminar permanentemente
+        $userName = $user->name;
+        
+        // Eliminar perfiles relacionados
+        $user->docenteProfile()->delete();
+        $user->alumnoProfile()->delete();
+        
+        // Eliminar el usuario
+        $user->delete();
+        
         return redirect()->route('admin.users.index')
-            ->with('success', 'Usuario desactivado exitosamente.');
+            ->with('success', "Usuario \"{$userName}\" eliminado permanentemente.");
+    }
+
+    public function forceDelete($id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'No puede eliminarse a sí mismo.');
+        }
+
+        $userName = $user->name;
+        
+        // Eliminar todas las relaciones
+        $user->enrollments()->delete();
+        $user->submissions()->delete();
+        $user->evaluationAttempts()->delete();
+        $user->forumTopics()->delete();
+        $user->forumReplies()->delete();
+        $user->docenteProfile()->delete();
+        $user->alumnoProfile()->delete();
+        
+        // Eliminar permanentemente
+        $user->forceDelete();
+        
+        return redirect()->route('admin.users.index')
+            ->with('success', "Usuario \"{$userName}\" y todos sus datos eliminados permanentemente.");
     }
 
     public function toggleStatus(User $user)
@@ -410,7 +475,7 @@ class UserController extends Controller
                         'degree'           => ($rec['grado']         ?? '') ?: null,
                         'specialty'        => ($rec['especialidad']  ?? '') ?: null,
                         'category'         => ($rec['categoria']     ?? '') ?: null,
-                        'years_of_service' => is_numeric($rec['anios_servicio'] ?? '') ? (int) $rec['anios_servicio'] : null,
+                        'years_of_service' => is_numeric($rec['anios_servicio'] ?? '') ? (int) $rec['anios_servicio'] : 0,
                     ]);
                 } elseif ($user->isAlumno()) {
                     AlumnoProfile::create([
@@ -422,12 +487,16 @@ class UserController extends Controller
                 }
 
                 // Enviar email de bienvenida con credenciales
-                $user->notify(new \App\Notifications\WelcomeUserNotification(
-                    $user->name,
-                    $user->email,
-                    $password, // Contraseña en texto plano antes de hashear
-                    $user->role
-                ));
+                try {
+                    $user->notify(new \App\Notifications\WelcomeUserNotification(
+                        $user->name,
+                        $user->email,
+                        $password, // Contraseña en texto plano antes de hashear
+                        $user->role
+                    ));
+                } catch (\Exception $e) {
+                    \Log::error("Error al enviar email a {$user->email}: " . $e->getMessage());
+                }
 
                 $imported++;
             } catch (\Exception $e) {
