@@ -23,14 +23,18 @@ class EvaluationController extends Controller
 
         $data = $request->validate([
             'title'        => 'required|string|max:255',
+            'type'         => 'required|in:quiz,document',
             'instructions' => 'nullable|string',
             'file'         => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,zip,jpg,jpeg,png|max:10240',
-            'time_limit'   => 'nullable|integer|min:1|max:300',
+            'time_limit'   => 'required_if:type,quiz|nullable|integer|min:1|max:300',
             'opens_at'     => 'nullable|date',
             'closes_at'    => 'nullable|date|after_or_equal:opens_at',
-            'max_score'    => 'nullable|numeric|min:1|max:100',
+            'max_score'    => 'required|numeric|min:1|max:100',
             'max_attempts' => 'nullable|integer|min:1|max:10',
             'show_results' => 'nullable|boolean',
+        ], [
+            'time_limit.required_if' => 'El tiempo límite es obligatorio para evaluaciones tipo cuestionario.',
+            'closes_at.after_or_equal' => 'La fecha de cierre debe ser posterior a la fecha de apertura.',
         ]);
 
         $data['week_id']      = $week->id;
@@ -45,9 +49,13 @@ class EvaluationController extends Controller
 
         $evaluation = Evaluation::create($data);
 
+        $message = $evaluation->type === 'document' 
+            ? 'Evaluación tipo documento creada exitosamente.' 
+            : 'Evaluación creada. Ahora agrega las preguntas.';
+
         return redirect()
             ->route('docente.evaluations.show', [$course, $evaluation])
-            ->with('success', 'Evaluación "' . $evaluation->title . '" creada. Ahora agrega las preguntas.');
+            ->with('success', $message);
     }
 
     // ── Gestionar evaluación (preguntas) ──────────────────────────────────────
@@ -100,7 +108,6 @@ class EvaluationController extends Controller
     {
         $this->authorize('manage', $course);
         abort_unless($evaluation->week->course_id === $course->id, 404);
-        abort_unless($evaluation->status === 'draft', 403, 'Solo se puede eliminar una evaluación en borrador.');
 
         $evaluation->delete();
 
@@ -136,9 +143,25 @@ class EvaluationController extends Controller
     {
         $this->authorize('manage', $course);
         abort_unless($evaluation->week->course_id === $course->id, 404);
-        abort_unless($evaluation->questions()->exists(), 422, 'Debes agregar al menos una pregunta antes de publicar.');
-
+        
+        // Verificar si está cerrada automáticamente por tiempo
+        if ($evaluation->closes_at && $evaluation->closes_at->isPast() && $evaluation->status !== 'closed') {
+            $evaluation->update(['status' => 'closed']);
+            return back()->with('info', 'Esta evaluación se cerró automáticamente por su fecha de cierre.');
+        }
+        
+        // DRAFT → PUBLISHED
         if ($evaluation->status === 'draft') {
+            // Solo las evaluaciones tipo quiz requieren preguntas
+            if ($evaluation->type === 'quiz') {
+                abort_unless($evaluation->questions()->exists(), 422, 'Debes agregar al menos una pregunta antes de publicar un cuestionario.');
+            }
+            
+            // Las evaluaciones tipo document requieren al menos descripción O archivo
+            if ($evaluation->type === 'document') {
+                abort_unless($evaluation->instructions || $evaluation->file_path, 422, 'Debes agregar una descripción/instrucciones o subir un archivo antes de publicar.');
+            }
+
             $evaluation->update(['status' => 'published']);
 
             // Notificar a alumnos matriculados
@@ -154,9 +177,16 @@ class EvaluationController extends Controller
             return back()->with('success', 'Evaluación publicada. Se notificó a ' . $students->count() . ' alumno(s).');
         }
 
+        // PUBLISHED → CLOSED
         if ($evaluation->status === 'published') {
             $evaluation->update(['status' => 'closed']);
-            return back()->with('success', 'Evaluación cerrada.');
+            return back()->with('success', 'Evaluación cerrada. Los alumnos ya no pueden acceder al contenido.');
+        }
+
+        // CLOSED → PUBLISHED (reabrir)
+        if ($evaluation->status === 'closed') {
+            $evaluation->update(['status' => 'published']);
+            return back()->with('success', 'Evaluación reabierta. Los alumnos pueden volver a acceder.');
         }
 
         return back()->with('error', 'No se puede cambiar el estado de esta evaluación.');

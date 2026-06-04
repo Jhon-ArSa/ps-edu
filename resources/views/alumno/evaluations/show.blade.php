@@ -38,8 +38,15 @@
     <div class="mb-4 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl">{{ session('info') }}</div>
     @endif
 
-    {{-- Instrucciones --}}
-    @if($evaluation->instructions)
+    @php
+        $userId       = auth()->id();
+        $usedAttempts = $attempts->whereIn('status', ['submitted', 'graded'])->count();
+        $canStart     = $evaluation->isOpen() && $usedAttempts < $evaluation->max_attempts;
+        $isClosed     = $evaluation->isClosed() || $evaluation->isClosedByTime();
+    @endphp
+
+    {{-- Instrucciones (solo si NO está cerrada) --}}
+    @if($evaluation->instructions && !$isClosed)
     <div class="card p-6 mb-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
             <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -49,8 +56,8 @@
     </div>
     @endif
 
-    {{-- Archivo adjunto del docente --}}
-    @if($evaluation->file_path)
+    {{-- Archivo adjunto del docente (solo si NO está cerrada) --}}
+    @if($evaluation->file_path && !$isClosed)
     <div class="card p-4 mb-6 flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
             <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
@@ -66,13 +73,6 @@
     </div>
     @endif
 
-    {{-- Estado actual y botón de acción --}}
-    @php
-        $userId       = auth()->id();
-        $usedAttempts = $attempts->whereIn('status', ['submitted', 'graded'])->count();
-        $canStart     = $evaluation->isOpen() && $usedAttempts < $evaluation->max_attempts;
-    @endphp
-
     @if($active)
     {{-- Intento en progreso --}}
     <div class="card p-6 mb-6 border-l-4 border-amber-400 bg-amber-50">
@@ -83,7 +83,41 @@
             Continuar evaluación →
         </a>
     </div>
+    @elseif($isClosed)
+    {{-- Evaluación cerrada - No mostrar contenido --}}
+    <div class="card p-8 mb-6 text-center bg-red-50 border-2 border-red-200">
+        <div class="text-5xl mb-3">🔒</div>
+        <p class="text-lg font-bold text-red-800 mb-2">Evaluación cerrada</p>
+        @if($evaluation->closes_at && $evaluation->closes_at->isPast())
+        <p class="text-sm text-red-600">Esta evaluación se cerró el {{ $evaluation->closes_at->format('d/m/Y') }} a las {{ $evaluation->closes_at->format('H:i') }}</p>
+        @else
+        <p class="text-sm text-red-600">El docente ha cerrado esta evaluación. Ya no está disponible.</p>
+        @endif
+        @if($usedAttempts > 0)
+        <p class="text-xs text-gray-500 mt-3">Intentos realizados: {{ $usedAttempts }} / {{ $evaluation->max_attempts }}</p>
+        @endif
+    </div>
     @elseif($canStart)
+    @if($evaluation->type === 'document')
+    {{-- Evaluación tipo documento - Solo descarga --}}
+    <div class="card p-6 mb-6 text-center bg-blue-50 border border-blue-200">
+        <div class="text-4xl mb-3">📄</div>
+        <p class="font-semibold text-blue-800 mb-1">Evaluación tipo Documento</p>
+        <p class="text-sm text-blue-600 mb-4">Descarga el archivo de instrucciones y completa la tarea externamente.</p>
+        @if($evaluation->file_path)
+        <a href="{{ $evaluation->file_url }}" target="_blank" 
+           class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Descargar instrucciones
+        </a>
+        @else
+        <p class="text-xs text-red-600">El docente aún no ha subido el archivo de instrucciones.</p>
+        @endif
+    </div>
+    @else
+    {{-- Evaluación tipo quiz - Requiere iniciar --}}
     <div class="card p-6 mb-6 text-center bg-violet-50 border border-violet-200">
         <div class="text-4xl mb-3">✍️</div>
         <p class="font-semibold text-violet-800 mb-1">Listo para iniciar</p>
@@ -96,6 +130,7 @@
             </button>
         </form>
     </div>
+    @endif
     @elseif(!$evaluation->isOpen())
     <div class="card p-6 mb-6 text-center bg-gray-50 border border-gray-200">
         <div class="text-4xl mb-2">🔒</div>

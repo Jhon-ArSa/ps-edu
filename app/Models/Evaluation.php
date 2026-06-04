@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Evaluation extends Model
 {
     protected $fillable = [
-        'week_id', 'title', 'instructions', 'file_path', 'time_limit',
+        'week_id', 'title', 'type', 'instructions', 'file_path', 'time_limit',
         'opens_at', 'closes_at', 'max_score', 'max_attempts',
         'show_results', 'status',
     ];
@@ -65,7 +65,16 @@ class Evaluation extends Model
         if ($this->closes_at && $this->closes_at->isPast()) {
             return false;
         }
+        // Si está cerrada manualmente, no está abierta
+        if ($this->status === 'closed') {
+            return false;
+        }
         return true;
+    }
+
+    public function isClosedByTime(): bool
+    {
+        return $this->closes_at && $this->closes_at->isPast();
     }
 
     public function isDraft(): bool
@@ -76,6 +85,16 @@ class Evaluation extends Model
     public function isClosed(): bool
     {
         return $this->status === 'closed';
+    }
+
+    public function isQuiz(): bool
+    {
+        return $this->type === 'quiz';
+    }
+
+    public function isDocument(): bool
+    {
+        return $this->type === 'document';
     }
 
     // ── Accessors ─────────────────────────────────────────────────────────────

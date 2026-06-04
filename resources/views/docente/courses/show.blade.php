@@ -626,14 +626,75 @@
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0 ml-3">
                                 <span class="badge {{ $evaluation->status_badge['class'] }} text-xs">{{ $evaluation->status_badge['label'] }}</span>
+                                
+                                {{-- Botón Publicar/Cerrar/Reabrir --}}
+                                @if($evaluation->status === 'draft')
+                                <form method="POST" action="{{ route('docente.evaluations.toggle', [$course, $evaluation]) }}"
+                                      class="inline-block"
+                                      data-confirm="¿Publicar esta evaluación? Se notificará a los alumnos."
+                                      data-confirm-title="🚀 Publicar Evaluación"
+                                      data-confirm-color="#10b981">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" 
+                                            class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+                                            title="Publicar evaluación">
+                                        🚀 Publicar
+                                    </button>
+                                </form>
+                                @elseif($evaluation->status === 'published')
+                                <form method="POST" action="{{ route('docente.evaluations.toggle', [$course, $evaluation]) }}"
+                                      class="inline-block"
+                                      data-confirm="¿Cerrar esta evaluación? Los alumnos ya no podrán realizar intentos."
+                                      data-confirm-title="🔒 Cerrar Evaluación"
+                                      data-confirm-color="#ef4444">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" 
+                                            class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors text-red-700 bg-red-50 hover:bg-red-100"
+                                            title="Cerrar evaluación">
+                                        🔒 Cerrar
+                                    </button>
+                                </form>
+                                @elseif($evaluation->status === 'closed')
+                                <form method="POST" action="{{ route('docente.evaluations.toggle', [$course, $evaluation]) }}"
+                                      class="inline-block"
+                                      data-confirm="¿Reabrir esta evaluación? Los alumnos podrán volver a acceder."
+                                      data-confirm-title="🔓 Reabrir Evaluación"
+                                      data-confirm-color="#3b82f6">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" 
+                                            class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors text-blue-700 bg-blue-50 hover:bg-blue-100"
+                                            title="Reabrir evaluación">
+                                        🔓 Reabrir
+                                    </button>
+                                </form>
+                                @endif
+                                
                                 <a href="{{ route('docente.evaluations.show', [$course, $evaluation]) }}"
-                                   class="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors">
-                                    Gestionar
+                                   class="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors"
+                                   title="{{ $evaluation->type === 'document' && !$evaluation->file_path && !$evaluation->instructions ? 'Falta agregar descripción o archivo' : 'Gestionar evaluación' }}">
+                                    @if($evaluation->type === 'document' && !$evaluation->file_path && !$evaluation->instructions)
+                                        ⚠️ Gestionar
+                                    @else
+                                        Gestionar
+                                    @endif
                                 </a>
+                                @if($evaluation->status !== 'draft')
                                 <a href="{{ route('docente.evaluations.attempts.index', [$course, $evaluation]) }}"
                                    class="px-3 py-1.5 text-xs font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors">
                                     Intentos
                                 </a>
+                                @endif
+                                {{-- Botón eliminar siempre visible --}}
+                                <form method="POST" action="{{ route('docente.evaluations.destroy', [$course, $evaluation]) }}"
+                                      class="inline-block"
+                                      data-confirm="¿Eliminar esta evaluación{{ $evaluation->status === 'published' ? ' publicada' : '' }}? Esta acción no se puede deshacer."
+                                      data-confirm-color="#ef4444">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" title="Eliminar evaluación"
+                                            class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                                        Eliminar
+                                    </button>
+                                </form>
                             </div>
                         </div>
                         @empty
@@ -651,36 +712,106 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             Agregar Evaluación
                         </button>
-                        <div x-show="showEvalForm" x-transition class="mt-4">
+                        <div x-show="showEvalForm" x-transition class="mt-4" x-data="{ evalType: 'quiz' }">
                             <form method="POST" action="{{ route('docente.evaluations.store', [$course, $week]) }}" enctype="multipart/form-data" class="space-y-3">
                                 @csrf
                                 <div>
                                     <label class="form-label">Título *</label>
                                     <input type="text" name="title" class="form-input" placeholder="Ej: Evaluación Parcial - Semana 4" required>
                                 </div>
+                                
+                                {{-- Selector de tipo de evaluación --}}
                                 <div>
+                                    <label class="form-label">Tipo de evaluación *</label>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <label class="relative cursor-pointer">
+                                            <input type="radio" name="type" value="quiz" x-model="evalType" class="peer sr-only" required>
+                                            <div class="p-4 rounded-lg border-2 transition-all peer-checked:border-amber-500 peer-checked:bg-amber-50 border-gray-200 hover:border-gray-300">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                    </svg>
+                                                    <span class="text-sm font-semibold text-gray-900">Cuestionario</span>
+                                                </div>
+                                                <p class="text-xs text-gray-500">Crear preguntas de opción múltiple, verdadero/falso, etc.</p>
+                                            </div>
+                                        </label>
+                                        <label class="relative cursor-pointer">
+                                            <input type="radio" name="type" value="document" x-model="evalType" class="peer sr-only">
+                                            <div class="p-4 rounded-lg border-2 transition-all peer-checked:border-amber-500 peer-checked:bg-amber-50 border-gray-200 hover:border-gray-300">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                    </svg>
+                                                    <span class="text-sm font-semibold text-gray-900">Documento</span>
+                                                </div>
+                                                <p class="text-xs text-gray-500">Subir archivo con instrucciones (Word, PDF, Forms)</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {{-- Descripción/Instrucciones --}}
+                                <div>
+                                    <label class="form-label">Descripción / Instrucciones</label>
+                                    <textarea name="instructions" rows="3" class="form-input resize-none" placeholder="Puedes escribir instrucciones o pegar un enlace a Google Forms aquí..."></textarea>
+                                    <p class="text-xs text-gray-400 mt-1">Texto o link que se mostrará a los alumnos. Esta información se ocultará cuando la evaluación se cierre.</p>
+                                </div>
+
+                                <div x-show="evalType === 'document'">
+                                    <label class="form-label">Archivo de instrucciones <span class="text-xs text-gray-400">(opcional - puedes usar descripción o link a Forms)</span></label>
+                                    <input type="file" name="file" class="form-input text-sm text-gray-600 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.jpg,.jpeg,.png">
+                                    <p class="text-xs text-gray-400 mt-1">PDF, Word, PowerPoint, ZIP o imagen. Máx. 10 MB. Si no subes archivo, asegúrate de agregar descripción/instrucciones.</p>
+                                </div>
+
+                                <div x-show="evalType === 'quiz'">
                                     <label class="form-label">Archivo adjunto (opcional)</label>
                                     <input type="file" name="file" class="form-input text-sm text-gray-600 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.jpg,.jpeg,.png">
                                     <p class="text-xs text-gray-400 mt-1">PDF, Word, PowerPoint, ZIP o imagen. Máx. 10 MB.</p>
                                 </div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="form-label">Tiempo límite (min)</label>
-                                        <input type="number" name="time_limit" class="form-input" placeholder="90" min="1" max="300">
+
+                                {{-- Opciones de tiempo --}}
+                                <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <p class="text-xs font-semibold text-blue-800 mb-2">⏰ Control de tiempo:</p>
+                                    <ul class="text-xs text-blue-600 space-y-1 ml-4">
+                                        <li>• <strong>Tiempo límite:</strong> Minutos que tiene el alumno una vez que inicia (obligatorio para cuestionarios)</li>
+                                        <li>• <strong>Apertura y Cierre:</strong> Fechas en las que la evaluación estará disponible. Al cerrar, se oculta el contenido.</li>
+                                    </ul>
+                                </div>
+
+                                {{-- Control de disponibilidad --}}
+                                <div x-data="{ hasTimeLimit: true }">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <input type="checkbox" x-model="hasTimeLimit" id="has_time_limit" class="rounded text-amber-500">
+                                        <label for="has_time_limit" class="text-sm font-medium text-gray-700 cursor-pointer">
+                                            ¿La evaluación tiene fechas específicas de apertura y cierre?
+                                        </label>
                                     </div>
-                                    <div>
-                                        <label class="form-label">Puntaje máximo</label>
-                                        <input type="number" name="max_score" class="form-input" value="20" min="1" max="100" step="0.5">
+                                    <p class="text-xs text-gray-400 mb-3" x-show="!hasTimeLimit">Si no marcas esto, la evaluación estará disponible indefinidamente una vez publicada.</p>
+                                    
+                                    <div x-show="hasTimeLimit" x-transition class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="form-label">Fecha de apertura *</label>
+                                            <input type="datetime-local" name="opens_at" class="form-input text-sm" :required="hasTimeLimit">
+                                            <p class="text-xs text-gray-400 mt-0.5">Cuándo estará disponible</p>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Fecha de cierre *</label>
+                                            <input type="datetime-local" name="closes_at" class="form-input text-sm" :required="hasTimeLimit">
+                                            <p class="text-xs text-gray-400 mt-0.5">Cuándo se cerrará automáticamente</p>
+                                        </div>
                                     </div>
                                 </div>
+
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="form-label">Apertura</label>
-                                        <input type="datetime-local" name="opens_at" class="form-input">
+                                    <div x-show="evalType === 'quiz'">
+                                        <label class="form-label">Tiempo límite (min) * <span class="text-xs text-gray-400">(requerido para cuestionarios)</span></label>
+                                        <input type="number" name="time_limit" class="form-input" placeholder="Ej: 90" min="1" max="300" :required="evalType === 'quiz'">
+                                        <p class="text-xs text-gray-400 mt-0.5">Tiempo para completar una vez iniciado</p>
                                     </div>
-                                    <div>
-                                        <label class="form-label">Cierre</label>
-                                        <input type="datetime-local" name="closes_at" class="form-input">
+                                    <div :class="evalType === 'quiz' ? '' : 'col-span-2'">
+                                        <label class="form-label">Puntaje máximo *</label>
+                                        <input type="number" name="max_score" class="form-input" value="20" min="1" max="100" step="0.5" required>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3">
@@ -698,7 +829,8 @@
                                 <div class="flex justify-end gap-2">
                                     <button type="button" @click="showEvalForm = false" class="btn-secondary btn-sm">Cancelar</button>
                                     <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
-                                        Crear y agregar preguntas →
+                                        <span x-show="evalType === 'quiz'">Crear y agregar preguntas →</span>
+                                        <span x-show="evalType === 'document'">Crear evaluación →</span>
                                     </button>
                                 </div>
                             </form>

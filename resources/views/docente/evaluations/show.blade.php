@@ -33,16 +33,28 @@
                     Ver intentos ({{ $stats['submitted'] }})
                 </a>
                 @endif
-                @if($evaluation->status !== 'closed')
-                <form method="POST" action="{{ route('docente.evaluations.toggle', [$course, $evaluation]) }}">
-                    @csrf @method('PATCH')
-                    <button type="submit"
-                        onclick="if(!confirm('{{ $evaluation->status === 'draft' ? '¿Publicar esta evaluación? Se notificará a los alumnos.' : '¿Cerrar esta evaluación?' }}')) return false"
-                        class="px-4 py-2 {{ $evaluation->status === 'draft' ? 'bg-emerald-500 hover:bg-emerald-400' : 'bg-red-500 hover:bg-red-400' }} rounded-lg text-sm font-medium transition-colors">
-                        {{ $evaluation->status === 'draft' ? '🚀 Publicar' : '🔒 Cerrar' }}
-                    </button>
-                </form>
+                @if($evaluation->status === 'draft')
+                <button type="button"
+                    onclick="toggleEvaluationStatus('draft')"
+                    class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 rounded-lg text-sm font-medium transition-colors">
+                    🚀 Publicar
+                </button>
+                @elseif($evaluation->status === 'published')
+                <button type="button"
+                    onclick="toggleEvaluationStatus('published')"
+                    class="px-4 py-2 bg-red-500 hover:bg-red-400 rounded-lg text-sm font-medium transition-colors">
+                    🔒 Cerrar
+                </button>
+                @elseif($evaluation->status === 'closed')
+                <button type="button"
+                    onclick="toggleEvaluationStatus('closed')"
+                    class="px-4 py-2 bg-blue-500 hover:bg-blue-400 rounded-lg text-sm font-medium transition-colors">
+                    🔓 Reabrir
+                </button>
                 @endif
+                <form id="toggle-status-form" method="POST" action="{{ route('docente.evaluations.toggle', [$course, $evaluation]) }}" class="hidden">
+                    @csrf @method('PATCH')
+                </form>
             </div>
         </div>
     </div>
@@ -60,13 +72,69 @@
     </div>
     @endif
 
+    {{-- Editar Descripción/Instrucciones --}}
+    @if($evaluation->status === 'draft')
+    <div class="card p-5 mb-6" x-data="{ editing: false }">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Descripción / Instrucciones
+            </h3>
+            <button @click="editing = !editing" type="button" class="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                <span x-show="!editing">✏️ Editar</span>
+                <span x-show="editing">❌ Cancelar</span>
+            </button>
+        </div>
+        
+        <div x-show="!editing">
+            @if($evaluation->instructions)
+            <div class="text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-3 rounded-lg">{{ $evaluation->instructions }}</div>
+            @else
+            <p class="text-sm text-gray-400 italic">Sin descripción. Puedes agregar instrucciones o un enlace a Google Forms.</p>
+            @endif
+        </div>
+
+        <div x-show="editing" x-cloak>
+            <form method="POST" action="{{ route('docente.evaluations.update', [$course, $evaluation]) }}">
+                @csrf @method('PUT')
+                <input type="hidden" name="title" value="{{ $evaluation->title }}">
+                <input type="hidden" name="max_attempts" value="{{ $evaluation->max_attempts }}">
+                <textarea name="instructions" rows="4" class="form-input w-full resize-none" placeholder="Escribe las instrucciones o pega un enlace a Google Forms...">{{ $evaluation->instructions }}</textarea>
+                <div class="flex justify-end gap-2 mt-2">
+                    <button type="button" @click="editing = false" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors">
+                        Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @else
+    {{-- Solo mostrar si no es borrador --}}
+    @if($evaluation->instructions)
+    <div class="card p-5 mb-6">
+        <h3 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Descripción / Instrucciones
+        </h3>
+        <div class="text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-3 rounded-lg">{{ $evaluation->instructions }}</div>
+    </div>
+    @endif
+    @endif
+
     {{-- Archivo adjunto de la evaluación --}}
     <div class="card p-5 mb-6">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
                     <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
-                    Archivo adjunto
+                    Archivo adjunto <span class="text-xs text-gray-400 font-normal">(opcional)</span>
                 </h3>
                 @if($evaluation->file_path)
                 <a href="{{ $evaluation->file_url }}" target="_blank"
@@ -78,34 +146,52 @@
                 <p class="text-sm text-gray-400">Sin archivo adjunto.</p>
                 @endif
             </div>
+            @if($evaluation->status === 'draft')
             <form method="POST" action="{{ route('docente.evaluations.file', [$course, $evaluation]) }}"
                   enctype="multipart/form-data" class="flex items-center gap-2">
                 @csrf
-                <input type="file" name="file" required
+                <input type="file" name="file"
                        accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.jpg,.jpeg,.png"
                        class="text-xs text-gray-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
                 <button type="submit" class="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-lg transition-colors flex-shrink-0">
                     {{ $evaluation->file_path ? 'Reemplazar' : 'Subir' }}
                 </button>
             </form>
+            @endif
         </div>
     </div>
 
     {{-- Stats --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        @foreach([
-            ['label' => 'Preguntas',         'value' => $stats['questions'],    'color' => 'blue'],
-            ['label' => 'Puntaje total',      'value' => $stats['total_points'], 'color' => 'violet'],
-            ['label' => 'Entregadas',         'value' => $stats['submitted'],    'color' => 'emerald'],
-            ['label' => 'Por revisar',        'value' => $stats['pending_review'],'color' => 'amber'],
-        ] as $s)
-        <div class="card p-4 text-center">
-            <div class="text-2xl font-bold text-{{ $s['color'] }}-600">{{ $s['value'] }}</div>
-            <div class="text-xs text-gray-500 mt-1">{{ $s['label'] }}</div>
-        </div>
-        @endforeach
+        @if($evaluation->type === 'quiz')
+            @foreach([
+                ['label' => 'Preguntas',         'value' => $stats['questions'],    'color' => 'blue'],
+                ['label' => 'Puntaje total',      'value' => $stats['total_points'], 'color' => 'violet'],
+                ['label' => 'Entregadas',         'value' => $stats['submitted'],    'color' => 'emerald'],
+                ['label' => 'Por revisar',        'value' => $stats['pending_review'],'color' => 'amber'],
+            ] as $s)
+            <div class="card p-4 text-center">
+                <div class="text-2xl font-bold text-{{ $s['color'] }}-600">{{ $s['value'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">{{ $s['label'] }}</div>
+            </div>
+            @endforeach
+        @else
+            @foreach([
+                ['label' => 'Tipo',               'value' => 'Documento',            'color' => 'violet'],
+                ['label' => 'Puntaje máximo',     'value' => $evaluation->max_score, 'color' => 'blue'],
+                ['label' => 'Visualizaciones',    'value' => $stats['submitted'],    'color' => 'emerald'],
+                ['label' => 'Estado',             'value' => $evaluation->status_badge['label'], 'color' => 'amber'],
+            ] as $s)
+            <div class="card p-4 text-center">
+                <div class="text-2xl font-bold text-{{ $s['color'] }}-600">{{ $s['value'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">{{ $s['label'] }}</div>
+            </div>
+            @endforeach
+        @endif
     </div>
 
+    {{-- Sección de preguntas (solo para evaluaciones tipo quiz) --}}
+    @if($evaluation->type === 'quiz')
     <div x-data="questionBuilder()" class="space-y-4">
 
         {{-- Lista de preguntas existentes --}}
@@ -242,11 +328,72 @@
         @endif
 
     </div>{{-- /questionBuilder --}}
+    @else
+    {{-- Mensaje para evaluaciones tipo documento --}}
+    <div class="card p-10 text-center">
+        <div class="w-16 h-16 rounded-full bg-violet-100 mx-auto mb-4 flex items-center justify-center">
+            <svg class="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Evaluación tipo Documento</h3>
+        <p class="text-sm text-gray-500 mb-4">Esta evaluación requiere que los estudiantes descarguen el archivo de instrucciones y completen la tarea externamente.</p>
+        <p class="text-xs text-gray-400">Asegúrate de subir un archivo con las instrucciones antes de publicar.</p>
+    </div>
+    @endif
+
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
+function toggleEvaluationStatus(currentStatus) {
+    let config = {};
+    
+    if (currentStatus === 'draft') {
+        config = {
+            title: '¿Publicar evaluación?',
+            html: '<p class="text-gray-600">Se notificará a todos los alumnos matriculados en el curso.</p>',
+            icon: 'question',
+            confirmButtonColor: '#10b981',
+            confirmButtonText: '🚀 Sí, publicar'
+        };
+    } else if (currentStatus === 'published') {
+        config = {
+            title: '¿Cerrar evaluación?',
+            html: '<p class="text-gray-600">Los alumnos ya no podrán realizar intentos. El contenido quedará oculto.</p>',
+            icon: 'question',
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: '🔒 Sí, cerrar'
+        };
+    } else if (currentStatus === 'closed') {
+        config = {
+            title: '¿Reabrir evaluación?',
+            html: '<p class="text-gray-600">Los alumnos podrán volver a acceder y realizar intentos.</p>',
+            icon: 'question',
+            confirmButtonColor: '#3b82f6',
+            confirmButtonText: '🔓 Sí, reabrir'
+        };
+    }
+    
+    Swal.fire({
+        ...config,
+        showCancelButton: true,
+        cancelButtonColor: '#6b7280',
+        cancelButtonText: 'Cancelar',
+        customClass: {
+            popup: 'rounded-2xl',
+            title: 'text-lg font-bold',
+            confirmButton: 'rounded-lg px-6 py-2.5 font-semibold',
+            cancelButton: 'rounded-lg px-6 py-2.5 font-semibold'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('toggle-status-form').submit();
+        }
+    });
+}
+
 function questionBuilder() {
     return {
         questionType:  'multiple_one',
@@ -330,4 +477,4 @@ function questionBuilder() {
     };
 }
 </script>
-@endsection
+@endpush

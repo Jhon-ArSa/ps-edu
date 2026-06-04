@@ -31,5 +31,8 @@ Schedule::call(function () {
 // Descomentar cuando se implemente el comando
 // Schedule::command('tasks:send-reminders')->dailyAt('08:00');
 
+// Cerrar evaluaciones que han pasado su fecha de cierre (cada hora)
+Schedule::command('evaluations:close-expired')->hourly();
+
 // Backup de base de datos (diario a las 1 AM) — requiere spatie/laravel-backup
 // Schedule::command('backup:run')->daily()->at('01:00');
