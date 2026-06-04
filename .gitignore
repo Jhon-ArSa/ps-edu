@@ -1,3 +1,48 @@
-# 2. Ignore an entire directory/folder (must end with a slash)
+# Dependencies
 node_modules/
 vendor/
+
+# Laravel
+/storage/*.key
+/storage/app/public
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+!storage/app/.gitkeep
+!storage/app/public/.gitkeep
+!storage/framework/.gitkeep
+!storage/framework/cache/.gitkeep
+!storage/framework/cache/data/.gitkeep
+!storage/framework/sessions/.gitkeep
+!storage/framework/testing/.gitkeep
+!storage/framework/views/.gitkeep
+!storage/logs/.gitkeep
+
+# Environment
+.env
+.env.backup
+.env.production
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PHP
+.phpunit.result.cache
+auth.json
+
+# Build
+/public/hot
+/public/storage
+/public/build
+/public/css
+/public/js
