@@ -173,8 +173,8 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'code' => [
+            'unique' => 'El código único ":input" ya existe. Por favor usa otro código diferente.',
         ],
     ],
 
