@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ForumReply;
 use App\Models\ForumTopic;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ForumReplyController extends Controller
 {
@@ -24,14 +25,16 @@ class ForumReplyController extends Controller
             'body' => 'required|string|min:5|max:5000',
         ]);
 
-        $reply = $topic->replies()->create([
-            'user_id' => $user->id,
-            'body'    => $request->body,
-        ]);
+        DB::transaction(function () use ($topic, $user, $request) {
+            $topic->replies()->create([
+                'user_id' => $user->id,
+                'body'    => $request->body,
+            ]);
 
-        // Actualizar contadores del tema
-        $topic->increment('replies_count');
-        $topic->update(['last_reply_at' => now()]);
+            // Actualizar contadores del tema
+            $topic->increment('replies_count');
+            $topic->update(['last_reply_at' => now()]);
+        });
 
         return back()->with('success', 'Respuesta publicada.');
     }
@@ -45,7 +48,10 @@ class ForumReplyController extends Controller
         abort_unless($reply->topic_id === $topic->id, 404);
         abort_unless($reply->canDelete($user), 403, 'No tienes permiso para eliminar esta respuesta.');
 
-        $reply->softDelete();
+        DB::transaction(function () use ($reply, $topic) {
+            $reply->delete();
+            $topic->decrement('replies_count');
+        });
 
         return back()->with('success', 'Respuesta eliminada.');
     }
