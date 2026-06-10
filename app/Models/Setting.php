@@ -11,9 +11,15 @@ class Setting extends Model
 
     public static function get(string $key, mixed $default = null): mixed
     {
-        return Cache::rememberForever("setting_{$key}", function () use ($key, $default) {
-            return static::where('key', $key)->value('value') ?? $default;
-        });
+        try {
+            return Cache::rememberForever("setting_{$key}", function () use ($key, $default) {
+                return static::where('key', $key)->value('value') ?? $default;
+            });
+        } catch (\Exception $e) {
+            // Si falla la conexión a BD, retornar el valor por defecto
+            \Log::warning("Setting::get() failed for key '{$key}': " . $e->getMessage());
+            return $default;
+        }
     }
 
     public static function set(string $key, mixed $value): void
