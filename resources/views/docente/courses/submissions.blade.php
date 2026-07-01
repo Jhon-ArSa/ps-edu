@@ -27,7 +27,7 @@
             <div class="flex items-start justify-between gap-4">
                 <div class="flex-1">
                     <p class="text-xs font-bold text-violet-200 uppercase tracking-widest mb-1">
-                        Semana {{ $task->week->number }} · Entregas de tarea
+                        {{ $task->week->title }} · Entregas de tarea
                     </p>
                     <h1 class="text-2xl font-extrabold tracking-tight">{{ $task->title }}</h1>
                     @if($task->description)

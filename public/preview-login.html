@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview - Nuevo Login PS-EDU</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        .illustration-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+
+<div class="min-h-screen flex items-center justify-center p-4 lg:p-8">
+    
+    <div class="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="grid lg:grid-cols-2 gap-0">
+            
+            <!-- Panel Izquierdo - Formulario -->
+            <div class="p-8 lg:p-12 xl:p-16 flex flex-col justify-center">
+                
+                <!-- Logo y Header -->
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                            PS
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">PS-EDU</h3>
+                            <p class="text-xs text-gray-500">Campus Virtual</p>
+                        </div>
+                    </div>
+                    
+                    <h1 class="text-3xl lg:text-4xl font-bold text-gray-800 mb-3">
+                        Bienvenido de vuelta
+                    </h1>
+                    <p class="text-gray-600">
+                        Inicia sesión para acceder a tu campus virtual y continuar con tu formación académica.
+                    </p>
+                </div>
+
+                <!-- Formulario -->
+                <form class="space-y-5" x-data="{ submitting: false, showPassword: false }" @submit.prevent="submitting = true; setTimeout(() => submitting = false, 2000)">
+
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Correo electrónico
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            placeholder="tu.correo@institución.edu.pe"
+                            class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-gray-800 placeholder-gray-400 bg-gray-50"
+                        >
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="password" class="block text-sm font-semibold text-gray-700">
+                                Contraseña
+                            </label>
+                            <a href="#"
+                               class="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                                ¿Olvidaste tu contraseña?
+                            </a>
+                        </div>
+                        <div class="relative">
+                            <input
+                                id="password"
+                                :type="showPassword ? 'text' : 'password'"
+                                placeholder="••••••••"
+                                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-gray-800 pr-12 bg-gray-50"
+                            >
+                            <button type="button" 
+                                    @click="showPassword = !showPassword"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
+                                <svg x-show="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                                <svg x-show="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember -->
+                    <div class="flex items-center gap-2.5">
+                        <input id="remember" 
+                               type="checkbox"
+                               class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0">
+                        <label for="remember" class="text-sm text-gray-600 cursor-pointer select-none">
+                            Mantener sesión iniciada
+                        </label>
+                    </div>
+
+                    <!-- Botón Submit -->
+                    <button type="submit"
+                            :disabled="submitting"
+                            :class="submitting ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-xl hover:-translate-y-0.5'"
+                            class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/30">
+                        <span x-show="!submitting" class="flex items-center justify-center gap-2">
+                            <span>Iniciar Sesión</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            </svg>
+                        </span>
+                        <span x-show="submitting" class="flex items-center justify-center gap-2" style="display: none;">
+                            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            <span>Ingresando...</span>
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Footer del formulario -->
+                <div class="mt-8 pt-6 border-t border-gray-100">
+                    <p class="text-center text-sm text-gray-600">
+                        ¿Problemas para ingresar? 
+                        <a href="#" class="font-medium text-blue-600 hover:text-blue-700">Contacta soporte</a>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Panel Derecho - Ilustración -->
+            <div class="hidden lg:flex relative bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 p-12 items-center justify-center overflow-hidden">
+                
+                <!-- Elementos decorativos de fondo -->
+                <div class="absolute inset-0 opacity-10">
+                    <div class="absolute top-10 right-10 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-10 left-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+                </div>
+                
+                <!-- Contenido -->
+                <div class="relative z-10 text-center text-white">
+                    <div class="illustration-float mb-8">
+                        <svg class="w-80 h-80 mx-auto" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Libro -->
+                            <rect x="120" y="200" width="160" height="120" rx="8" fill="white" opacity="0.9"/>
+                            <rect x="130" y="210" width="60" height="4" rx="2" fill="#3B82F6" opacity="0.3"/>
+                            <rect x="130" y="220" width="140" height="3" rx="1.5" fill="#3B82F6" opacity="0.2"/>
+                            <rect x="130" y="228" width="130" height="3" rx="1.5" fill="#3B82F6" opacity="0.2"/>
+                            <rect x="130" y="236" width="135" height="3" rx="1.5" fill="#3B82F6" opacity="0.2"/>
+                            <rect x="130" y="244" width="125" height="3" rx="1.5" fill="#3B82F6" opacity="0.2"/>
+                            <rect x="130" y="260" width="140" height="3" rx="1.5" fill="#3B82F6" opacity="0.2"/>
+                            <rect x="130" y="268" width="120" height="3" rx="1.5" fill="#3B82F6" opacity="0.2"/>
+                            <rect x="130" y="276" width="135" height="3" rx="1.5" fill="#3B82F6" opacity="0.2"/>
+                            <rect x="130" y="284" width="115" height="3" rx="1.5" fill="#3B82F6" opacity="0.2"/>
+                            
+                            <!-- Persona leyendo -->
+                            <circle cx="200" cy="140" r="30" fill="white" opacity="0.9"/>
+                            <path d="M200 170 Q180 180, 170 200" stroke="white" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.9"/>
+                            <path d="M200 170 Q220 180, 230 200" stroke="white" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.9"/>
+                            
+                            <!-- Gato -->
+                            <ellipse cx="320" cy="280" rx="25" ry="20" fill="white" opacity="0.8"/>
+                            <circle cx="315" cy="275" r="3" fill="#3B82F6"/>
+                            <circle cx="325" cy="275" r="3" fill="#3B82F6"/>
+                            <path d="M305 265 L310 255 L312 265 Z" fill="white" opacity="0.8"/>
+                            <path d="M335 265 L330 255 L328 265 Z" fill="white" opacity="0.8"/>
+                            
+                            <!-- Elementos flotantes -->
+                            <circle cx="100" cy="100" r="8" fill="white" opacity="0.6"/>
+                            <circle cx="300" cy="120" r="6" fill="white" opacity="0.5"/>
+                            <circle cx="80" cy="250" r="5" fill="white" opacity="0.4"/>
+                            <circle cx="340" cy="180" r="7" fill="white" opacity="0.5"/>
+                        </svg>
+                    </div>
+                    
+                    <h2 class="text-3xl font-bold mb-4">
+                        Tu educación, nuestro compromiso
+                    </h2>
+                    <p class="text-lg text-blue-100 max-w-md mx-auto">
+                        Accede a contenidos educativos de calidad, interactúa con tus docentes y construye tu futuro profesional.
+                    </p>
+                    
+                    <!-- Stats -->
+                    <div class="grid grid-cols-3 gap-6 mt-12 max-w-lg mx-auto">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold">500+</div>
+                            <div class="text-sm text-blue-100 mt-1">Estudiantes</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold">50+</div>
+                            <div class="text-sm text-blue-100 mt-1">Docentes</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold">100+</div>
+                            <div class="text-sm text-blue-100 mt-1">Cursos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+</div>
+
+<!-- Nota flotante -->
+<div class="fixed bottom-4 right-4 bg-white rounded-lg shadow-xl p-4 max-w-sm border-l-4 border-blue-500">
+    <p class="text-sm font-semibold text-gray-800 mb-1">👋 Preview del Nuevo Diseño</p>
+    <p class="text-xs text-gray-600">
+        Este es el nuevo login de PS-EDU. Para ver la versión real con Laravel, visita 
+        <a href="../" class="text-blue-600 font-medium hover:underline">la página principal</a>.
+    </p>
+</div>
+
+</body>
+</html>

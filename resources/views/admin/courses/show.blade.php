@@ -433,8 +433,7 @@
                                 @endif
                             </div>
                             <div class="text-left">
-                                <p class="text-sm font-bold text-gray-900 group-hover:text-violet-700 transition-colors">Semana {{ $week->number }}</p>
-                                <p class="text-xs text-gray-500 mt-0.5">{{ $week->title ?? 'Sin título asignado' }}</p>
+                                <p class="text-sm font-bold text-gray-900 group-hover:text-violet-700 transition-colors">{{ $week->title }}</p>
                                 @if($week->description)
                                 <p class="text-xs text-gray-400 mt-1 line-clamp-1">{{ $week->description }}</p>
                                 @endif

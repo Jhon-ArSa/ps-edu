@@ -14,7 +14,7 @@ class WeekController extends Controller
         $this->authorize('manage', $course);
 
         $request->validate([
-            'title'       => 'nullable|string|max:255',
+            'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
 
@@ -30,27 +30,32 @@ class WeekController extends Controller
             'description' => $request->description,
         ]);
 
-        return back()->with('success', 'Semana ' . $nextNumber . ' creada exitosamente.');
+        return back()->with('success', 'Clase "' . $request->title . '" creada exitosamente.');
     }
 
     public function update(Request $request, Course $course, Week $week)
     {
         $this->authorize('manage', $course);
 
+        abort_unless($week->course_id === $course->id, 404);
+
         $request->validate([
-            'title'       => 'nullable|string|max:255',
+            'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
 
         $week->update($request->only(['title', 'description']));
 
-        return response()->json(['success' => true, 'message' => 'Semana actualizada.']);
+        return back()->with('success', 'Clase actualizada exitosamente.');
     }
 
     public function destroy(Course $course, Week $week)
     {
         $this->authorize('manage', $course);
+
+        abort_unless($week->course_id === $course->id, 404);
+
         $week->delete();
-        return back()->with('success', 'Semana eliminada exitosamente.');
+        return back()->with('success', 'Clase eliminada exitosamente.');
     }
 }

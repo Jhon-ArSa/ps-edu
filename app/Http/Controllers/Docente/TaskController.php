@@ -19,6 +19,8 @@ class TaskController extends Controller
     {
         $this->authorize('manage', $course);
 
+        abort_unless($week->course_id === $course->id, 404);
+
         $request->validate([
             'title'        => 'required|string|max:255',
             'description'  => 'nullable|string',

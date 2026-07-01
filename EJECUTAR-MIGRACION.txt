@@ -1,0 +1,197 @@
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║  🔄 MIGRACIÓN DE BASE DE DATOS - PS-EDU FAEDU               ║
+║  AWS RDS MySQL → MySQL Local                                ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+📋 INSTRUCCIONES RÁPIDAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 MÉTODO RECOMENDADO (MÁS FÁCIL):
+
+1. Abre tu terminal en el directorio del proyecto
+
+2. Ejecuta este comando:
+
+   php artisan db:migrate-to-local
+
+3. Sigue las instrucciones en pantalla
+
+4. Limpia la caché:
+
+   php artisan config:clear
+   php artisan cache:clear
+
+5. Verifica la conexión:
+
+   php artisan db:show
+
+6. Inicia el servidor:
+
+   php artisan serve
+
+7. Accede a: http://127.0.0.1:8000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 OTROS MÉTODOS DISPONIBLES:
+
+🔹 Método 2 - Script PowerShell (Windows):
+   .\migrate-database.ps1
+
+🔹 Método 3 - Script Bash (Linux/Mac):
+   chmod +x migrate-database.sh
+   ./migrate-database.sh
+
+🔹 Método 4 - Laravel Export (sin mysqldump):
+   php artisan db:export-laravel
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚙️ CONFIGURACIÓN:
+
+📤 ORIGEN (AWS RDS):
+   Host: cpapcentro.cr40yws4ssdu.us-east-2.rds.amazonaws.com
+   DB: ps_edu
+   User: cpapcentro
+
+📥 DESTINO (MySQL Local):
+   Host: 127.0.0.1
+   DB: posgrado_intranet
+   User: root
+   Pass: admin
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ REQUISITOS PREVIOS:
+
+✓ MySQL instalado y corriendo
+✓ PHP 8.2+ instalado
+✓ Conexión a internet
+✓ 100-500 MB de espacio en disco
+
+Verifica:
+   mysql --version
+   php --version
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 QUÉ SE MIGRARÁ:
+
+✓ ~50 tablas completas
+✓ Todos los usuarios (admin, docentes, alumnos)
+✓ Todos los cursos y programas
+✓ Todas las evaluaciones y sus intentos
+✓ Todas las tareas y entregas
+✓ Todos los temas del foro
+✓ Todos los anuncios institucionales
+✓ Toda la configuración del sistema
+✓ Todas las notificaciones
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🛡️ SEGURIDAD:
+
+✓ Se crea backup automático del archivo .env
+✓ Se exporta la base de datos completa a SQL
+✓ Se verifica cada paso antes de continuar
+✓ Puedes revertir los cambios si es necesario
+
+Backup guardado en:
+   storage/app/backups/database_backup.sql
+   .env.backup.YYYYMMDD_HHMMSS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🐛 PROBLEMAS COMUNES:
+
+❌ "mysqldump: command not found"
+   → Solución: php artisan db:export-laravel
+
+❌ "Access denied for user 'root'"
+   → Solución: Verifica password de MySQL (admin)
+
+❌ "Can't connect to MySQL server"
+   → Solución: Inicia MySQL local (XAMPP/WAMP/servicio)
+
+❌ "Connection to AWS RDS failed"
+   → Solución: Verifica tu conexión a internet
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 DOCUMENTACIÓN COMPLETA:
+
+📄 INSTRUCCIONES-MIGRACION.md
+   → Instrucciones detalladas paso a paso
+
+📄 MIGRACION-BASE-DATOS.md
+   → Guía completa con todos los métodos
+
+📄 RESUMEN-MIGRACION-BD.md
+   → Resumen técnico del sistema de migración
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 VERIFICACIÓN POST-MIGRACIÓN:
+
+Después de migrar, ejecuta:
+
+   php artisan tinker
+
+En tinker:
+   >>> DB::table('users')->count()
+   >>> DB::table('courses')->count()
+   >>> exit
+
+Debe mostrar los conteos correctos.
+
+Luego inicia sesión en:
+   http://127.0.0.1:8000
+
+Con:
+   Email: upeducacionuncp@gmail.com
+   Password: Admin2024!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏱️ TIEMPO ESTIMADO:
+
+- Exportación: 2-5 minutos
+- Importación: 3-10 minutos
+- Total: 5-15 minutos
+
+(Depende del tamaño de los datos y velocidad de conexión)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ VENTAJAS DE MIGRAR A LOCAL:
+
+✓ Mayor velocidad (sin latencia de red)
+✓ Desarrollo offline (no necesitas internet)
+✓ Control total (acceso directo a la BD)
+✓ Sin costos de AWS
+✓ Depuración más fácil
+✓ Testing sin afectar producción
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 ¡LISTO PARA EMPEZAR!
+
+Ejecuta ahora:
+
+   php artisan db:migrate-to-local
+
+El comando te guiará paso a paso.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📞 ¿Necesitas ayuda?
+
+Revisa los archivos de documentación o los logs:
+   storage/logs/laravel.log
+
+╔══════════════════════════════════════════════════════════════╗
+║  PS-EDU FAEDU - Sistema de Posgrado - UNCP                  ║
+║  © 2026 - Facultad de Educación                              ║
+╚══════════════════════════════════════════════════════════════╝

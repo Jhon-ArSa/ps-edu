@@ -15,6 +15,8 @@ class MaterialController extends Controller
     {
         $this->authorize('manage', $course);
 
+        abort_unless($week->course_id === $course->id, 404);
+
         $request->validate([
             'type'        => 'required|in:file,link,video',
             'title'       => 'required|string|max:255',

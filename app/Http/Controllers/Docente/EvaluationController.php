@@ -21,6 +21,8 @@ class EvaluationController extends Controller
     {
         $this->authorize('manage', $course);
 
+        abort_unless($week->course_id === $course->id, 404);
+
         $data = $request->validate([
             'title'        => 'required|string|max:255',
             'type'         => 'required|in:quiz,document',
@@ -108,6 +110,16 @@ class EvaluationController extends Controller
     {
         $this->authorize('manage', $course);
         abort_unless($evaluation->week->course_id === $course->id, 404);
+
+        if ($evaluation->file_path) {
+            Storage::disk('public')->delete($evaluation->file_path);
+        }
+
+        foreach ($evaluation->attempts as $attempt) {
+            if ($attempt->file_path) {
+                Storage::disk('public')->delete($attempt->file_path);
+            }
+        }
 
         $evaluation->delete();
 

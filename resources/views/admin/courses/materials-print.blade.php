@@ -47,8 +47,7 @@
                     @if($week->materials->isNotEmpty())
                         <tr class="week-header">
                             <td colspan="5">
-                                Semana {{ $week->number }}
-                                @if($week->title) — {{ $week->title }} @endif
+                                {{ $week->title }}
                             </td>
                         </tr>
                         @foreach($week->materials->sortBy('order') as $material)

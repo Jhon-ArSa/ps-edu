@@ -225,10 +225,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-primary-600 uppercase tracking-wider">Semana {{ $week->number }}</span>
-                        @if($week->title)
                         <span class="text-sm font-semibold text-gray-900">{{ $week->title }}</span>
-                        @endif
                     </div>
                     <div class="flex items-center gap-2 mt-0.5 flex-wrap">
                         <span class="inline-flex items-center gap-1 text-xs text-gray-400">

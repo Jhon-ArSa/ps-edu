@@ -17,7 +17,7 @@
                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $evaluation->status_badge['class'] }}">
                         {{ $evaluation->status_badge['label'] }}
                     </span>
-                    <span class="text-white/60 text-sm">Semana {{ $evaluation->week->number }}</span>
+                    <span class="text-white/60 text-sm">{{ $evaluation->week->title }}</span>
                 </div>
                 <h1 class="text-2xl font-bold">{{ $evaluation->title }}</h1>
                 <div class="flex flex-wrap gap-4 mt-2 text-sm text-white/80">

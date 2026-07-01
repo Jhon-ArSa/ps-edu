@@ -50,7 +50,7 @@
                     </div>
                     <div class="min-w-0">
                         <p class="text-sm font-semibold text-gray-800 truncate">{{ $attempt->student->name }}</p>
-                        <p class="text-xs text-gray-500">{{ $attempt->student->alumnoProfile?->student_code ?? $attempt->student->email }}</p>
+                        <p class="text-xs text-gray-500">{{ $attempt->student->alumnoProfile?->code ?? $attempt->student->email }}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 flex-shrink-0 ml-3">

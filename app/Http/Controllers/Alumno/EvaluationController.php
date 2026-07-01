@@ -93,6 +93,10 @@ class EvaluationController extends Controller
         $attempt = $evaluation->activeAttemptFor(auth()->id());
         abort_unless($attempt, 404, 'No tienes un intento activo.');
 
+        $request->validate([
+            'file_answer' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,zip,jpg,jpeg,png|max:10240',
+        ]);
+
         $answers = collect($request->input('answers', []));
         return $this->doSubmit($request, $course, $evaluation, $attempt, $answers);
     }

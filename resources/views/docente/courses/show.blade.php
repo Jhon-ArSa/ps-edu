@@ -173,7 +173,7 @@
                 <form method="POST" action="{{ route('docente.courses.weeks.store', $course) }}" class="flex gap-3">
                     @csrf
                     <div class="flex-1">
-                        <input type="text" name="title" placeholder="Título de la semana (ej: Introducción a la materia)"
+                        <input type="text" name="title" required placeholder="Nombre de la clase (ej: Introducción a la materia)"
                                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent">
                     </div>
                     <button type="submit"
@@ -222,8 +222,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-primary-600 uppercase tracking-wider">Semana {{ $week->number }}</span>
-                            <span x-show="!editingWeek" class="text-sm font-semibold text-gray-900">{{ $week->title ?? '' }}</span>
+                            <span x-show="!editingWeek" class="text-sm font-semibold text-gray-900">{{ $week->title }}</span>
                         </div>
                         <div class="flex items-center gap-2 mt-0.5 flex-wrap">
                             <span class="inline-flex items-center gap-1 text-xs text-gray-400">
@@ -258,7 +257,7 @@
                         </svg>
                     </button>
                     <form method="POST" action="{{ route('docente.courses.weeks.destroy', [$course, $week]) }}"
-                          data-confirm="¿Eliminar la Semana {{ $week->number }} y todos sus materiales y tareas?">
+                          data-confirm="¿Eliminar la clase &quot;{{ $week->title }}&quot; y todos sus materiales y tareas?">
                         @csrf @method('DELETE')
                         <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar semana">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -758,16 +757,15 @@
                                     <p class="text-xs text-gray-400 mt-1">Texto o link que se mostrará a los alumnos. Esta información se ocultará cuando la evaluación se cierre.</p>
                                 </div>
 
-                                <div x-show="evalType === 'document'">
-                                    <label class="form-label">Archivo de instrucciones <span class="text-xs text-gray-400">(opcional - puedes usar descripción o link a Forms)</span></label>
+                                <div>
+                                    <label class="form-label">
+                                        <span x-show="evalType === 'document'">Archivo de instrucciones</span>
+                                        <span x-show="evalType === 'quiz'" x-cloak>Archivo adjunto</span>
+                                        <span class="text-xs text-gray-400">(opcional)</span>
+                                    </label>
                                     <input type="file" name="file" class="form-input text-sm text-gray-600 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.jpg,.jpeg,.png">
-                                    <p class="text-xs text-gray-400 mt-1">PDF, Word, PowerPoint, ZIP o imagen. Máx. 10 MB. Si no subes archivo, asegúrate de agregar descripción/instrucciones.</p>
-                                </div>
-
-                                <div x-show="evalType === 'quiz'">
-                                    <label class="form-label">Archivo adjunto (opcional)</label>
-                                    <input type="file" name="file" class="form-input text-sm text-gray-600 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.jpg,.jpeg,.png">
-                                    <p class="text-xs text-gray-400 mt-1">PDF, Word, PowerPoint, ZIP o imagen. Máx. 10 MB.</p>
+                                    <p class="text-xs text-gray-400 mt-1" x-show="evalType === 'document'">PDF, Word, PowerPoint, ZIP o imagen. Máx. 10 MB. Si no subes archivo, asegúrate de agregar descripción/instrucciones.</p>
+                                    <p class="text-xs text-gray-400 mt-1" x-show="evalType === 'quiz'" x-cloak>PDF, Word, PowerPoint, ZIP o imagen. Máx. 10 MB.</p>
                                 </div>
 
                                 {{-- Opciones de tiempo --}}
