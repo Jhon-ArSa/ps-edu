@@ -1,0 +1,185 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║  🔧 CORRECCIÓN DE ERRORES - PS-EDU FAEDU                     ║
+║  Error 404 en archivos + Emails no se envían                 ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+📋 INSTRUCCIONES RÁPIDAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ PASO 1: CORREGIR SISTEMA DE ARCHIVOS (Soluciona Error 404)
+
+1. Ver qué se migrará (sin hacer cambios):
+
+   php artisan storage:fix --dry-run
+
+2. Ejecutar la corrección:
+
+   php artisan storage:fix
+
+3. Crear symlink:
+
+   php artisan storage:link
+
+4. Limpiar caché:
+
+   php artisan config:clear
+   php artisan cache:clear
+
+✅ PASO 2: PROBAR SISTEMA DE EMAILS
+
+1. Probar configuración de email:
+
+   php artisan mail:test
+
+2. Si falla, seguir diagnóstico en pantalla
+
+3. Alternativa (si puerto 587 no funciona):
+   
+   Editar .env:
+   MAIL_PORT=465
+   MAIL_ENCRYPTION=ssl
+   
+   Luego:
+   php artisan config:clear
+   php artisan mail:test
+
+✅ PASO 3: VERIFICAR CORRECCIONES
+
+1. Subir un material en un curso (como docente)
+2. Verificar que el archivo se guarda
+3. Verificar que NO sale error 404
+4. Crear un usuario de prueba
+5. Verificar que llega el email con credenciales
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 COMANDOS COMPLETOS (COPIA Y PEGA)
+
+# Ejecutar todo de una vez:
+
+php artisan storage:fix --dry-run
+php artisan storage:fix
+php artisan storage:link
+php artisan config:clear
+php artisan cache:clear
+php artisan mail:test
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 QUÉ SE CORRIGIÓ:
+
+1. PROBLEMA: Error 404 al subir archivos
+   ✅ SOLUCIÓN: Sistema de almacenamiento corregido
+   
+   ANTES: Archivos en public/materials/
+   AHORA:  Archivos en storage/app/public/materials/
+   URL:    /storage/materials/archivo.pdf
+
+2. PROBLEMA: Emails no se envían
+   ✅ SOLUCIÓN: Comando de prueba creado
+   
+   Ejecuta: php artisan mail:test
+   El comando te dirá exactamente qué está mal
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 ARCHIVOS QUE SE MIGRARÁN:
+
+✓ public/materials/      → storage/app/public/materials/
+✓ public/tasks/          → storage/app/public/tasks/
+✓ public/evaluations/    → storage/app/public/evaluations/
+✓ public/submissions/    → storage/app/public/submissions/
+✓ public/announcements/  → storage/app/public/announcements/
+✓ public/avatars/        → storage/app/public/avatars/
+
+Además, todas las referencias en la base de datos se actualizarán.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  SI ESTÁS EN HOSTING/CPANEL:
+
+Después de subir los cambios al servidor:
+
+ssh tu-usuario@tu-servidor.com
+
+cd /ruta/al/proyecto
+
+git pull origin main
+
+php artisan storage:fix
+php artisan storage:link
+php artisan config:clear
+php artisan cache:clear
+php artisan optimize
+
+chmod -R 775 storage/
+chmod -R 775 bootstrap/cache/
+
+php artisan mail:test upeducacionuncp@gmail.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🐛 SOLUCIÓN DE PROBLEMAS:
+
+┌─ Error 404 persiste después de migración ─────────────────────┐
+│                                                                │
+│ Solución:                                                      │
+│ 1. Verificar que el symlink existe:                           │
+│    ls -la public/storage                                       │
+│                                                                │
+│ 2. Si no existe o no es un symlink:                           │
+│    rm -rf public/storage                                       │
+│    php artisan storage:link                                    │
+│                                                                │
+│ 3. Limpiar caché del navegador (Ctrl+F5)                      │
+└────────────────────────────────────────────────────────────────┘
+
+┌─ Emails no se envían ──────────────────────────────────────────┐
+│                                                                │
+│ Ejecuta: php artisan mail:test                                │
+│                                                                │
+│ El comando te dirá exactamente qué está mal y cómo arreglarlo │
+│                                                                │
+│ Errores comunes:                                              │
+│ • Puerto 587 bloqueado → Usa puerto 465                       │
+│ • App Password inválida → Regenera en Google                  │
+│ • Caché antigua → php artisan config:clear                    │
+└────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTACIÓN COMPLETA:
+
+Lee estos archivos para más detalles:
+
+• AUDITORIA-Y-CORRECCIONES.md
+  → Explicación completa de los problemas y soluciones
+
+• README-MIGRACION.md
+  → Instrucciones de migración de base de datos (si lo necesitas)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ VERIFICACIÓN FINAL:
+
+Después de ejecutar los comandos, verifica:
+
+□ Puedes subir un material como docente
+□ El archivo se guarda correctamente
+□ NO aparece error 404 al acceder al archivo
+□ Al crear un usuario, se envía el email
+□ El email llega con las credenciales correctas
+
+Si todo funciona: ¡Listo! ✅
+
+Si algo falla: Ejecuta 'php artisan mail:test' para emails
+              o lee 'AUDITORIA-Y-CORRECCIONES.md'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+╔═══════════════════════════════════════════════════════════════╗
+║  PS-EDU FAEDU - Sistema de Posgrado - UNCP                   ║
+║  © 2026 - Facultad de Educación                               ║
+╚═══════════════════════════════════════════════════════════════╝
