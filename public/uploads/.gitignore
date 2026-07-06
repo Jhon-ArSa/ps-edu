@@ -1,0 +1,10 @@
+# Ignorar todos los archivos en uploads
+*
+
+# Pero NO ignorar subdirectorios
+!*/
+
+# Permitir archivos de configuración
+!.gitignore
+!.htaccess
+!index.php

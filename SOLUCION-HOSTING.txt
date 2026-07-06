@@ -1,0 +1,237 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║  ✅ SOLUCIÓN: Archivos en Hosting SIN Terminal               ║
+║  PS-EDU FAEDU - Error 404 Resuelto                           ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+🎯 PROBLEMA IDENTIFICADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Error 404 al subir archivos en hosting
+❌ No hay acceso a terminal (SSH)
+❌ No se pueden ejecutar comandos Artisan
+❌ No se pueden crear symlinks
+
+✅ SOLUCIÓN APLICADA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cambié el sistema para que use: public/uploads/
+Ya NO necesitas terminal, SSH ni symlinks
+
+ANTES:
+storage/app/public/ → Requiere symlink ❌
+/storage/archivo.pdf → Error 404 ❌
+
+AHORA:
+public/uploads/ → Directo, sin symlink ✅
+/uploads/archivo.pdf → Funciona ✅
+
+📁 ESTRUCTURA CREADA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+public/
+└── uploads/
+    ├── .htaccess           ← Seguridad
+    ├── index.php           ← Protección
+    ├── materials/          ← Materiales
+    ├── tasks/              ← Tareas
+    ├── evaluations/        ← Evaluaciones
+    ├── submissions/        ← Entregas
+    ├── announcements/      ← Anuncios
+    ├── avatars/            ← Avatares
+    └── forum/              ← Foro
+
+🚀 CÓMO SUBIR AL HOSTING (3 OPCIONES)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━ OPCIÓN 1: Script Automático (MÁS FÁCIL) ━━━
+
+1. Sube el archivo al servidor:
+   create-upload-directories.php
+
+2. Accede desde el navegador:
+   https://tu-dominio.com/create-upload-directories.php
+
+3. El script crea todo automáticamente
+
+4. Elimina el archivo después:
+   create-upload-directories.php
+
+━━━ OPCIÓN 2: cPanel File Manager ━━━
+
+1. Entra a cPanel → File Manager
+
+2. Sube TODA la carpeta del proyecto
+
+3. Verifica que exista:
+   public/uploads/ con todas las subcarpetas
+
+4. Permisos (click derecho en uploads/):
+   • Change Permissions
+   • Valor: 755 o 775
+   • Marcar: "Recurse into subdirectories"
+   • Change Permissions
+
+━━━ OPCIÓN 3: FTP (FileZilla) ━━━
+
+1. Conecta por FTP a tu hosting
+
+2. Sube toda la carpeta public/uploads/
+
+3. Asegúrate de subir:
+   ✓ .htaccess
+   ✓ index.php
+   ✓ Todas las subcarpetas
+
+4. Permisos (click derecho):
+   • File Permissions
+   • Numeric: 755
+
+🔐 SEGURIDAD INCLUIDA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ .htaccess previene ejecución de PHP
+✅ Solo archivos seguros permitidos (PDF, DOC, imágenes)
+✅ No lista directorios
+✅ Headers de seguridad configurados
+
+📋 VERIFICACIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+□ Carpeta public/uploads/ existe
+□ Subcarpetas creadas (materials, tasks, etc.)
+□ Archivo .htaccess presente
+□ Permisos 755 o 775 configurados
+□ Prueba: Sube un material como docente
+□ Verifica: NO aparece error 404
+□ Archivo es accesible: /uploads/materials/...
+
+⚠️  SI AÚN DA ERROR 404
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Verifica permisos de uploads/:
+   Debe ser 755 o 775
+
+2. Limpia caché del navegador:
+   Ctrl + F5 o Cmd + Shift + R
+
+3. Elimina caché de Laravel (si tienes SSH):
+   php artisan config:clear
+   php artisan cache:clear
+
+4. Si NO tienes SSH:
+   • Borra: bootstrap/cache/config.php
+   • Borra: bootstrap/cache/routes-*.php
+
+5. Verifica APP_URL en .env:
+   APP_URL=https://tu-dominio-real.com
+
+📊 URLs DE ARCHIVOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Materiales:
+https://tu-dominio.com/uploads/materials/1/archivo.pdf
+
+Evaluaciones:
+https://tu-dominio.com/uploads/evaluations/examen.pdf
+
+Tareas:
+https://tu-dominio.com/uploads/tasks/1/tarea.docx
+
+Entregas:
+https://tu-dominio.com/uploads/submissions/1/entrega.zip
+
+Anuncios:
+https://tu-dominio.com/uploads/announcements/imagen.jpg
+
+✨ VENTAJAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Funciona en CUALQUIER hosting compartido
+✓ NO requiere acceso SSH/terminal
+✓ NO requiere comandos Artisan
+✓ NO requiere symlinks
+✓ Fácil de subir (FTP o File Manager)
+✓ URLs más simples (/uploads/ en vez de /storage/)
+✓ Backups más fáciles (solo copiar carpeta)
+✓ Compatible 100% con cPanel
+
+📚 DOCUMENTACIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• INSTRUCCIONES-HOSTING-SIN-TERMINAL.md
+  → Guía completa con todos los detalles
+
+• create-upload-directories.php
+  → Script para crear estructura automáticamente
+
+• public/uploads/.htaccess
+  → Configuración de seguridad
+
+🎯 ARCHIVOS MODIFICADOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ config/filesystems.php
+  → Ahora usa: public_path('uploads')
+
+✓ public/uploads/
+  → Estructura completa de carpetas creada
+
+✓ Archivos de seguridad:
+  → .htaccess, index.php, .gitignore
+
+💡 COMANDOS (Si tienes SSH)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Opcional, solo si tienes acceso SSH:
+
+cd /ruta/a/tu/proyecto
+
+# Limpiar caché
+php artisan config:clear
+php artisan cache:clear
+
+# Verificar configuración
+php artisan config:show filesystems
+
+🔧 PARA cPanel (Sin SSH)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Sube todos los archivos vía File Manager o FTP
+
+2. Verifica permisos:
+   public/uploads/ → 755 o 775
+
+3. Ejecuta el script (opcional):
+   https://tu-dominio.com/create-upload-directories.php
+
+4. Prueba subir un archivo en el sistema
+
+5. ¡Listo! Debería funcionar
+
+🎉 RESULTADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ANTES:
+❌ Error 404 al subir archivos
+❌ Requiere terminal/SSH
+❌ Necesita symlinks
+❌ Difícil de configurar en hosting
+
+AHORA:
+✅ Archivos se suben correctamente
+✅ Funciona sin terminal/SSH
+✅ Sin symlinks necesarios
+✅ Fácil de configurar en cPanel
+✅ Compatible con hosting compartido
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📞 CONTACTO: upeducacionuncp@gmail.com
+🏫 SISTEMA: PS-EDU FAEDU - UNCP
+📅 FECHA: Junio 19, 2026
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+¡SUBE LOS ARCHIVOS AL HOSTING Y PRUEBA! 🚀
